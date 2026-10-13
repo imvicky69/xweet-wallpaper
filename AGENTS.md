@@ -1043,3 +1043,5 @@ Every design decision should reinforce the same identity:
 The goal is not to make every page look empty. It is to remove everything that does not help people discover, appreciate, or download a wallpaper.
 
 When in doubt, prioritize the artwork, typography, whitespace, and usability over decoration.
+
+never run dev server and go to check all tests will be done manually .
