@@ -1,1 +1,41 @@
 @import "tailwindcss";
+
+:root {
+  --background: #F6F3E9;
+  --surface: #FCFAF4;
+  --foreground: #252923;
+  --primary: #244B38;
+  --primary-hover: #193A2A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #DCE5D5;
+  --secondary-foreground: #244B38;
+  --muted: #EAE7DD;
+  --muted-foreground: #62685E;
+  --border: #D9D8C9;
+  --accent: #858B70;
+  --destructive: #B42318;
+
+  --radius: 0px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-destructive: var(--destructive);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
