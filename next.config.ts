@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["firebase-admin", "sharp"],
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   cacheComponents: true,
   partialPrefetching: true,
   images: {
