@@ -14,7 +14,7 @@ async function getSharpInstance(buffer: Buffer) {
   }
 }
 
-export const maxDuration = 60;
+
 
 export async function GET() {
   return NextResponse.json({
