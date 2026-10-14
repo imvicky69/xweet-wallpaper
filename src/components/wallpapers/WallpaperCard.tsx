@@ -9,9 +9,11 @@ import {
   IconBookmark,
   IconCheck,
   IconDeviceMobile,
+  IconDeviceDesktop,
   IconShieldCheck,
   IconShare,
   IconPencil,
+  IconTrash,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
 import { getCdnImageUrl } from "@/lib/wallpapers";
@@ -22,6 +24,7 @@ interface WallpaperCardProps {
   onPreview?: (wallpaper: Wallpaper) => void;
   onDownload?: (wallpaper: Wallpaper) => void;
   onEdit?: (wallpaper: Wallpaper) => void;
+  onDelete?: (wallpaper: Wallpaper) => void;
 }
 
 export const WallpaperCard: React.FC<WallpaperCardProps> = ({
@@ -29,6 +32,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
   onPreview,
   onDownload,
   onEdit,
+  onDelete,
 }) => {
   const [bookmarked, setBookmarked] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
@@ -133,23 +137,35 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
                 NEW
               </span>
             )}
-            {wallpaper.orientation === "mobile" ? (
+            {wallpaper.orientation === "mobile" && !wallpaper.desktopAsset ? (
               <span
-                title="Mobile Lockscreen Wallpaper"
-                className="bg-surface/95 text-primary font-mono text-[9px] tracking-wider px-1.5 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-semibold"
+                title="Mobile Lockscreen Edition"
+                className="bg-surface/95 text-primary font-mono text-[9px] tracking-wider px-2 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-semibold shadow-2xs"
               >
-                <IconDeviceMobile size={11} />
-                <span>MOBILE ONLY</span>
+                <IconDeviceMobile size={11} className="text-primary" />
+                <span>PHONE ONLY</span>
               </span>
             ) : hasPhoneCompanion ? (
               <span
-                title="Includes Phone Lockscreen Crop"
-                className="bg-surface/95 text-primary font-mono text-[9px] tracking-wider px-1.5 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-semibold"
+                title="Dual Edition: 4K Desktop + Vertical Phone Lockscreen included"
+                className="bg-surface/95 text-primary font-mono text-[9px] tracking-wider px-2 py-0.5 border border-border flex items-center gap-1.5 backdrop-blur-xs font-semibold shadow-2xs"
               >
-                <IconDeviceMobile size={11} />
-                <span>+PHONE</span>
+                <div className="flex items-center gap-1 text-primary font-bold">
+                  <IconDeviceDesktop size={12} />
+                  <span className="text-[9px]">+</span>
+                  <IconDeviceMobile size={11} />
+                </div>
+                <span>DESKTOP & PHONE</span>
               </span>
-            ) : null}
+            ) : (
+              <span
+                title="Desktop Master Edition"
+                className="bg-surface/95 text-muted-foreground font-mono text-[9px] tracking-wider px-2 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-medium shadow-2xs"
+              >
+                <IconDeviceDesktop size={11} />
+                <span>DESKTOP</span>
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-1 pointer-events-auto">
@@ -167,6 +183,22 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
               >
                 <IconPencil size={13} />
                 <span>EDIT</span>
+              </button>
+            )}
+
+            {/* Delete Button (when authorized) */}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(wallpaper);
+                }}
+                aria-label="Delete wallpaper"
+                title="Delete this wallpaper drop"
+                className="flex h-8 w-8 items-center justify-center border border-destructive/40 bg-surface/90 text-destructive hover:bg-destructive hover:text-white transition-colors shadow-xs cursor-pointer"
+              >
+                <IconTrash size={13} />
               </button>
             )}
 
@@ -212,6 +244,20 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
             >
               <IconPencil size={14} />
               <span>Edit</span>
+            </button>
+          )}
+
+          {onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(wallpaper);
+              }}
+              className="pointer-events-auto flex items-center gap-1.5 h-10 px-3 bg-surface font-sans text-xs font-semibold border-2 border-destructive text-destructive hover:bg-destructive hover:text-white transition-colors cursor-pointer shadow-xs"
+            >
+              <IconTrash size={14} />
+              <span>Delete</span>
             </button>
           )}
 
@@ -275,6 +321,20 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
               >
                 <IconPencil size={11} />
                 <span>EDIT</span>
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(wallpaper);
+                }}
+                className="font-mono text-[10px] text-destructive hover:underline flex items-center gap-1 bg-destructive/10 px-1.5 py-0.5 border border-destructive/30 cursor-pointer"
+                title="Delete wallpaper drop"
+              >
+                <IconTrash size={11} />
+                <span>DELETE</span>
               </button>
             )}
             <span className="font-mono text-[11px] text-muted-foreground shrink-0 border border-border/80 px-1.5 py-0.5 bg-background">

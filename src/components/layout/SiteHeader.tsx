@@ -29,6 +29,25 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, profile, logout } = useAuth();
 
+  const handleClearSearch = () => {
+    if (onSearchChange) {
+      onSearchChange("");
+    }
+  };
+
+  const handleSearchInput = (val: string) => {
+    if (onSearchChange) {
+      onSearchChange(val);
+      // If user starts typing from near the top of the home page, scroll down to the catalog
+      if (val.trim() && typeof window !== "undefined") {
+        const wallpapersSection = document.getElementById("wallpapers");
+        if (wallpapersSection && window.scrollY < 240) {
+          wallpapersSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-md transition-all">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-12">
@@ -73,18 +92,34 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
         {/* Right Header Actions */}
         <div className="hidden sm:flex items-center gap-3">
           {onSearchChange !== undefined ? (
-            <div className="relative w-44 lg:w-52">
+            <div className="relative w-48 lg:w-56">
               <input
                 type="text"
                 placeholder="Search catalog..."
                 value={searchQuery || ""}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="h-8.5 w-full rounded-none border border-border bg-surface pl-8 pr-3 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
+                onChange={(e) => handleSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    handleClearSearch();
+                  }
+                }}
+                className="h-8.5 w-full rounded-none border border-border bg-surface pl-8 pr-7 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
               />
               <IconSearch
                 size={13}
                 className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  title="Clear search (Esc)"
+                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <IconX size={13} />
+                </button>
+              )}
             </div>
           ) : (
             <button
@@ -154,7 +189,34 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-border bg-background px-6 py-5 animate-in slide-in-from-top-2 duration-150">
+        <div className="md:hidden border-b border-border bg-background px-6 py-5 animate-in slide-in-from-top-2 duration-150 space-y-4">
+          {/* Mobile Search Input */}
+          {onSearchChange !== undefined && (
+            <div className="relative w-full">
+              <input
+                type="text"
+                placeholder="Search catalog..."
+                value={searchQuery || ""}
+                onChange={(e) => handleSearchInput(e.target.value)}
+                className="h-10 w-full rounded-none border border-border bg-surface pl-9 pr-8 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
+              />
+              <IconSearch
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  title="Clear search"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <IconX size={14} />
+                </button>
+              )}
+            </div>
+          )}
+
           <nav className="flex flex-col gap-3 text-sm font-medium">
             <Link
               href="/#featured"

@@ -19,6 +19,7 @@ import {
   IconSparkles,
   IconLock,
   IconPencil,
+  IconTrash,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
 import { getCdnImageUrl } from "@/lib/wallpapers";
@@ -29,12 +30,14 @@ interface WallpaperQuickViewModalProps {
   wallpaper: Wallpaper | null;
   onClose: () => void;
   onEdit?: (wallpaper: Wallpaper) => void;
+  onDelete?: (wallpaper: Wallpaper) => void;
 }
 
 export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = ({
   wallpaper,
   onClose,
   onEdit,
+  onDelete,
 }) => {
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
   const [bookmarked, setBookmarked] = useState(false);
@@ -157,8 +160,21 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
           transition={{ duration: 0.2, ease: "easeOut" }}
           className="relative z-10 w-full max-w-5xl border border-border bg-surface shadow-2xl flex flex-col lg:flex-row max-h-[94dvh] overflow-y-auto lg:overflow-hidden overscroll-contain"
         >
-          {/* Top Actions on Mobile (Sticky Close & Share) */}
+          {/* Top Actions on Mobile (Sticky Close, Share & Delete) */}
           <div className="sticky top-0 right-0 z-30 flex items-center justify-end gap-2 p-2 bg-surface/90 backdrop-blur-xs border-b border-border/60 lg:hidden">
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onDelete(wallpaper);
+                }}
+                aria-label="Delete wallpaper"
+                className="flex h-9 w-9 items-center justify-center border border-destructive/40 bg-background text-destructive hover:bg-destructive hover:text-white transition-colors cursor-pointer"
+              >
+                <IconTrash size={16} />
+              </button>
+            )}
             <button
               onClick={handleShare}
               aria-label="Share wallpaper"
@@ -175,7 +191,22 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
             </button>
           </div>
 
-          {/* Desktop Close Button */}
+          {/* Desktop Delete & Close Buttons */}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onDelete(wallpaper);
+              }}
+              title="Delete wallpaper"
+              aria-label="Delete wallpaper"
+              className="hidden lg:flex absolute top-4 right-16 z-30 h-10 w-10 items-center justify-center border border-destructive/40 bg-surface text-destructive hover:bg-destructive hover:text-white transition-colors cursor-pointer"
+            >
+              <IconTrash size={18} />
+            </button>
+          )}
+
           <button
             onClick={onClose}
             aria-label="Close modal"
@@ -590,19 +621,37 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                 </Button>
               </div>
 
-              {onEdit && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    onClose();
-                    onEdit(wallpaper);
-                  }}
-                  className="w-full text-xs h-8 gap-1.5 border-primary/70 text-primary hover:bg-primary hover:text-primary-foreground font-mono"
-                >
-                  <IconPencil size={13} />
-                  <span>EDIT WALLPAPER METADATA</span>
-                </Button>
+              {(onEdit || onDelete) && (
+                <div className={`grid ${onEdit && onDelete ? "grid-cols-2" : "grid-cols-1"} gap-2 pt-1`}>
+                  {onEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        onClose();
+                        onEdit(wallpaper);
+                      }}
+                      className="w-full text-xs h-8 gap-1.5 border-primary/70 text-primary hover:bg-primary hover:text-primary-foreground font-mono"
+                    >
+                      <IconPencil size={13} />
+                      <span>EDIT METADATA</span>
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        onClose();
+                        onDelete(wallpaper);
+                      }}
+                      className="w-full text-xs h-8 gap-1.5 border-destructive/60 text-destructive hover:bg-destructive hover:text-white font-mono"
+                    >
+                      <IconTrash size={13} />
+                      <span>DELETE DROP</span>
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </div>

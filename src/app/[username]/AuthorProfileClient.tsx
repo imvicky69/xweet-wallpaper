@@ -10,11 +10,18 @@ import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickV
 import { EditWallpaperModal } from "@/components/wallpapers/EditWallpaperModal";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { Wallpaper } from "@/types/wallpaper";
+import { getCdnImageUrl } from "@/lib/wallpapers";
+import { deleteDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase/client";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   IconShieldCheck,
   IconSparkles,
   IconArrowLeft,
   IconPlus,
+  IconTrash,
+  IconAlertTriangle,
+  IconX,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
@@ -29,6 +36,10 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
   const { wallpapers } = useWallpapers();
   const [activePreview, setActivePreview] = useState<Wallpaper | null>(null);
   const [editingWallpaper, setEditingWallpaper] = useState<Wallpaper | null>(null);
+  const [deletingWallpaper, setDeletingWallpaper] = useState<Wallpaper | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
   const [localUpdates, setLocalUpdates] = useState<Record<string, Wallpaper>>({});
 
   const isCurator = ["xweet", "vikky", "vicky", "rajvicky97988"].includes(username);
@@ -62,8 +73,32 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
         (wp) => wp.author?.username?.toLowerCase() === username
       );
     }
-    return list.map((wp) => localUpdates[wp.id] || wp);
-  }, [username, isCurator, wallpapers, localUpdates]);
+    return list
+      .filter((wp) => !deletedIds.has(wp.id))
+      .map((wp) => localUpdates[wp.id] || wp);
+  }, [username, isCurator, wallpapers, localUpdates, deletedIds]);
+
+  const handleConfirmDelete = async () => {
+    if (!deletingWallpaper) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteDoc(doc(db, "wallpapers", deletingWallpaper.id));
+      setDeletedIds((prev) => new Set(prev).add(deletingWallpaper.id));
+      if (activePreview?.id === deletingWallpaper.id) {
+        setActivePreview(null);
+      }
+      if (editingWallpaper?.id === deletingWallpaper.id) {
+        setEditingWallpaper(null);
+      }
+      setDeletingWallpaper(null);
+    } catch (err: unknown) {
+      console.error("Failed to delete wallpaper:", err);
+      setDeleteError(err instanceof Error ? err.message : "Failed to delete wallpaper. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -176,6 +211,7 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
               wallpapers={authorWallpapers}
               onPreview={setActivePreview}
               onEdit={isOwner ? (wp) => setEditingWallpaper(wp) : undefined}
+              onDelete={isOwner ? (wp) => setDeletingWallpaper(wp) : undefined}
             />
           </div>
         </section>
@@ -187,12 +223,14 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
         wallpaper={activePreview}
         onClose={() => setActivePreview(null)}
         onEdit={isOwner ? (wp) => setEditingWallpaper(wp) : undefined}
+        onDelete={isOwner ? (wp) => setDeletingWallpaper(wp) : undefined}
       />
 
       <EditWallpaperModal
         wallpaper={editingWallpaper}
         isOpen={Boolean(editingWallpaper)}
         onClose={() => setEditingWallpaper(null)}
+        onDelete={isOwner ? (wp) => setDeletingWallpaper(wp) : undefined}
         onSaved={(updated) => {
           setLocalUpdates((prev) => ({
             ...prev,
@@ -200,6 +238,116 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
           }));
         }}
       />
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deletingWallpaper && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overscroll-contain">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isDeleting && setDeletingWallpaper(null)}
+              className="absolute inset-0 bg-foreground/50 backdrop-blur-[2px]"
+            />
+
+            {/* Modal Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 8 }}
+              transition={{ duration: 0.18 }}
+              className="relative z-10 w-full max-w-md border border-border bg-surface p-6 shadow-2xl flex flex-col gap-5"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-2.5 text-destructive">
+                  <div className="flex h-9 w-9 items-center justify-center border border-destructive/40 bg-destructive/10">
+                    <IconAlertTriangle size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-sans text-base font-bold text-foreground">
+                      Delete Wallpaper Drop
+                    </h3>
+                    <p className="font-mono text-[11px] text-muted-foreground uppercase tracking-wider">
+                      Permanent Removal
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => !isDeleting && setDeletingWallpaper(null)}
+                  disabled={isDeleting}
+                  className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
+                  aria-label="Close dialog"
+                >
+                  <IconX size={18} />
+                </button>
+              </div>
+
+              {/* Thumbnail & Title Card */}
+              <div className="flex items-center gap-3.5 border border-border bg-background p-3">
+                <div className="relative h-14 w-20 shrink-0 overflow-hidden border border-border/80 bg-black/10">
+                  <Image
+                    src={getCdnImageUrl(deletingWallpaper.thumbnailUrl || deletingWallpaper.imageUrl)}
+                    alt={deletingWallpaper.title}
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-sans text-sm font-semibold text-foreground truncate">
+                    {deletingWallpaper.title}
+                  </span>
+                  <div className="flex items-center gap-2 font-mono text-[11px] text-muted-foreground mt-0.5">
+                    <span>{deletingWallpaper.category}</span>
+                    <span>•</span>
+                    <span>{deletingWallpaper.resolution}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Warning Notice */}
+              <div className="bg-destructive/10 border border-destructive/30 p-3 text-xs text-destructive leading-relaxed">
+                <p>
+                  Are you sure you want to permanently delete this wallpaper? This action cannot be undone and will immediately remove this wallpaper from your public profile and discovery catalog.
+                </p>
+              </div>
+
+              {deleteError && (
+                <div className="border border-destructive bg-destructive/10 p-2 text-xs text-destructive font-mono">
+                  {deleteError}
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setDeletingWallpaper(null)}
+                  disabled={isDeleting}
+                  className="h-10 px-4 font-mono text-xs text-foreground border border-border hover:border-foreground transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  disabled={isDeleting}
+                  className="h-10 px-5 font-mono text-xs font-semibold bg-destructive text-white hover:bg-destructive/90 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-60 shadow-xs"
+                >
+                  <IconTrash size={14} />
+                  <span>{isDeleting ? "Deleting..." : "Delete Permanently"}</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

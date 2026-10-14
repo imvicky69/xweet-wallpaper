@@ -11,7 +11,7 @@ import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickV
 import { CATEGORIES } from "@/lib/wallpapers";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { Wallpaper, Orientation } from "@/types/wallpaper";
-import { IconSearch } from "@tabler/icons-react";
+import { IconSearch, IconX } from "@tabler/icons-react";
 
 export default function Home() {
   const { wallpapers } = useWallpapers();
@@ -36,9 +36,20 @@ export default function Home() {
         wp.category.toLowerCase() === selectedCategory.toLowerCase() ||
         Boolean(wp.collection && wp.collection.toLowerCase() === selectedCategory.toLowerCase());
 
-      // Orientation match
+      // Orientation match:
+      // When "mobile" is selected, include mobile-only AND dual wallpapers (common ones with phone edition)
+      // When "desktop" is selected, include desktop-only AND dual wallpapers (common ones with desktop edition)
+      const hasPhone = wp.hasPhoneCrop || Boolean(wp.phoneImageUrl) || wp.orientation === "mobile";
+      const hasDesktop =
+        wp.orientation === "desktop" ||
+        Boolean(wp.desktopAsset) ||
+        wp.aspectRatio === "16:9" ||
+        wp.aspectRatio === "16:10";
+
       const matchesOrientation =
-        selectedOrientation === "all" || wp.orientation === selectedOrientation;
+        selectedOrientation === "all" ||
+        (selectedOrientation === "mobile" && hasPhone) ||
+        (selectedOrientation === "desktop" && hasDesktop);
 
       // Search query match
       const query = searchQuery.trim().toLowerCase();
@@ -97,7 +108,7 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Inline Search Input with Tabler Icon */}
+              {/* Inline Search Input with 1-click Clear Button */}
               <div className="w-full md:w-80">
                 <div className="relative">
                   <input
@@ -105,15 +116,50 @@ export default function Home() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search titles, tags, colors..."
-                    className="h-9 sm:h-10 w-full rounded-none border border-border bg-surface pl-9 pr-4 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
+                    className="h-9 sm:h-10 w-full rounded-none border border-border bg-surface pl-9 pr-8 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
                   />
                   <IconSearch
                     size={15}
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery("")}
+                      title="Clear search"
+                      aria-label="Clear search"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      <IconX size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
+
+            {/* Active Search & Filter Feedback Banner */}
+            {searchQuery.trim() && (
+              <div className="mb-4 flex items-center justify-between border border-primary/30 bg-secondary/30 px-3.5 py-2 text-xs font-mono">
+                <div className="flex items-center gap-2 text-foreground">
+                  <IconSearch size={14} className="text-primary shrink-0" />
+                  <span>
+                    Showing results for <strong className="text-primary font-bold">&quot;{searchQuery}&quot;</strong>
+                  </span>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-muted-foreground">
+                    {filteredWallpapers.length} {filteredWallpapers.length === 1 ? "wallpaper" : "wallpapers"} found
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Clear Search</span>
+                  <IconX size={12} />
+                </button>
+              </div>
+            )}
 
             {/* Filter Bar */}
             <div className="mb-6 sm:mb-10">

@@ -14,6 +14,7 @@ interface WallpaperGridProps {
   itemsPerPage?: number;
   isFiltered?: boolean;
   onEdit?: (wallpaper: Wallpaper) => void;
+  onDelete?: (wallpaper: Wallpaper) => void;
 }
 
 /**
@@ -39,6 +40,7 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
   itemsPerPage = 12,
   isFiltered = false,
   onEdit,
+  onDelete,
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,6 +127,7 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
             wallpaper={wallpaper}
             onPreview={onPreview}
             onEdit={onEdit}
+            onDelete={onDelete}
           />
         ))}
       </div>

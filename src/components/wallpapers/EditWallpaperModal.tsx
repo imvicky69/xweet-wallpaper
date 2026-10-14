@@ -25,6 +25,7 @@ interface EditWallpaperModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaved?: (updated: Wallpaper) => void;
+  onDelete?: (wallpaper: Wallpaper) => void;
 }
 
 export const EditWallpaperModal: React.FC<EditWallpaperModalProps> = ({
@@ -32,6 +33,7 @@ export const EditWallpaperModal: React.FC<EditWallpaperModalProps> = ({
   isOpen,
   onClose,
   onSaved,
+  onDelete,
 }) => {
   // Form fields
   const [title, setTitle] = useState("");
@@ -475,26 +477,45 @@ export const EditWallpaperModal: React.FC<EditWallpaperModalProps> = ({
           </form>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 border-t border-border px-5 py-3.5 bg-background">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isSaving}
-              className="h-10 px-4 font-mono text-xs text-foreground border border-border hover:border-foreground transition-colors cursor-pointer rounded-none disabled:opacity-50"
-            >
-              Cancel
-            </button>
+          <div className="flex items-center justify-between gap-3 border-t border-border px-5 py-3.5 bg-background">
+            {onDelete ? (
+              <button
+                type="button"
+                onClick={() => {
+                  onDelete(wallpaper);
+                  onClose();
+                }}
+                disabled={isSaving}
+                className="h-10 px-3 font-mono text-xs text-destructive border border-destructive/40 hover:bg-destructive/10 hover:border-destructive transition-colors flex items-center gap-1.5 cursor-pointer rounded-none disabled:opacity-50"
+              >
+                <IconTrash size={14} />
+                <span>Delete Drop</span>
+              </button>
+            ) : (
+              <div />
+            )}
 
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleSave}
-              isLoading={isSaving}
-              className="h-10 px-5 text-xs font-semibold gap-1.5"
-            >
-              <IconCheck size={14} />
-              <span>Save Changes</span>
-            </Button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSaving}
+                className="h-10 px-4 font-mono text-xs text-foreground border border-border hover:border-foreground transition-colors cursor-pointer rounded-none disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSave}
+                isLoading={isSaving}
+                className="h-10 px-5 text-xs font-semibold gap-1.5"
+              >
+                <IconCheck size={14} />
+                <span>Save Changes</span>
+              </Button>
+            </div>
           </div>
         </motion.div>
       </div>
