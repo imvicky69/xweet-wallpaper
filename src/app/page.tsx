@@ -72,18 +72,18 @@ export default function Home() {
         />
 
         {/* 4. All Wallpapers (Clean Filterable Catalog) */}
-        <section id="wallpapers" className="w-full py-16 lg:py-20">
-          <div className="mx-auto max-w-7xl px-6 lg:px-12">
+        <section id="wallpapers" className="w-full py-10 sm:py-16 lg:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-12">
             {/* Header with Search and Title */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-6 mb-5 sm:mb-8">
               <div>
-                <span className="font-mono text-xs font-semibold text-primary uppercase tracking-wider">
+                <span className="font-mono text-[11px] sm:text-xs font-semibold text-primary uppercase tracking-wider">
                   Catalog
                 </span>
-                <h2 className="font-sans text-3xl sm:text-4xl font-semibold tracking-tight text-foreground mt-1">
+                <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground mt-0.5">
                   All Wallpapers
                 </h2>
-                <p className="font-sans text-xs sm:text-sm text-muted-foreground mt-1 max-w-xl">
+                <p className="font-sans text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 max-w-xl line-clamp-1 sm:line-clamp-none">
                   Uncompressed 4K & 5K master backgrounds tailored for clean desks and handheld screens.
                 </p>
               </div>
@@ -96,7 +96,7 @@ export default function Home() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search titles, tags, colors..."
-                    className="h-10 w-full rounded-none border border-border bg-surface pl-9 pr-4 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
+                    className="h-9 sm:h-10 w-full rounded-none border border-border bg-surface pl-9 pr-4 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
                   />
                   <IconSearch
                     size={15}
@@ -107,7 +107,7 @@ export default function Home() {
             </div>
 
             {/* Filter Bar */}
-            <div className="mb-10">
+            <div className="mb-6 sm:mb-10">
               <WallpaperFilters
                 categories={CATEGORIES}
                 selectedCategory={selectedCategory}

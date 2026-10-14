@@ -59,6 +59,17 @@ body {
   pointer-events: none;
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 /* Global Outlined Hover Effect for all dark (primary) buttons */
 button.bg-primary:not(:disabled),
 a.bg-primary:not(:disabled),
