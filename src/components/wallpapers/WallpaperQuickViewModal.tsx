@@ -21,6 +21,7 @@ import {
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
 import { getCdnImageUrl } from "@/lib/wallpapers";
+import { triggerDirectDownload } from "@/lib/download";
 import { Button } from "@/components/ui/Button";
 
 interface WallpaperQuickViewModalProps {
@@ -86,24 +87,24 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
   const handleDownloadDesktop = () => {
     setDownloadSuccess("desktop");
     const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
-    downloadFile(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
+    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadPhone = () => {
     setDownloadSuccess("phone");
     const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
-    downloadFile(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
+    triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadBoth = () => {
     setDownloadSuccess("both");
     const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
-    downloadFile(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
+    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
     setTimeout(() => {
       const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
-      downloadFile(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
+      triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
     }, 450);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };

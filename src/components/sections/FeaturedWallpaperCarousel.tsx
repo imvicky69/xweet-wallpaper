@@ -14,6 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
 import { getCdnImageUrl } from "@/lib/wallpapers";
+import { triggerDirectDownload } from "@/lib/download";
 import { Button } from "@/components/ui/Button";
 
 // Import Swiper styles
@@ -152,10 +153,12 @@ export const FeaturedWallpaperCarousel: React.FC<FeaturedWallpaperCarouselProps>
                           size="sm"
                           variant="primary"
                           className="text-xs"
-                          href={getCdnImageUrl(wp.imageUrl)}
-                          target="_blank"
-                          rel="noreferrer"
-                          download={`${wp.slug}-desktop-4k.png`}
+                          onClick={() =>
+                            triggerDirectDownload(
+                              getCdnImageUrl(wp.imageUrl),
+                              `${wp.slug}-desktop-4k.png`
+                            )
+                          }
                         >
                           <IconDownload size={14} />
                           <span className="hidden sm:inline">Download</span>

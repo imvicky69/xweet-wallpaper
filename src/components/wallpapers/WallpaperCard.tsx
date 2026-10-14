@@ -14,6 +14,7 @@ import {
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
 import { getCdnImageUrl } from "@/lib/wallpapers";
+import { triggerDirectDownload } from "@/lib/download";
 
 interface WallpaperCardProps {
   wallpaper: Wallpaper;
@@ -36,15 +37,10 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
     if (onDownload) {
       onDownload(wallpaper);
     } else {
-      // Direct high quality desktop download trigger
-      const link = document.createElement("a");
-      link.href = getCdnImageUrl(wallpaper.imageUrl);
-      link.download = `${wallpaper.slug}-desktop-4k.png`;
-      link.target = "_blank";
-      link.rel = "noreferrer";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      triggerDirectDownload(
+        getCdnImageUrl(wallpaper.imageUrl),
+        `${wallpaper.slug}-desktop-4k.png`
+      );
     }
     setTimeout(() => setIsDownloaded(false), 2200);
   };

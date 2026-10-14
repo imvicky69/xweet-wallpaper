@@ -21,6 +21,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { WallpaperCard } from "@/components/wallpapers/WallpaperCard";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
 import { WALLPAPERS, getCdnImageUrl } from "@/lib/wallpapers";
+import { triggerDirectDownload } from "@/lib/download";
 import { Wallpaper } from "@/types/wallpaper";
 
 interface WallpaperDetailClientProps {
@@ -71,24 +72,24 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
   const handleDownloadDesktop = () => {
     setDownloadSuccess("desktop");
     const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
-    downloadFile(desktopUrl, "desktop-4k");
+    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadPhone = () => {
     setDownloadSuccess("phone");
     const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
-    downloadFile(phoneUrl, "phone-1170x2532");
+    triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadBoth = () => {
     setDownloadSuccess("both");
     const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
-    downloadFile(desktopUrl, "desktop-4k");
+    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
     setTimeout(() => {
       const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
-      downloadFile(phoneUrl, "phone-1170x2532");
+      triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
     }, 450);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
