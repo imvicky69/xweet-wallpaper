@@ -1,4 +1,4 @@
-export type AspectRatio = "16:9" | "9:16" | "16:10" | "21:9";
+export type AspectRatio = "16:9" | "9:16" | "16:10" | "21:9" | "9:19.5";
 export type Orientation = "all" | "desktop" | "mobile";
 
 /**

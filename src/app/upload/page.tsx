@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,9 @@ import {
   IconCheck,
   IconPhoto,
   IconAlertCircle,
+  IconArrowsHorizontal,
+  IconCrop,
+  IconSparkles,
 } from "@tabler/icons-react";
 import { CATEGORIES } from "@/lib/wallpapers";
 
@@ -31,10 +34,19 @@ export default function UploadPage() {
   // Files & URLs
   const [desktopFile, setDesktopFile] = useState<File | null>(null);
   const [desktopPreviewUrl, setDesktopPreviewUrl] = useState<string>("");
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number }>({
+    width: 3840,
+    height: 2160,
+  });
   const [resolution, setResolution] = useState("3840 × 2160");
 
-  // Optional Phone Crop
-  const [includePhoneCrop, setIncludePhoneCrop] = useState(false);
+  // Interactive Phone Crop (9:19.5 lockscreen ratio)
+  const [cropPosition, setCropPosition] = useState<number>(50); // 0 to 100%
+  const [isDragging, setIsDragging] = useState(false);
+  const cropperContainerRef = useRef<HTMLDivElement>(null);
+
+  // Optional alternative separate file upload
+  const [useSeparateFile, setUseSeparateFile] = useState(false);
   const [phoneFile, setPhoneFile] = useState<File | null>(null);
   const [phonePreviewUrl, setPhonePreviewUrl] = useState<string>("");
 
@@ -61,11 +73,30 @@ export default function UploadPage() {
 
   const isXweet = profile?.username?.toLowerCase() === "xweet";
 
+  // Phone ratio: 9 / 19.5 (~0.4615)
+  const phoneRatio = 9 / 19.5;
+  const imgAspect = imageDimensions.width / imageDimensions.height;
+  const cropBoxWidthPercent =
+    imgAspect >= phoneRatio
+      ? Math.min(100, Math.max(16, (phoneRatio / imgAspect) * 100))
+      : 100;
+  const cropBoxLeftPercent = ((100 - cropBoxWidthPercent) * cropPosition) / 100;
+
   const handleDesktopFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setDesktopFile(file);
-      setDesktopPreviewUrl(URL.createObjectURL(file));
+      const url = URL.createObjectURL(file);
+      setDesktopPreviewUrl(url);
+
+      const img = new window.Image();
+      img.onload = () => {
+        const w = img.naturalWidth || 3840;
+        const h = img.naturalHeight || 2160;
+        setImageDimensions({ width: w, height: h });
+        setResolution(`${w} × ${h}`);
+      };
+      img.src = url;
     }
   };
 
@@ -74,6 +105,43 @@ export default function UploadPage() {
     if (file) {
       setPhoneFile(file);
       setPhonePreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const updateCropFromPointer = (clientX: number) => {
+    if (!cropperContainerRef.current) return;
+    const rect = cropperContainerRef.current.getBoundingClientRect();
+    const clickX = clientX - rect.left;
+    const containerWidth = rect.width;
+    const boxWidthPx = containerWidth * (cropBoxWidthPercent / 100);
+    const usableWidth = containerWidth - boxWidthPx;
+    if (usableWidth <= 0) return;
+
+    const targetLeft = clickX - boxWidthPx / 2;
+    const clamped = Math.max(0, Math.min(usableWidth, targetLeft));
+    const percent = Math.round((clamped / usableWidth) * 100);
+    setCropPosition(percent);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    try {
+      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    } catch {}
+    setIsDragging(true);
+    updateCropFromPointer(e.clientX);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    updateCropFromPointer(e.clientX);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isDragging) {
+      setIsDragging(false);
+      try {
+        (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+      } catch {}
     }
   };
 
@@ -102,12 +170,13 @@ export default function UploadPage() {
       formData.append("resolution", resolution);
       formData.append("dominantColor", dominantColor);
       formData.append("tags", tagsInput);
+      formData.append("cropPosition", cropPosition.toString());
 
       if (desktopFile) {
         formData.append("desktopImage", desktopFile);
       }
 
-      if (includePhoneCrop && phoneFile) {
+      if (useSeparateFile && phoneFile) {
         formData.append("phoneImage", phoneFile);
       }
 
@@ -321,63 +390,207 @@ export default function UploadPage() {
                 </div>
               </div>
 
-              {/* ASSET GENERATION & COMPANION PHONE WALLPAPER */}
+              {/* ASSET GENERATION & INTERACTIVE PHONE LOCKSCREEN CROPPER */}
               <div className="border border-border bg-surface p-5 mt-2">
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2 text-foreground font-mono text-xs font-semibold uppercase tracking-wider">
-                    <IconShieldCheck size={16} className="text-primary" />
-                    <span>Multi-Format Asset Guarantee</span>
+                  <div className="flex items-center justify-between pb-3 border-b border-border">
+                    <div className="flex items-center gap-2 text-foreground font-mono text-xs font-semibold uppercase tracking-wider">
+                      <IconCrop size={16} className="text-primary" />
+                      <span>Interactive Phone Crop Studio (9:19.5)</span>
+                    </div>
+                    {desktopPreviewUrl && (
+                      <span className="font-mono text-[11px] text-primary bg-secondary/60 px-2 py-0.5 border border-border">
+                        Framing: {cropPosition}%
+                      </span>
+                    )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-muted-foreground bg-background p-3 border border-border">
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                      <span>WebP Thumbnail: Auto-generated</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                      <span>Phone Crop: Auto 9:16 Lockscreen</span>
-                    </div>
-                  </div>
+                  <p className="font-sans text-xs text-muted-foreground">
+                    Frame your companion phone lockscreen directly on this page. We extract the exact pixels from your raw 4K master into an uncompressed 1170 × 2532 phone edition.
+                  </p>
 
-                  <div className="flex items-start gap-3 pt-2 border-t border-border/60">
-                    <input
-                      type="checkbox"
-                      id="phoneCropToggle"
-                      checked={includePhoneCrop}
-                      onChange={(e) => setIncludePhoneCrop(e.target.checked)}
-                      className="mt-1 h-4 w-4 rounded-none accent-primary cursor-pointer"
-                    />
-                    <div>
-                      <label htmlFor="phoneCropToggle" className="font-sans text-sm font-semibold text-foreground cursor-pointer flex items-center gap-2">
-                        <IconDeviceMobile size={16} className="text-primary" />
-                        <span>Upload Custom Phone Crop (Optional)</span>
+                  {desktopPreviewUrl ? (
+                    <div className="flex flex-col gap-3 mt-1">
+                      {/* Visual Interactive Cropping Canvas */}
+                      <div
+                        ref={cropperContainerRef}
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        className="relative w-full aspect-[16/9] sm:aspect-[16/10] bg-black/40 border-2 border-border overflow-hidden select-none cursor-ew-resize touch-none shadow-inner"
+                        title="Click or drag to position phone lockscreen crop"
+                      >
+                        {/* Background Master Image */}
+                        <img
+                          src={desktopPreviewUrl}
+                          alt="Master wallpaper"
+                          className="w-full h-full object-cover select-none pointer-events-none"
+                          draggable={false}
+                        />
+
+                        {/* Darkened mask: Left side */}
+                        <div
+                          className="absolute inset-y-0 left-0 bg-black/65 backdrop-blur-[1px] pointer-events-none transition-all duration-75"
+                          style={{ width: `${cropBoxLeftPercent}%` }}
+                        />
+
+                        {/* Darkened mask: Right side */}
+                        <div
+                          className="absolute inset-y-0 right-0 bg-black/65 backdrop-blur-[1px] pointer-events-none transition-all duration-75"
+                          style={{
+                            width: `${Math.max(0, 100 - (cropBoxLeftPercent + cropBoxWidthPercent))}%`,
+                          }}
+                        />
+
+                        {/* Active 9:19.5 Phone Crop Window */}
+                        <div
+                          className="absolute inset-y-0 border-2 border-white shadow-[0_0_25px_rgba(0,0,0,0.85)] flex flex-col justify-between p-2 pointer-events-none transition-all duration-75"
+                          style={{
+                            left: `${cropBoxLeftPercent}%`,
+                            width: `${cropBoxWidthPercent}%`,
+                          }}
+                        >
+                          {/* Top Badges */}
+                          <div className="flex items-center justify-between pointer-events-none">
+                            <span className="bg-black/80 text-white font-mono text-[9px] px-1.5 py-0.5 border border-white/20">
+                              9:19.5
+                            </span>
+                            <span className="bg-primary text-primary-foreground font-mono text-[9px] px-1.5 py-0.5">
+                              LOCKSCREEN
+                            </span>
+                          </div>
+
+                          {/* Rule of Thirds Visual Grid */}
+                          <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-40">
+                            <div className="border-r border-b border-white/30" />
+                            <div className="border-r border-b border-white/30" />
+                            <div className="border-b border-white/30" />
+                            <div className="border-r border-b border-white/30" />
+                            <div className="border-r border-b border-white/30" />
+                            <div className="border-b border-white/30" />
+                            <div className="border-r border-white/30" />
+                            <div className="border-r border-white/30" />
+                            <div />
+                          </div>
+
+                          {/* Center Grab Handle */}
+                          <div className="self-center bg-black/80 text-white p-1.5 rounded-full border border-white/40 shadow-lg pointer-events-none">
+                            <IconArrowsHorizontal size={15} />
+                          </div>
+
+                          {/* Bottom Hint */}
+                          <div className="self-center bg-black/80 text-white/90 font-mono text-[9px] px-2 py-0.5 border border-white/20 pointer-events-none">
+                            Drag to Frame
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Presets and Slider Controls */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs text-muted-foreground uppercase mr-1">
+                            Preset:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setCropPosition(0)}
+                            className={`h-7 px-2.5 text-xs font-mono uppercase border transition-colors cursor-pointer select-none ${
+                              cropPosition === 0
+                                ? "bg-primary text-primary-foreground border-primary font-semibold"
+                                : "bg-surface border-border text-foreground hover:border-primary"
+                            }`}
+                          >
+                            Left (0%)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCropPosition(50)}
+                            className={`h-7 px-2.5 text-xs font-mono uppercase border transition-colors cursor-pointer select-none ${
+                              cropPosition === 50
+                                ? "bg-primary text-primary-foreground border-primary font-semibold"
+                                : "bg-surface border-border text-foreground hover:border-primary"
+                            }`}
+                          >
+                            Center (50%)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCropPosition(100)}
+                            className={`h-7 px-2.5 text-xs font-mono uppercase border transition-colors cursor-pointer select-none ${
+                              cropPosition === 100
+                                ? "bg-primary text-primary-foreground border-primary font-semibold"
+                                : "bg-surface border-border text-foreground hover:border-primary"
+                            }`}
+                          >
+                            Right (100%)
+                          </button>
+                        </div>
+
+                        {/* Precision Slider */}
+                        <div className="flex items-center gap-2 flex-1 sm:max-w-xs">
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={cropPosition}
+                            onChange={(e) => setCropPosition(Number(e.target.value))}
+                            className="w-full accent-primary cursor-pointer h-2 bg-border rounded-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground pt-2 border-t border-border/60">
+                        <span className="flex items-center gap-1.5 text-primary font-medium">
+                          <IconSparkles size={13} />
+                          Target: 1170 × 2532 Lossless PNG (9:19.5)
+                        </span>
+                        <span>Auto-synchronized</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 border border-dashed border-border bg-background text-center text-xs font-mono text-muted-foreground">
+                      Upload a desktop wallpaper above to enable the interactive phone cropper.
+                    </div>
+                  )}
+
+                  {/* Optional Separate File Override */}
+                  <div className="pt-3 border-t border-border/60">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="separateFileToggle"
+                        checked={useSeparateFile}
+                        onChange={(e) => setUseSeparateFile(e.target.checked)}
+                        className="h-3.5 w-3.5 rounded-none accent-primary cursor-pointer"
+                      />
+                      <label
+                        htmlFor="separateFileToggle"
+                        className="font-mono text-xs text-muted-foreground cursor-pointer hover:text-foreground"
+                      >
+                        Upload a completely separate mobile artwork file instead of cropping
                       </label>
-                      <p className="font-sans text-xs text-muted-foreground mt-0.5">
-                        If unchecked, Xweet automatically creates a crisp 9:16 vertical companion phone wallpaper from your master file. Check this only if you want to upload your own custom-framed artwork.
-                      </p>
                     </div>
+
+                    {useSeparateFile && (
+                      <div className="mt-3 p-3 border border-border bg-background">
+                        <label className="block font-mono text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                          Separate Phone Cropped File (9:19.5)
+                        </label>
+                        <div className="border border-dashed border-border p-3 text-center hover:border-primary transition-colors cursor-pointer relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePhoneFileChange}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                          <span className="font-sans text-xs text-muted-foreground pointer-events-none">
+                            {phoneFile ? phoneFile.name : "Select separate 9:19.5 phone image file"}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                {includePhoneCrop && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <label className="block font-mono text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                      Phone Cropped File (9:19.5 Ratio)
-                    </label>
-                    <div className="border border-dashed border-border bg-background p-4 text-center hover:border-primary transition-colors cursor-pointer relative">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhoneFileChange}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
-                      <span className="font-sans text-xs text-muted-foreground pointer-events-none">
-                        {phoneFile ? phoneFile.name : "Select 9:19.5 phone crop image file"}
-                      </span>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Submit Button */}
@@ -396,19 +609,20 @@ export default function UploadPage() {
             {/* Form Right: Live Visual Preview (5 cols) */}
             <div className="lg:col-span-5 flex flex-col gap-4">
               <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                Live Card Preview
+                Live Dual Preview (Desktop & Phone)
               </span>
 
               {/* Desktop Card Preview */}
               <div className="border border-border bg-surface p-3">
+                <span className="font-mono text-[10px] uppercase text-muted-foreground block mb-2 font-medium">
+                  Desktop Master Viewport
+                </span>
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/40 border border-border/60">
                   {desktopPreviewUrl ? (
-                    <Image
+                    <img
                       src={desktopPreviewUrl}
                       alt="Preview"
-                      fill
-                      sizes="400px"
-                      className="object-cover"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
@@ -421,12 +635,10 @@ export default function UploadPage() {
                     <span className="bg-primary text-primary-foreground px-2 py-0.5 uppercase">
                       {category}
                     </span>
-                    {includePhoneCrop && (
-                      <span className="bg-surface/90 text-foreground px-2 py-0.5 border border-border uppercase flex items-center gap-1">
-                        <IconDeviceMobile size={10} />
-                        PHONE INCLUDED
-                      </span>
-                    )}
+                    <span className="bg-surface/90 text-foreground px-2 py-0.5 border border-border uppercase flex items-center gap-1">
+                      <IconDeviceMobile size={10} />
+                      PHONE INCLUDED
+                    </span>
                   </div>
                 </div>
 
@@ -446,28 +658,47 @@ export default function UploadPage() {
                 </div>
               </div>
 
-              {/* Phone Preview (If enabled) */}
-              {includePhoneCrop && (
-                <div className="border border-border bg-surface p-3 flex items-center gap-4">
-                  <div className="relative w-16 aspect-[9/19] rounded-[10px] overflow-hidden border border-foreground/30 bg-black shrink-0">
-                    <Image
-                      src={phonePreviewUrl || desktopPreviewUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"}
-                      alt="Phone preview"
-                      fill
-                      sizes="80px"
-                      className="object-cover scale-110"
+              {/* Synchronized Phone Lockscreen Mockup Preview */}
+              <div className="border border-border bg-surface p-4 flex items-center gap-4">
+                <div className="relative w-24 aspect-[9/19.5] rounded-[18px] overflow-hidden border-2 border-neutral-700 bg-black shadow-xl shrink-0 ring-1 ring-white/10 select-none">
+                  {desktopPreviewUrl ? (
+                    <img
+                      src={phonePreviewUrl || desktopPreviewUrl}
+                      alt="Phone crop preview"
+                      style={{
+                        objectPosition: `${useSeparateFile ? 50 : cropPosition}% center`,
+                      }}
+                      className="w-full h-full object-cover"
                     />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-black/80 text-muted-foreground">
+                      <IconDeviceMobile size={22} />
+                    </div>
+                  )}
+
+                  {/* Lockscreen Accents */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40 pointer-events-none" />
+                  <div className="absolute top-2.5 inset-x-0 text-center font-mono text-[9px] text-white/90 drop-shadow select-none pointer-events-none font-semibold">
+                    9:41
                   </div>
-                  <div>
-                    <span className="font-mono text-[10px] uppercase text-primary font-semibold block">
-                      MOBILE COMPANION READY
-                    </span>
-                    <p className="font-sans text-xs text-muted-foreground mt-0.5">
-                      Visitors will see dual download options for both desktop and phone lockscreen.
-                    </p>
+                  <div className="absolute bottom-2.5 inset-x-0 flex justify-center pointer-events-none">
+                    <div className="w-9 h-1 bg-white/70 rounded-full" />
                   </div>
                 </div>
-              )}
+
+                <div className="flex flex-col gap-1">
+                  <span className="font-mono text-[10px] uppercase text-primary font-bold flex items-center gap-1.5">
+                    <IconCheck size={13} />
+                    MOBILE 9:19.5 CROP SYNCED
+                  </span>
+                  <span className="font-mono text-[11px] text-foreground font-medium">
+                    1170 × 2532 Phone Lockscreen
+                  </span>
+                  <p className="font-sans text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Live framing updates in real-time as you drag the crop window. Both editions will be published together in full quality.
+                  </p>
+                </div>
+              </div>
             </div>
           </form>
         )}

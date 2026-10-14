@@ -80,6 +80,8 @@ export async function POST(req: NextRequest) {
     const resolution = formData.get("resolution")?.toString() || "3840 × 2160";
     const dominantColor = formData.get("dominantColor")?.toString() || "#D6C7B2";
     const tagsString = formData.get("tags")?.toString() || "";
+    const cropPositionString = formData.get("cropPosition")?.toString();
+    const cropPosition = cropPositionString !== undefined ? Number(cropPositionString) : 50;
 
     const desktopFile = formData.get("desktopImage") as File | null;
     const phoneFile = formData.get("phoneImage") as File | null;
@@ -110,12 +112,12 @@ export async function POST(req: NextRequest) {
       contentType: desktopFile.type || "image/webp",
     });
 
-    // 6. Generate and Upload High-Speed WebP Thumbnail (~800px width)
+    // 6. Generate and Upload High-Fidelity 1600px Retina WebP Thumbnail
     let thumbnailBuffer: Buffer;
     try {
       thumbnailBuffer = await sharp(desktopBuffer)
-        .resize({ width: 800, withoutEnlargement: true })
-        .webp({ quality: 85 })
+        .resize({ width: 1600, withoutEnlargement: true })
+        .webp({ quality: 92, effort: 5 })
         .toBuffer();
     } catch (thumbErr) {
       console.warn("Thumbnail generation failed, falling back to desktop buffer:", thumbErr);
@@ -129,31 +131,65 @@ export async function POST(req: NextRequest) {
       contentType: "image/webp",
     });
 
-    // 7. Handle Companion Phone Wallpaper (Author uploaded or auto-generated 9:16 crop)
+    // 7. Handle Companion Phone Wallpaper (Cropped directly from master in high quality)
     let phoneBuffer: Buffer;
     let phoneExt: string;
     let phoneContentType: string;
 
     if (phoneFile) {
       phoneBuffer = Buffer.from(await phoneFile.arrayBuffer());
-      phoneExt = phoneFile.type.split("/")[1] || "webp";
-      phoneContentType = phoneFile.type || "image/webp";
+      phoneExt = phoneFile.type.split("/")[1] || "png";
+      phoneContentType = phoneFile.type || "image/png";
     } else {
-      // Automatically crop 9:16 (1290x2796) vertical phone lockscreen wallpaper from master
+      // Extract exact 9:19.5 phone crop directly from master buffer using user-selected framing position
       try {
+        const metadata = await sharp(desktopBuffer).metadata();
+        const naturalWidth = metadata.width || 3840;
+        const naturalHeight = metadata.height || 2160;
+        const targetAspect = 9 / 19.5; // ~0.461538 standard phone ratio
+
+        let extractLeft = 0;
+        let extractTop = 0;
+        let extractWidth = naturalWidth;
+        let extractHeight = naturalHeight;
+
+        if (naturalWidth / naturalHeight >= targetAspect) {
+          // Landscape: full vertical height, slide horizontally
+          extractHeight = naturalHeight;
+          extractWidth = Math.min(naturalWidth, Math.round(naturalHeight * targetAspect));
+          const maxOffset = naturalWidth - extractWidth;
+          const pct = Math.max(0, Math.min(100, isNaN(cropPosition) ? 50 : cropPosition));
+          extractLeft = Math.round((pct / 100) * maxOffset);
+          extractTop = 0;
+        } else {
+          // Portrait: full horizontal width, slide vertically
+          extractWidth = naturalWidth;
+          extractHeight = Math.min(naturalHeight, Math.round(naturalWidth / targetAspect));
+          const maxOffset = naturalHeight - extractHeight;
+          const pct = Math.max(0, Math.min(100, isNaN(cropPosition) ? 50 : cropPosition));
+          extractTop = Math.round((pct / 100) * maxOffset);
+          extractLeft = 0;
+        }
+
         phoneBuffer = await sharp(desktopBuffer)
-          .resize({
-            width: 1290,
-            height: 2796,
-            fit: "cover",
-            position: "centre",
+          .extract({
+            left: extractLeft,
+            top: extractTop,
+            width: extractWidth,
+            height: extractHeight,
           })
-          .webp({ quality: 90 })
+          .resize({
+            width: 1170,
+            height: 2532,
+            fit: "cover",
+          })
+          .png({ quality: 100, compressionLevel: 7 })
           .toBuffer();
-        phoneExt = "webp";
-        phoneContentType = "image/webp";
+
+        phoneExt = "png";
+        phoneContentType = "image/png";
       } catch (cropErr) {
-        console.warn("Auto phone crop failed, falling back to desktop buffer:", cropErr);
+        console.warn("Direct phone crop failed, falling back to desktop buffer:", cropErr);
         phoneBuffer = desktopBuffer;
         phoneExt = desktopExt;
         phoneContentType = desktopFile.type || "image/webp";
@@ -196,10 +232,10 @@ export async function POST(req: NextRequest) {
       phoneAsset: {
         key: phoneKey,
         url: phoneCdnUrl,
-        width: 1290,
-        height: 2796,
-        resolution: "1290 × 2796",
-        aspectRatio: "9:16",
+        width: 1170,
+        height: 2532,
+        resolution: "1170 × 2532",
+        aspectRatio: "9:19.5",
         fileSizeBytes: phoneBuffer.byteLength,
         format: phoneExt as any,
       },
