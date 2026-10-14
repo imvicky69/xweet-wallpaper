@@ -7,14 +7,16 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        allow: ["/", "/wallpaper/", "/xweet", "/wallpapers/"],
         disallow: ["/api/", "/private/"],
       },
       {
-        userAgent: "Googlebot-Image",
-        allow: ["/wallpapers/", "/logo.png"],
+        userAgent: ["Googlebot-Image", "Bingbot", "Googlebot"],
+        allow: ["/", "/wallpaper/", "/wallpapers/", "/logo.png", "/favicon.png"],
+        disallow: ["/api/"],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }

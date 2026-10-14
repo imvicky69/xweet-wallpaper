@@ -11,6 +11,7 @@ import {
   IconDeviceMobile,
   IconShieldCheck,
   IconShare,
+  IconPencil,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
 import { getCdnImageUrl } from "@/lib/wallpapers";
@@ -20,12 +21,14 @@ interface WallpaperCardProps {
   wallpaper: Wallpaper;
   onPreview?: (wallpaper: Wallpaper) => void;
   onDownload?: (wallpaper: Wallpaper) => void;
+  onEdit?: (wallpaper: Wallpaper) => void;
 }
 
 export const WallpaperCard: React.FC<WallpaperCardProps> = ({
   wallpaper,
   onPreview,
   onDownload,
+  onEdit,
 }) => {
   const [bookmarked, setBookmarked] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
@@ -150,6 +153,23 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
           </div>
 
           <div className="flex items-center gap-1 pointer-events-auto">
+            {/* Edit Button (when authorized) */}
+            {onEdit && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(wallpaper);
+                }}
+                aria-label="Edit wallpaper metadata"
+                title="Edit wallpaper metadata"
+                className="flex h-8 px-2 items-center gap-1 border border-primary bg-primary text-primary-foreground font-mono text-[10px] uppercase font-semibold hover:bg-primary-hover transition-colors shadow-xs"
+              >
+                <IconPencil size={13} />
+                <span>EDIT</span>
+              </button>
+            )}
+
             {/* Share Button */}
             <button
               onClick={handleShare}
@@ -180,13 +200,27 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
         </div>
 
         {/* Hover Action Overlay (Desktop) */}
-        <div className="absolute inset-0 z-20 bg-foreground/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 p-4 pointer-events-none">
+        <div className="absolute inset-0 z-20 bg-foreground/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 p-4 pointer-events-none">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(wallpaper);
+              }}
+              className="pointer-events-auto flex items-center gap-1.5 h-10 px-3 bg-surface font-sans text-xs font-semibold border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer shadow-xs"
+            >
+              <IconPencil size={14} />
+              <span>Edit</span>
+            </button>
+          )}
+
           <button
             onClick={(e) => {
               e.stopPropagation();
               onPreview && onPreview(wallpaper);
             }}
-            className="pointer-events-auto flex items-center gap-2 h-10 px-4 bg-surface text-foreground font-sans text-xs font-medium border border-border hover:border-primary hover:text-primary transition-colors cursor-pointer shadow-xs"
+            className="pointer-events-auto flex items-center gap-2 h-10 px-3.5 bg-surface text-foreground font-sans text-xs font-medium border border-border hover:border-primary hover:text-primary transition-colors cursor-pointer shadow-xs"
           >
             <IconEye size={15} />
             <span>Quick View</span>
@@ -194,7 +228,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
 
           <button
             onClick={handleDownload}
-            className="pointer-events-auto flex items-center gap-2 h-10 px-4 bg-primary text-primary-foreground font-sans text-xs font-medium border-2 border-primary hover:bg-transparent hover:text-primary hover:border-primary hover:shadow-[0_4px_22px_rgba(36,75,56,0.28)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer shadow-xs"
+            className="pointer-events-auto flex items-center gap-2 h-10 px-3.5 bg-primary text-primary-foreground font-sans text-xs font-medium border-2 border-primary hover:bg-transparent hover:text-primary hover:border-primary hover:shadow-[0_4px_22px_rgba(36,75,56,0.28)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer shadow-xs"
           >
             {isDownloaded ? (
               <>
@@ -228,9 +262,25 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
             </span>
           </div>
 
-          <span className="font-mono text-[11px] text-muted-foreground shrink-0 border border-border/80 px-1.5 py-0.5 bg-background">
-            {wallpaper.resolution}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {onEdit && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(wallpaper);
+                }}
+                className="font-mono text-[10px] text-primary hover:underline flex items-center gap-1 bg-secondary/60 px-1.5 py-0.5 border border-border cursor-pointer"
+                title="Edit wallpaper metadata"
+              >
+                <IconPencil size={11} />
+                <span>EDIT</span>
+              </button>
+            )}
+            <span className="font-mono text-[11px] text-muted-foreground shrink-0 border border-border/80 px-1.5 py-0.5 bg-background">
+              {wallpaper.resolution}
+            </span>
+          </div>
         </div>
 
         {/* Bottom Author Attribution & Palette Strip */}

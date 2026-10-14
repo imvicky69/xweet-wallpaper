@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
@@ -14,13 +14,26 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#244B38",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://wallpaper.xweet.in"),
   title: {
     default: "Xweet Wallpapers — Curated Minimal Abstracts",
     template: "%s | Xweet Wallpapers",
   },
-  description: "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity 4K backgrounds.",
+  description:
+    "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity 4K backgrounds.",
+  alternates: {
+    canonical: "https://wallpaper.xweet.in",
+  },
+  category: "Design & Art",
+  classification: "Curated Wallpapers, Minimalist Design, 4K Backgrounds",
   keywords: [
     "Xweet",
     "Xweet Wallpapers",
@@ -32,17 +45,29 @@ export const metadata: Metadata = {
     "aesthetic backgrounds",
     "clean desktop backgrounds",
     "editorial wallpapers",
+    "high resolution backgrounds",
   ],
   authors: [{ name: "Vicky", url: "https://wallpaper.xweet.in/xweet" }],
   creator: "Vicky (@xweet)",
   publisher: "Xweet Wallpapers",
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Xweet Wallpapers",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://wallpaper.xweet.in",
     siteName: "Xweet Wallpapers",
     title: "Xweet Wallpapers — Curated Minimal Abstracts",
-    description: "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity 4K backgrounds.",
+    description:
+      "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity 4K backgrounds.",
     images: [
       {
         url: "https://cdn.xweet.in/wallpapers/midnight-amber.png",
@@ -54,6 +79,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    site: "@xweet",
     title: "Xweet Wallpapers — Curated Minimal Abstracts",
     description: "Curated wallpaper discovery platform for everyday screens.",
     creator: "@xweet",

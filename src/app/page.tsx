@@ -132,6 +132,11 @@ export default function Home() {
               wallpapers={filteredWallpapers}
               onPreview={setActivePreview}
               onResetFilters={resetFilters}
+              isFiltered={
+                selectedCategory !== "All" ||
+                selectedOrientation !== "all" ||
+                Boolean(searchQuery.trim())
+              }
             />
           </div>
         </section>
@@ -146,15 +151,48 @@ export default function Home() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "WebSite",
-            name: "Xweet Wallpapers",
-            url: "https://wallpaper.xweet.in",
-            description: "Curated wallpaper discovery platform for everyday screens.",
-            potentialAction: {
-              "@type": "SearchAction",
-              target: "https://wallpaper.xweet.in/?search={search_term_string}",
-              "query-input": "required name=search_term_string",
-            },
+            "@graph": [
+              {
+                "@type": "WebSite",
+                "@id": "https://wallpaper.xweet.in/#website",
+                name: "Xweet Wallpapers",
+                url: "https://wallpaper.xweet.in",
+                description:
+                  "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity 4K backgrounds.",
+                publisher: {
+                  "@id": "https://wallpaper.xweet.in/#organization",
+                },
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: "https://wallpaper.xweet.in/?search={search_term_string}",
+                  "query-input": "required name=search_term_string",
+                },
+              },
+              {
+                "@type": "Organization",
+                "@id": "https://wallpaper.xweet.in/#organization",
+                name: "Xweet Wallpapers",
+                url: "https://wallpaper.xweet.in",
+                logo: "https://wallpaper.xweet.in/logo.png",
+                founder: {
+                  "@type": "Person",
+                  name: "Vicky",
+                  url: "https://wallpaper.xweet.in/xweet",
+                },
+                sameAs: ["https://x.com/xweet"],
+              },
+              {
+                "@type": "CollectionPage",
+                "@id": "https://wallpaper.xweet.in/#collection",
+                url: "https://wallpaper.xweet.in",
+                name: "Xweet Minimal Abstracts Wallpaper Catalog",
+                description:
+                  "Uncompressed 4K & 5K master backgrounds tailored for clean desks and handheld screens.",
+                isPartOf: {
+                  "@id": "https://wallpaper.xweet.in/#website",
+                },
+              },
+            ],
           }),
         }}
       />

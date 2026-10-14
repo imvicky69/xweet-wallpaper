@@ -18,6 +18,7 @@ import {
   IconShare,
   IconSparkles,
   IconLock,
+  IconPencil,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
 import { getCdnImageUrl } from "@/lib/wallpapers";
@@ -27,11 +28,13 @@ import { Button } from "@/components/ui/Button";
 interface WallpaperQuickViewModalProps {
   wallpaper: Wallpaper | null;
   onClose: () => void;
+  onEdit?: (wallpaper: Wallpaper) => void;
 }
 
 export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = ({
   wallpaper,
   onClose,
+  onEdit,
 }) => {
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
   const [bookmarked, setBookmarked] = useState(false);
@@ -586,6 +589,21 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                   <span>Full Page</span>
                 </Button>
               </div>
+
+              {onEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onClose();
+                    onEdit(wallpaper);
+                  }}
+                  className="w-full text-xs h-8 gap-1.5 border-primary/70 text-primary hover:bg-primary hover:text-primary-foreground font-mono"
+                >
+                  <IconPencil size={13} />
+                  <span>EDIT WALLPAPER METADATA</span>
+                </Button>
+              )}
             </div>
           </div>
         </motion.div>

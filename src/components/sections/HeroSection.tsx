@@ -153,15 +153,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               natural earth pigments, and editorial restraint.
             </p>
 
-            {/* Current Spotlight Info */}
-            <div className="flex items-center gap-2 mt-4 text-xs font-mono text-muted-foreground">
-              <span className="text-foreground font-semibold uppercase">{active.wallpaper.title}</span>
-              <span>—</span>
-              <span className="truncate">{active.tagline}</span>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 mt-7">
+            {/* Action Buttons - Stable and stationary */}
+            <div className="flex flex-wrap items-center gap-3 mt-8">
               <Button href="#wallpapers" size="md" variant="primary">
                 <span>Explore wallpapers</span>
                 <IconArrowDown size={16} />
@@ -180,12 +173,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
           {/* Right Column: Pure Laptop & Phone Viewed Wallpaper Mockup (No clutter, No extra elements) */}
           <div
-            className="lg:col-span-6 relative flex items-center justify-center py-4"
+            className="lg:col-span-6 relative flex flex-col items-center justify-center py-4"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
             {/* Ambient Base Shadow */}
-            <div className="absolute bottom-2 inset-x-8 h-8 bg-black/25 blur-2xl rounded-full pointer-events-none" />
+            <div className="absolute bottom-8 inset-x-8 h-8 bg-black/25 blur-2xl rounded-full pointer-events-none" />
 
             {/* Laptop Mockup Wrapper */}
             <div
@@ -303,6 +296,37 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Artwork Spotlight Caption - Directly below the device mockup with fixed height */}
+            <div className="mt-6 sm:mt-7 flex items-center justify-center gap-2 font-mono text-xs text-muted-foreground select-none h-6">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 animate-pulse" />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={active.wallpaper.id}
+                  initial={{ opacity: 0, y: 3 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -3 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center gap-2 truncate"
+                >
+                  <span className="text-foreground font-semibold uppercase tracking-wide truncate max-w-[200px] sm:max-w-[260px]">
+                    {active.wallpaper.title}
+                  </span>
+                  <span className="text-border">•</span>
+                  <span className="text-primary font-medium uppercase text-[11px] tracking-wider shrink-0">
+                    {active.wallpaper.category}
+                  </span>
+                  {active.wallpaper.resolution && (
+                    <>
+                      <span className="text-border hidden sm:inline">•</span>
+                      <span className="text-muted-foreground text-[11px] hidden sm:inline shrink-0">
+                        {active.wallpaper.resolution}
+                      </span>
+                    </>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
 

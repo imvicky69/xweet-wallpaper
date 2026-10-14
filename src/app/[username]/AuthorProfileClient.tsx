@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { WallpaperGrid } from "@/components/wallpapers/WallpaperGrid";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
+import { EditWallpaperModal } from "@/components/wallpapers/EditWallpaperModal";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { Wallpaper } from "@/types/wallpaper";
 import {
@@ -27,6 +28,8 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
   const { profile: loggedInProfile } = useAuth();
   const { wallpapers } = useWallpapers();
   const [activePreview, setActivePreview] = useState<Wallpaper | null>(null);
+  const [editingWallpaper, setEditingWallpaper] = useState<Wallpaper | null>(null);
+  const [localUpdates, setLocalUpdates] = useState<Record<string, Wallpaper>>({});
 
   const isCurator = ["xweet", "vikky", "vicky", "rajvicky97988"].includes(username);
   const displayUsername = isCurator ? "xweet" : username;
@@ -46,18 +49,21 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
 
   // Filter wallpapers authored by this user: curator gets platform master wallpapers + their drops
   const authorWallpapers = useMemo(() => {
+    let list: Wallpaper[];
     if (isCurator) {
-      return wallpapers.filter(
+      list = wallpapers.filter(
         (wp) =>
           !wp.author?.username ||
           ["xweet", "vikky", "vicky", "rajvicky97988"].includes(wp.author.username.toLowerCase()) ||
           wp.author.isVerified
       );
+    } else {
+      list = wallpapers.filter(
+        (wp) => wp.author?.username?.toLowerCase() === username
+      );
     }
-    return wallpapers.filter(
-      (wp) => wp.author?.username?.toLowerCase() === username
-    );
-  }, [username, isCurator, wallpapers]);
+    return list.map((wp) => localUpdates[wp.id] || wp);
+  }, [username, isCurator, wallpapers, localUpdates]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -169,6 +175,7 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
             <WallpaperGrid
               wallpapers={authorWallpapers}
               onPreview={setActivePreview}
+              onEdit={isOwner ? (wp) => setEditingWallpaper(wp) : undefined}
             />
           </div>
         </section>
@@ -179,6 +186,19 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
       <WallpaperQuickViewModal
         wallpaper={activePreview}
         onClose={() => setActivePreview(null)}
+        onEdit={isOwner ? (wp) => setEditingWallpaper(wp) : undefined}
+      />
+
+      <EditWallpaperModal
+        wallpaper={editingWallpaper}
+        isOpen={Boolean(editingWallpaper)}
+        onClose={() => setEditingWallpaper(null)}
+        onSaved={(updated) => {
+          setLocalUpdates((prev) => ({
+            ...prev,
+            [updated.id]: updated,
+          }));
+        }}
       />
     </div>
   );

@@ -36,13 +36,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Merge static wallpapers with live Firestore drops
-  const wallpaperMap = new Map<string, { slug: string; lastModified: Date }>();
+  const wallpaperMap = new Map<
+    string,
+    { slug: string; lastModified: Date; imageUrl?: string }
+  >();
 
   for (const wp of WALLPAPERS) {
     if (wp.slug) {
       wallpaperMap.set(wp.slug, {
         slug: wp.slug,
         lastModified: new Date(wp.publishedAt || wp.createdAt || Date.now()),
+        imageUrl: wp.imageUrl,
       });
     }
   }
@@ -55,6 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         wallpaperMap.set(data.slug, {
           slug: data.slug,
           lastModified: new Date(data.publishedAt || data.createdAt || Date.now()),
+          imageUrl: data.imageUrl,
         });
       }
     });
@@ -62,12 +67,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("Sitemap Firestore fetch note:", err);
   }
 
-  // Dynamic wallpaper routes
+  // Dynamic wallpaper routes with Google Image indexing
   const wallpaperRoutes: MetadataRoute.Sitemap = Array.from(wallpaperMap.values()).map((wp) => ({
     url: `${baseUrl}/wallpaper/${wp.slug}`,
     lastModified: wp.lastModified,
     changeFrequency: "weekly",
     priority: 0.8,
+    images: wp.imageUrl ? [wp.imageUrl] : undefined,
   }));
 
   return [...staticRoutes, ...wallpaperRoutes];
