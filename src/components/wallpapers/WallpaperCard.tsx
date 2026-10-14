@@ -176,7 +176,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
 
           <button
             onClick={handleDownload}
-            className="pointer-events-auto flex items-center gap-2 h-10 px-4 bg-primary text-primary-foreground font-sans text-xs font-medium border border-primary hover:bg-primary-hover transition-colors cursor-pointer shadow-xs"
+            className="pointer-events-auto flex items-center gap-2 h-10 px-4 bg-primary text-primary-foreground font-sans text-xs font-medium border-2 border-primary hover:bg-transparent hover:text-primary hover:border-primary hover:shadow-[0_4px_22px_rgba(36,75,56,0.28)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer shadow-xs"
           >
             {isDownloaded ? (
               <>

@@ -15,10 +15,10 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
     };
 
     const variantMap = {
-      surface: "bg-surface border border-border text-foreground hover:border-primary hover:text-primary",
-      primary: "bg-primary border border-primary text-primary-foreground hover:bg-primary-hover",
-      ghost: "bg-transparent border border-transparent text-foreground hover:bg-secondary/50",
-      secondary: "bg-secondary border border-border text-secondary-foreground hover:bg-secondary/80",
+      surface: "bg-surface border border-border text-foreground hover:border-primary hover:text-primary transition-all duration-200",
+      primary: "bg-primary border-2 border-primary text-primary-foreground hover:bg-transparent hover:text-primary hover:border-primary hover:shadow-[0_4px_22px_rgba(36,75,56,0.28)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200",
+      ghost: "bg-transparent border border-transparent text-foreground hover:bg-secondary/50 transition-colors",
+      secondary: "bg-secondary border border-border text-secondary-foreground hover:bg-secondary/80 transition-colors",
     };
 
     return (

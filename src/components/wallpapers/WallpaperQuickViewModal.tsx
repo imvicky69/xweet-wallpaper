@@ -393,13 +393,18 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                 </div>
 
                 {hasPhoneCrop && (
-                  <div className="flex items-center justify-between py-1 border-b border-border/50">
-                    <span className="flex items-center gap-1.5 uppercase text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMode("phone")}
+                    className="flex items-center justify-between py-1 border-b border-border/50 text-left hover:text-foreground transition-colors cursor-pointer group select-none"
+                    title="Click to preview Phone edition"
+                  >
+                    <span className="flex items-center gap-1.5 uppercase text-[11px] group-hover:text-primary transition-colors">
                       <IconDeviceMobile size={13} className="text-primary" />
                       Phone Edition
                     </span>
-                    <span className="text-foreground font-medium text-[11px]">1170 × 2532 (9:19.5)</span>
-                  </div>
+                    <span className="text-foreground font-medium text-[11px] group-hover:underline">1170 × 2532 (9:19.5)</span>
+                  </button>
                 )}
 
                 <div className="flex items-center justify-between py-1 border-b border-border/50">
@@ -419,66 +424,133 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
               </div>
             </div>
 
-            {/* Action Buttons: Responsive for phones */}
-            <div className="mt-5 pt-3 border-t border-border flex flex-col gap-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <Button
-                  variant="primary"
-                  size="md"
-                  onClick={handleDownloadDesktop}
-                  className="text-xs h-10 w-full"
-                >
-                  {downloadSuccess === "desktop" ? (
-                    <>
-                      <IconCheck size={15} />
-                      <span>Downloaded</span>
-                    </>
-                  ) : (
-                    <>
-                      <IconDownload size={15} />
-                      <span>Get Desktop (4K)</span>
-                    </>
-                  )}
-                </Button>
+            {/* Action Buttons: Dynamically prioritizes and enlarges Phone button in Phone View */}
+            <div className="mt-5 pt-3 border-t border-border flex flex-col gap-2.5">
+              {previewMode === "phone" ? (
+                <>
+                  {/* In Phone View: Big, prominent, primary Phone button */}
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={handleDownloadPhone}
+                    className="w-full h-13 text-sm font-semibold tracking-wide flex items-center justify-center gap-2.5 shadow-sm"
+                  >
+                    {downloadSuccess === "phone" ? (
+                      <>
+                        <IconCheck size={18} />
+                        <span>Downloaded Phone Lockscreen</span>
+                      </>
+                    ) : (
+                      <>
+                        <IconDeviceMobile size={18} />
+                        <span>Get Phone Edition (1170 × 2532)</span>
+                      </>
+                    )}
+                  </Button>
 
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={handleDownloadPhone}
-                  className="text-xs h-10 w-full"
-                >
-                  {downloadSuccess === "phone" ? (
-                    <>
-                      <IconCheck size={15} />
-                      <span>Downloaded</span>
-                    </>
-                  ) : (
-                    <>
-                      <IconDeviceMobile size={15} />
-                      <span>Get Phone (Cropped)</span>
-                    </>
-                  )}
-                </Button>
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={handleDownloadDesktop}
+                      className="text-xs h-10 w-full"
+                    >
+                      {downloadSuccess === "desktop" ? (
+                        <>
+                          <IconCheck size={15} />
+                          <span>Downloaded 4K</span>
+                        </>
+                      ) : (
+                        <>
+                          <IconDownload size={15} />
+                          <span>Get Desktop (4K)</span>
+                        </>
+                      )}
+                    </Button>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadBoth}
-                className="w-full text-xs h-9"
-              >
-                {downloadSuccess === "both" ? (
-                  <>
-                    <IconCheck size={14} />
-                    <span>Downloaded Both Editions</span>
-                  </>
-                ) : (
-                  <>
-                    <IconSparkles size={14} className="text-primary" />
-                    <span>Download Bundle (Desktop + Phone)</span>
-                  </>
-                )}
-              </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDownloadBoth}
+                      className="w-full text-xs h-10"
+                    >
+                      {downloadSuccess === "both" ? (
+                        <>
+                          <IconCheck size={14} />
+                          <span>Downloaded Both</span>
+                        </>
+                      ) : (
+                        <>
+                          <IconSparkles size={14} className="text-primary" />
+                          <span>Bundle (Both)</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* In Desktop View: Primary Desktop button, Secondary Phone button */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={handleDownloadDesktop}
+                      className="text-xs h-11 w-full font-medium"
+                    >
+                      {downloadSuccess === "desktop" ? (
+                        <>
+                          <IconCheck size={15} />
+                          <span>Downloaded</span>
+                        </>
+                      ) : (
+                        <>
+                          <IconDownload size={15} />
+                          <span>Get Desktop (4K)</span>
+                        </>
+                      )}
+                    </Button>
+
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={handleDownloadPhone}
+                      className="text-xs h-11 w-full"
+                    >
+                      {downloadSuccess === "phone" ? (
+                        <>
+                          <IconCheck size={15} />
+                          <span>Downloaded</span>
+                        </>
+                      ) : (
+                        <>
+                          <IconDeviceMobile size={15} />
+                          <span>Get Phone (Cropped)</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadBoth}
+                    className="w-full text-xs h-9"
+                  >
+                    {downloadSuccess === "both" ? (
+                      <>
+                        <IconCheck size={14} />
+                        <span>Downloaded Both Editions</span>
+                      </>
+                    ) : (
+                      <>
+                        <IconSparkles size={14} className="text-primary" />
+                        <span>Download Bundle (Desktop + Phone)</span>
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
 
               <div className="flex items-center gap-2 pt-1">
                 <Button

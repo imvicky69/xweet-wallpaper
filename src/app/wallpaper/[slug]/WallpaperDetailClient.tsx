@@ -402,43 +402,85 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
 
                 {/* Download Actions */}
                 <div className="mt-6 flex flex-col gap-2.5">
-                  <button
-                    onClick={handleDownloadDesktop}
-                    className="w-full flex items-center justify-center gap-2 h-11 px-4 bg-primary text-primary-foreground font-sans text-xs font-semibold uppercase tracking-wider border border-primary hover:bg-primary-hover transition-colors cursor-pointer"
-                  >
-                    {downloadSuccess === "desktop" ? (
-                      <>
-                        <IconCheck size={16} />
-                        <span>Downloaded 4K Desktop</span>
-                      </>
-                    ) : (
-                      <>
-                        <IconDownload size={16} />
-                        <span>Download Desktop (4K PNG)</span>
-                      </>
-                    )}
-                  </button>
+                  {previewMode === "phone" ? (
+                    <>
+                      {/* Phone View: Big, prominent Phone Lockscreen button */}
+                      <button
+                        onClick={handleDownloadPhone}
+                        className="w-full flex items-center justify-center gap-2.5 h-13 px-5 bg-primary text-primary-foreground font-sans text-sm font-semibold uppercase tracking-wider border-2 border-primary hover:bg-transparent hover:text-primary hover:border-primary hover:shadow-[0_4px_24px_rgba(36,75,56,0.28)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out cursor-pointer shadow-xs"
+                      >
+                        {downloadSuccess === "phone" ? (
+                          <>
+                            <IconCheck size={18} />
+                            <span>Downloaded Phone Lockscreen</span>
+                          </>
+                        ) : (
+                          <>
+                            <IconDeviceMobile size={18} />
+                            <span>Download Phone Edition (1170 × 2532)</span>
+                          </>
+                        )}
+                      </button>
 
-                  <button
-                    onClick={handleDownloadPhone}
-                    className="w-full flex items-center justify-center gap-2 h-11 px-4 bg-surface text-foreground font-sans text-xs font-semibold uppercase tracking-wider border border-border hover:border-primary hover:text-primary transition-colors cursor-pointer"
-                  >
-                    {downloadSuccess === "phone" ? (
-                      <>
-                        <IconCheck size={16} />
-                        <span>Downloaded Phone Lockscreen</span>
-                      </>
-                    ) : (
-                      <>
-                        <IconDeviceMobile size={16} />
-                        <span>Download Phone Lockscreen</span>
-                      </>
-                    )}
-                  </button>
+                      <button
+                        onClick={handleDownloadDesktop}
+                        className="w-full flex items-center justify-center gap-2 h-10 px-4 bg-surface text-foreground font-sans text-xs font-semibold uppercase tracking-wider border border-border hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer"
+                      >
+                        {downloadSuccess === "desktop" ? (
+                          <>
+                            <IconCheck size={15} />
+                            <span>Downloaded 4K Desktop</span>
+                          </>
+                        ) : (
+                          <>
+                            <IconDownload size={15} />
+                            <span>Download Desktop (4K PNG)</span>
+                          </>
+                        )}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* Desktop View: Primary Desktop button, Secondary Phone button */}
+                      <button
+                        onClick={handleDownloadDesktop}
+                        className="w-full flex items-center justify-center gap-2 h-11 px-4 bg-primary text-primary-foreground font-sans text-xs font-semibold uppercase tracking-wider border-2 border-primary hover:bg-transparent hover:text-primary hover:border-primary hover:shadow-[0_4px_24px_rgba(36,75,56,0.28)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 ease-out cursor-pointer shadow-xs"
+                      >
+                        {downloadSuccess === "desktop" ? (
+                          <>
+                            <IconCheck size={16} />
+                            <span>Downloaded 4K Desktop</span>
+                          </>
+                        ) : (
+                          <>
+                            <IconDownload size={16} />
+                            <span>Download Desktop (4K PNG)</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={handleDownloadPhone}
+                        className="w-full flex items-center justify-center gap-2 h-11 px-4 bg-surface text-foreground font-sans text-xs font-semibold uppercase tracking-wider border border-border hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer"
+                      >
+                        {downloadSuccess === "phone" ? (
+                          <>
+                            <IconCheck size={16} />
+                            <span>Downloaded Phone Lockscreen</span>
+                          </>
+                        ) : (
+                          <>
+                            <IconDeviceMobile size={16} />
+                            <span>Download Phone Lockscreen</span>
+                          </>
+                        )}
+                      </button>
+                    </>
+                  )}
 
                   <button
                     onClick={handleDownloadBoth}
-                    className="w-full flex items-center justify-center gap-2 h-10 px-4 bg-background text-muted-foreground font-sans text-xs hover:text-foreground hover:border-foreground border border-border/70 transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 h-10 px-4 bg-background text-muted-foreground font-sans text-xs hover:text-foreground hover:border-foreground border border-border/70 transition-all duration-200 cursor-pointer"
                   >
                     {downloadSuccess === "both" ? (
                       <>

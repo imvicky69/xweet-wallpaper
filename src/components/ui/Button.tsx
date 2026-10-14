@@ -30,17 +30,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-sans font-medium rounded-none tracking-normal transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+      "inline-flex items-center justify-center font-sans font-medium rounded-none tracking-normal transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
     const variantStyles = {
       primary:
-        "bg-primary text-primary-foreground hover:bg-primary-hover border border-primary",
+        "bg-primary text-primary-foreground border-2 border-primary hover:bg-transparent hover:text-primary hover:border-primary hover:shadow-[0_4px_22px_rgba(36,75,56,0.28)] hover:-translate-y-0.5 active:translate-y-0 shadow-xs",
       secondary:
-        "bg-surface text-primary border border-border hover:border-primary hover:bg-surface/80",
+        "bg-surface text-primary border border-border hover:border-primary hover:bg-surface/80 hover:-translate-y-0.5 active:translate-y-0 shadow-xs",
       ghost:
         "bg-transparent text-foreground hover:bg-secondary/60 hover:text-secondary-foreground border border-transparent",
       outline:
-        "bg-transparent text-foreground border border-border hover:border-foreground",
+        "bg-transparent text-foreground border border-border hover:border-foreground hover:-translate-y-0.5 active:translate-y-0",
     };
 
     const sizeStyles = {
