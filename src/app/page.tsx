@@ -8,7 +8,8 @@ import { FeaturedWallpaperCarousel } from "@/components/sections/FeaturedWallpap
 import { WallpaperFilters } from "@/components/wallpapers/WallpaperFilters";
 import { WallpaperGrid } from "@/components/wallpapers/WallpaperGrid";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
-import { CATEGORIES } from "@/lib/wallpapers";
+import CircularCarousel, { CircularCarouselItem } from "@/components/CircularCarousel";
+import { CATEGORIES, getCdnImageUrl } from "@/lib/wallpapers";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { Wallpaper, Orientation } from "@/types/wallpaper";
 import { IconSearch, IconX } from "@tabler/icons-react";
@@ -69,6 +70,26 @@ export default function Home() {
     setSelectedOrientation("all");
     setSearchQuery("");
   };
+
+  // Curated recent drops for the 3D circular carousel
+  const carouselWallpapers = useMemo(() => {
+    const drops = [...wallpapers];
+    drops.sort((a, b) => {
+      if (a.isNew && !b.isNew) return -1;
+      if (!a.isNew && b.isNew) return 1;
+      return 0;
+    });
+    return drops.slice(0, 12);
+  }, [wallpapers]);
+
+  const carouselItems: CircularCarouselItem[] = useMemo(() => {
+    return carouselWallpapers.map((wp) => ({
+      src: getCdnImageUrl(wp.thumbnailUrl || wp.imageUrl),
+      alt: wp.title,
+      title: wp.title,
+      subtitle: `${wp.category} • ${wp.resolution}`,
+    }));
+  }, [carouselWallpapers]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -186,9 +207,46 @@ export default function Home() {
             />
           </div>
         </section>
+
+        {/* 5. Curated 3D Ring Showcase: Circular Carousel */}
+        {carouselItems.length > 0 && (
+          <section className="w-full py-12 sm:py-16 bg-surface border-t border-border overflow-hidden">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-12 mb-6 sm:mb-8 text-center flex flex-col items-center">
+              <span className="font-mono text-[10px] sm:text-xs font-semibold text-primary uppercase tracking-widest px-2.5 py-1 border border-primary/40 bg-primary/5">
+                INTERACTIVE 3D PERSPECTIVE
+              </span>
+              <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground mt-3">
+                Explore Drops in 3D Orbit
+              </h2>
+              <p className="font-sans text-xs sm:text-sm text-muted-foreground mt-1.5 max-w-lg leading-relaxed">
+                Drag, swipe, or spin the carousel to browse recent releases. Click any wallpaper card to inspect details and download in lossless 4K.
+              </p>
+            </div>
+
+            <div className="w-full h-[400px] sm:h-[460px] lg:h-[500px] relative select-none">
+              <CircularCarousel
+                items={carouselItems}
+                preset="cylinder"
+                autoplay="drift"
+                speed={0.35}
+                cardWidth={260}
+                aspectRatio={16 / 10}
+                cornerRadius={0}
+                gap={16}
+                fadeColor="#FCFAF4"
+                captions={true}
+                draggable={true}
+                onItemClick={(_item, index) => {
+                  const targetWp = carouselWallpapers[index];
+                  if (targetWp) setActivePreview(targetWp);
+                }}
+              />
+            </div>
+          </section>
+        )}
       </main>
 
-      {/* 5. Minimal Editorial Footer */}
+      {/* 6. Minimal Editorial Footer */}
       <SiteFooter />
 
       {/* Schema.org Structured Data */}
