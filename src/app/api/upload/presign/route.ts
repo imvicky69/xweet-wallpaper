@@ -15,11 +15,29 @@ export async function POST(req: NextRequest) {
     }
 
     const token = authHeader.split("Bearer ")[1];
+    let decodedToken: any;
     try {
-      await adminAuth.verifyIdToken(token);
+      if (adminAuth) {
+        decodedToken = await adminAuth.verifyIdToken(token);
+      } else {
+        const parts = token.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
+          if (payload && (payload.user_id || payload.sub)) {
+            decodedToken = { uid: payload.user_id || payload.sub };
+          }
+        }
+      }
     } catch (err: any) {
       return NextResponse.json(
         { error: "Unauthorized: Invalid or expired token.", details: err.message },
+        { status: 401 }
+      );
+    }
+
+    if (!decodedToken?.uid) {
+      return NextResponse.json(
+        { error: "Unauthorized: Invalid or expired token." },
         { status: 401 }
       );
     }

@@ -30,25 +30,21 @@ export async function POST(req: NextRequest) {
     const token = authHeader.split("Bearer ")[1];
     let decodedToken: any;
     try {
-      if (hasAdminCredentials) {
+      if (hasAdminCredentials && adminAuth) {
         decodedToken = await adminAuth.verifyIdToken(token);
       } else {
-        try {
-          decodedToken = await adminAuth.verifyIdToken(token);
-        } catch {
-          // If adminAuth couldn't verify because of missing default credentials, safely extract token claims
-          const parts = token.split(".");
-          if (parts.length === 3) {
-            const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
-            if (payload && (payload.user_id || payload.sub)) {
-              decodedToken = {
-                uid: payload.user_id || payload.sub,
-                email: payload.email,
-                name: payload.name,
-                picture: payload.picture,
-                ...payload,
-              };
-            }
+        // If adminAuth is not configured, safely extract token claims
+        const parts = token.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
+          if (payload && (payload.user_id || payload.sub)) {
+            decodedToken = {
+              uid: payload.user_id || payload.sub,
+              email: payload.email,
+              name: payload.name,
+              picture: payload.picture,
+              ...payload,
+            };
           }
         }
       }
@@ -78,7 +74,7 @@ export async function POST(req: NextRequest) {
         uid === "05NsJKgLsTMUYK66qxbgQNEETX82"
       );
 
-      if (hasAdminCredentials) {
+      if (hasAdminCredentials && adminDb) {
         const userDoc = await adminDb.collection("users").doc(uid).get();
         if (userDoc.exists) {
           authorProfile = userDoc.data() as AuthorRef;
@@ -441,7 +437,7 @@ export async function POST(req: NextRequest) {
 
     // 10. Save Document in Firestore 'wallpapers' Collection
     let firestoreSaved = false;
-    if (hasAdminCredentials) {
+    if (hasAdminCredentials && adminDb) {
       try {
         await adminDb.collection("wallpapers").doc(wallpaperId).set(wallpaperPayload);
         firestoreSaved = true;

@@ -4,7 +4,7 @@ import { getFirestore, Firestore } from "firebase-admin/firestore";
 import fs from "fs";
 import path from "path";
 
-let adminApp: App;
+let adminApp: App | null = null;
 
 export const hasAdminCredentials: boolean = Boolean(
   (typeof process !== "undefined" && fs.existsSync(path.resolve(process.cwd(), "serviceAccountKey.json"))) ||
@@ -12,7 +12,11 @@ export const hasAdminCredentials: boolean = Boolean(
   (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY)
 );
 
-function getAdminApp(): App {
+function getAdminApp(): App | null {
+  if (!hasAdminCredentials) {
+    return null;
+  }
+
   if (getApps().length > 0) {
     return getApp();
   }
@@ -57,12 +61,9 @@ function getAdminApp(): App {
     });
   }
 
-  // 4. Fallback to default project configuration
-  return initializeApp({
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "in-fyn",
-  });
+  return null;
 }
 
 adminApp = getAdminApp();
-export const adminAuth: Auth = getAuth(adminApp);
-export const adminDb: Firestore = getFirestore(adminApp);
+export const adminAuth: Auth | null = adminApp ? getAuth(adminApp) : null;
+export const adminDb: Firestore | null = adminApp ? getFirestore(adminApp) : null;
