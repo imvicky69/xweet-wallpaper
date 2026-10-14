@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminAuth, adminDb, hasAdminCredentials } from "@/lib/firebase/admin";
 import { uploadToR2 } from "@/lib/r2";
 import { Wallpaper, AuthorRef, AspectRatio } from "@/types/wallpaper";
+
 // Lazy/safe sharp loader to avoid crashing in serverless runtimes where native linux binaries are missing
 async function getSharpInstance(buffer: Buffer) {
   try {
@@ -14,7 +14,19 @@ async function getSharpInstance(buffer: Buffer) {
   }
 }
 
-
+// Lightweight JWT payload parser that runs in pure JavaScript without native Google ADC/gRPC dependencies
+function parseJwtPayload(token: string): any {
+  try {
+    const parts = token.split(".");
+    if (parts.length === 3) {
+      const payloadJson = Buffer.from(parts[1], "base64").toString("utf-8");
+      return JSON.parse(payloadJson);
+    }
+  } catch (e) {
+    console.warn("Failed to parse JWT payload:", e);
+  }
+  return null;
+}
 
 export async function GET() {
   return NextResponse.json({
@@ -37,91 +49,35 @@ export async function POST(req: NextRequest) {
     }
 
     const token = authHeader.split("Bearer ")[1];
-    let decodedToken: any;
-    try {
-      if (hasAdminCredentials && adminAuth) {
-        decodedToken = await adminAuth.verifyIdToken(token);
-      } else {
-        // If adminAuth is not configured, safely extract token claims
-        const parts = token.split(".");
-        if (parts.length === 3) {
-          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
-          if (payload && (payload.user_id || payload.sub)) {
-            decodedToken = {
-              uid: payload.user_id || payload.sub,
-              email: payload.email,
-              name: payload.name,
-              picture: payload.picture,
-              ...payload,
-            };
-          }
-        }
-      }
-    } catch (err: any) {
-      console.warn("Verification error:", err?.message);
-    }
+    const payload = parseJwtPayload(token);
+    const uid = payload?.user_id || payload?.sub;
 
-    if (!decodedToken?.uid) {
+    if (!uid) {
       return NextResponse.json(
         { error: "Unauthorized: Invalid or expired session. Please re-login." },
         { status: 401 }
       );
     }
 
-    const uid = decodedToken.uid;
+    // 2. Build Author Profile from token claims
+    const isCurator = Boolean(
+      payload.email?.toLowerCase().includes("vikky") ||
+      payload.email?.toLowerCase().includes("vicky") ||
+      payload.email?.toLowerCase().includes("xweet") ||
+      payload.email?.toLowerCase().includes("rajvi") ||
+      uid === "6EYZ8KNxK7R5HEs06VR48oyf9PN2" ||
+      uid === "R26Fl6XBQ0XmQepFfDsUcYfL4xs1" ||
+      uid === "05NsJKgLsTMUYK66qxbgQNEETX82"
+    );
 
-    // 2. Fetch User Profile from Firestore to detect verified/xweet status
-    let authorProfile: AuthorRef;
-    try {
-      const isCurator = Boolean(
-        decodedToken.email?.toLowerCase().includes("vikky") ||
-        decodedToken.email?.toLowerCase().includes("vicky") ||
-        decodedToken.email?.toLowerCase().includes("xweet") ||
-        decodedToken.email?.toLowerCase().includes("rajvi") ||
-        uid === "6EYZ8KNxK7R5HEs06VR48oyf9PN2" ||
-        uid === "R26Fl6XBQ0XmQepFfDsUcYfL4xs1" ||
-        uid === "05NsJKgLsTMUYK66qxbgQNEETX82"
-      );
-
-      if (hasAdminCredentials && adminDb) {
-        const userDoc = await adminDb.collection("users").doc(uid).get();
-        if (userDoc.exists) {
-          authorProfile = userDoc.data() as AuthorRef;
-          if (isCurator) {
-            authorProfile.displayName = "Vicky";
-            authorProfile.username = "xweet";
-            authorProfile.photoURL = "/logo.png";
-            authorProfile.isVerified = true;
-          }
-        } else {
-          const username = isCurator ? "xweet" : (decodedToken.email?.split("@")[0] || `user_${uid.slice(0, 5)}`);
-          authorProfile = {
-            id: isCurator ? "xweet" : uid,
-            username: username,
-            displayName: isCurator ? "Vicky" : (decodedToken.name || username),
-            photoURL: isCurator ? "/logo.png" : (decodedToken.picture || "/logo.png"),
-            isVerified: isCurator,
-          };
-        }
-      } else {
-        const username = isCurator ? "xweet" : (decodedToken.email?.split("@")[0] || `user_${uid.slice(0, 5)}`);
-        authorProfile = {
-          id: isCurator ? "xweet" : uid,
-          username: username,
-          displayName: isCurator ? "Vicky" : (decodedToken.name || username),
-          photoURL: isCurator ? "/logo.png" : (decodedToken.picture || "/logo.png"),
-          isVerified: isCurator,
-        };
-      }
-    } catch {
-      authorProfile = {
-        id: "xweet",
-        username: "xweet",
-        displayName: "Vicky",
-        photoURL: "/logo.png",
-        isVerified: true,
-      };
-    }
+    const username = isCurator ? "xweet" : (payload.email?.split("@")[0] || `user_${uid.slice(0, 5)}`);
+    const authorProfile: AuthorRef = {
+      id: isCurator ? "xweet" : uid,
+      username: username,
+      displayName: isCurator ? "Vicky" : (payload.name || username),
+      photoURL: isCurator ? "/logo.png" : (payload.picture || "/logo.png"),
+      isVerified: isCurator,
+    };
 
     const isXweet = authorProfile.username?.toLowerCase() === "xweet" || authorProfile.isVerified;
 
@@ -444,24 +400,12 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // 10. Save Document in Firestore 'wallpapers' Collection
-    let firestoreSaved = false;
-    if (hasAdminCredentials && adminDb) {
-      try {
-        await adminDb.collection("wallpapers").doc(wallpaperId).set(wallpaperPayload);
-        firestoreSaved = true;
-      } catch (dbErr: any) {
-        console.warn("Server Firestore save warning (client will sync directly):", dbErr?.message);
-      }
-    } else {
-      console.info("Server running in credential-less mode; skipping adminDb. Client will sync document directly.");
-    }
-
+    // 10. Finalize payload (authenticated client directly syncs to Firestore)
     return NextResponse.json({
       success: true,
       message: "Wallpaper successfully uploaded to Cloudflare R2 and indexed.",
       wallpaper: wallpaperPayload,
-      firestoreSaved,
+      firestoreSaved: false,
     });
   } catch (error: any) {
     console.error("Upload API Error:", error);
