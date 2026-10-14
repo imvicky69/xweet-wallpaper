@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/providers/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,7 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Xweet Wallpapers — Curated Wallpaper Experience",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://xweet.com"),
+  title: "Xweet Wallpapers — Curated Minimal Abstracts",
   description: "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity backgrounds.",
   icons: {
     icon: "/favicon.png",
@@ -30,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background text-foreground selection:bg-secondary selection:text-secondary-foreground`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

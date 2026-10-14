@@ -25,7 +25,7 @@ export default function Home() {
       const matchesCategory =
         selectedCategory === "All" ||
         wp.category.toLowerCase() === selectedCategory.toLowerCase() ||
-        wp.collection.toLowerCase() === selectedCategory.toLowerCase();
+        Boolean(wp.collection && wp.collection.toLowerCase() === selectedCategory.toLowerCase());
 
       // Orientation match
       const matchesOrientation =

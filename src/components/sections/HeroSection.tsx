@@ -94,7 +94,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             className="absolute inset-0"
           >
             <Image
-              src={active.wallpaper.imageUrl}
+              src={active.wallpaper.thumbnailUrl || active.wallpaper.imageUrl}
               alt=""
               fill
               sizes="100vw"
@@ -257,7 +257,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         href={active.wallpaper.imageUrl}
                         target="_blank"
                         rel="noreferrer"
-                        download
+                        download={`${active.wallpaper.slug}-desktop-4k.png`}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <IconDownload size={13} />
@@ -274,26 +274,34 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
                 onClick={() => onPreview(active.wallpaper)}
-                className="absolute -bottom-6 -right-3 sm:-right-6 w-36 sm:w-44 aspect-[9/19] rounded-[24px] border-[5px] border-foreground/80 bg-black shadow-2xl overflow-hidden cursor-pointer group z-20"
+                className="absolute -bottom-4 right-0 sm:-right-6 w-32 sm:w-44 aspect-[9/19.5] rounded-[22px] sm:rounded-[24px] border-[4px] sm:border-[5px] border-foreground/80 bg-black shadow-2xl overflow-hidden cursor-pointer group z-20"
                 title="Click to view lockscreen preview"
               >
                 {/* Dynamic Zoomed & Cropped Wallpaper Image */}
                 <div className="relative w-full h-full overflow-hidden">
+                  {/* Protective Layer */}
+                  <div
+                    className="absolute inset-0 z-10 select-none cursor-pointer"
+                    onContextMenu={(e) => e.preventDefault()}
+                    onDragStart={(e) => e.preventDefault()}
+                  />
+
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={active.wallpaper.id}
-                      initial={{ opacity: 0, scale: 1.25 }}
-                      animate={{ opacity: 1, scale: 1.15 }}
+                      initial={{ opacity: 0, scale: 1.15 }}
+                      animate={{ opacity: 1, scale: 1.05 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.6 }}
                       className="absolute inset-0"
                     >
                       <Image
-                        src={active.wallpaper.imageUrl}
+                        src={active.wallpaper.phoneImageUrl || active.wallpaper.imageUrl}
                         alt="Mobile Wallpaper Crop"
                         fill
                         sizes="200px"
-                        className="object-cover"
+                        className="object-cover protected-image select-none pointer-events-none"
+                        draggable={false}
                       />
                     </motion.div>
                   </AnimatePresence>

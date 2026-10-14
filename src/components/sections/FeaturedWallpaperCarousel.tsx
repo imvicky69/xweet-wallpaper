@@ -100,15 +100,23 @@ export const FeaturedWallpaperCarousel: React.FC<FeaturedWallpaperCarouselProps>
                 <SwiperSlide key={wp.id}>
                   <div className="group border border-border bg-background p-3 transition-all duration-200 hover:border-primary">
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/30">
+                      {/* Protective Layer */}
+                      <div
+                        className="absolute inset-0 z-10 select-none cursor-pointer"
+                        onContextMenu={(e) => e.preventDefault()}
+                        onDragStart={(e) => e.preventDefault()}
+                      />
+
                       <Image
-                        src={wp.imageUrl}
+                        src={wp.thumbnailUrl || wp.imageUrl}
                         alt={wp.title}
                         fill
                         sizes="(max-width: 1024px) 100vw, 70vw"
-                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
+                        className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] protected-image select-none pointer-events-none"
+                        draggable={false}
                       />
 
-                      <div className="absolute top-3 left-3 flex items-center gap-2">
+                      <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
                         <span className="bg-primary text-primary-foreground font-mono text-[10px] tracking-widest px-2 py-0.5 uppercase border border-primary">
                           {wp.category}
                         </span>
@@ -145,7 +153,7 @@ export const FeaturedWallpaperCarousel: React.FC<FeaturedWallpaperCarouselProps>
                           href={wp.imageUrl}
                           target="_blank"
                           rel="noreferrer"
-                          download
+                          download={`${wp.slug}-desktop-4k.png`}
                         >
                           <IconDownload size={14} />
                           <span className="hidden sm:inline">Download</span>

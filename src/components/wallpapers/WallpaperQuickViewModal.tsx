@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconX,
@@ -11,6 +12,12 @@ import {
   IconColorSwatch,
   IconCheck,
   IconExternalLink,
+  IconDeviceMobile,
+  IconDeviceDesktop,
+  IconShieldCheck,
+  IconShare,
+  IconSparkles,
+  IconLock,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
 import { Button } from "@/components/ui/Button";
@@ -24,8 +31,11 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
   wallpaper,
   onClose,
 }) => {
-  const [downloadSuccess, setDownloadSuccess] = React.useState(false);
-  const [bookmarked, setBookmarked] = React.useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"desktop" | "phone">("desktop");
+  const [shareFeedback, setShareFeedback] = useState(false);
+  const [protectionNotice, setProtectionNotice] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -34,6 +44,14 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
     if (wallpaper) {
       document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleKeyDown);
+
+      // On phone / mobile devices, default to Phone view instead of desktop!
+      const isMobile =
+        window.innerWidth < 768 ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      const hasPhone = wallpaper.hasPhoneCrop || Boolean(wallpaper.phoneImageUrl);
+      setPreviewMode(isMobile && hasPhone ? "phone" : "desktop");
     }
     return () => {
       document.body.style.overflow = "";
@@ -43,177 +61,439 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
 
   if (!wallpaper) return null;
 
-  const handleDownload = () => {
-    setDownloadSuccess(true);
+  const author = wallpaper.author || {
+    id: "xweet",
+    username: "xweet",
+    displayName: "Vicky",
+    photoURL: "/logo.png",
+    isVerified: true,
+  };
+  const isXweetAuthor = author.username?.toLowerCase() === "xweet" || author.isVerified;
+  const hasPhoneCrop = wallpaper.hasPhoneCrop || Boolean(wallpaper.phoneImageUrl);
+
+  const downloadFile = (url: string, filename: string) => {
     const link = document.createElement("a");
-    link.href = wallpaper.imageUrl;
-    link.download = `${wallpaper.slug}.jpg`;
+    link.href = url;
+    link.download = filename;
     link.target = "_blank";
     link.rel = "noreferrer";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
 
-    setTimeout(() => setDownloadSuccess(false), 2500);
+  const handleDownloadDesktop = () => {
+    setDownloadSuccess("desktop");
+    downloadFile(wallpaper.imageUrl, `${wallpaper.slug}-desktop-4k.png`);
+    setTimeout(() => setDownloadSuccess(null), 2500);
+  };
+
+  const handleDownloadPhone = () => {
+    setDownloadSuccess("phone");
+    const phoneUrl = wallpaper.phoneImageUrl || `/wallpapers/phone/${wallpaper.slug}.png`;
+    downloadFile(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
+    setTimeout(() => setDownloadSuccess(null), 2500);
+  };
+
+  const handleDownloadBoth = () => {
+    setDownloadSuccess("both");
+    downloadFile(wallpaper.imageUrl, `${wallpaper.slug}-desktop-4k.png`);
+    setTimeout(() => {
+      const phoneUrl = wallpaper.phoneImageUrl || `/wallpapers/phone/${wallpaper.slug}.png`;
+      downloadFile(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
+    }, 450);
+    setTimeout(() => setDownloadSuccess(null), 2500);
+  };
+
+  const handleShare = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const shareUrl = `${window.location.origin}/wallpaper/${wallpaper.slug}`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      navigator
+        .share({
+          title: `${wallpaper.title} Wallpaper — Xweet`,
+          text: wallpaper.description,
+          url: shareUrl,
+        })
+        .catch(() => {});
+    } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl);
+      setShareFeedback(true);
+      setTimeout(() => setShareFeedback(false), 2200);
+    }
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-10">
-        {/* Backdrop (Restrained, no blur overkill) */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 lg:p-8 overscroll-contain">
+        {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
           onClick={onClose}
-          className="absolute inset-0 bg-foreground/40 backdrop-blur-[2px]"
+          className="absolute inset-0 bg-foreground/50 backdrop-blur-[3px]"
         />
 
-        {/* Modal Window (Square geometry, sharp borders, warm surface) */}
+        {/* Modal Window: Responsive scrolling on phones, two-column split on desktop */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: 10 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="relative z-10 w-full max-w-5xl border border-border bg-surface shadow-2xl flex flex-col lg:flex-row max-h-[92vh] overflow-hidden"
+          className="relative z-10 w-full max-w-5xl border border-border bg-surface shadow-2xl flex flex-col lg:flex-row max-h-[94dvh] overflow-y-auto lg:overflow-hidden overscroll-contain"
         >
-          {/* Close button */}
+          {/* Top Actions on Mobile (Sticky Close & Share) */}
+          <div className="sticky top-0 right-0 z-30 flex items-center justify-end gap-2 p-2 bg-surface/90 backdrop-blur-xs border-b border-border/60 lg:hidden">
+            <button
+              onClick={handleShare}
+              aria-label="Share wallpaper"
+              className="flex h-9 w-9 items-center justify-center border border-border bg-background text-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer"
+            >
+              {shareFeedback ? <IconCheck size={16} className="text-emerald-600" /> : <IconShare size={16} />}
+            </button>
+            <button
+              onClick={onClose}
+              aria-label="Close modal"
+              className="flex h-9 w-9 items-center justify-center border border-border bg-background text-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer"
+            >
+              <IconX size={18} />
+            </button>
+          </div>
+
+          {/* Desktop Close Button */}
           <button
             onClick={onClose}
             aria-label="Close modal"
-            className="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center border border-border bg-surface text-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer"
+            className="hidden lg:flex absolute top-4 right-4 z-30 h-10 w-10 items-center justify-center border border-border bg-surface text-foreground hover:border-primary hover:text-primary transition-colors cursor-pointer"
           >
             <IconX size={20} />
           </button>
 
           {/* Left: Artwork Viewport */}
-          <div className="relative flex-1 bg-black/5 min-h-[340px] sm:min-h-[460px] lg:min-h-[580px] overflow-hidden flex items-center justify-center p-4 lg:p-8">
-            <div className="relative w-full h-full max-h-[520px] overflow-hidden border border-border/80 shadow-sm">
-              <Image
-                src={wallpaper.imageUrl}
-                alt={wallpaper.title}
-                fill
-                sizes="(max-width: 1024px) 100vw, 60vw"
-                className="object-contain"
-                priority
-              />
+          {/* Left: Artwork Viewport */}
+          <div className="relative flex-1 bg-black/5 min-h-[260px] sm:min-h-[340px] lg:min-h-[560px] overflow-hidden flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 shrink-0">
+            
+            {/* Aspect Preview Switcher */}
+            {hasPhoneCrop && (
+              <div className="absolute top-3 left-3 z-30 flex items-center gap-1 border border-border bg-surface/95 p-1 font-mono text-[10px] sm:text-[11px] backdrop-blur-xs select-none">
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode("desktop")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 transition-colors cursor-pointer select-none whitespace-nowrap ${
+                    previewMode === "desktop"
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <IconDeviceDesktop size={13} />
+                  <span>Desktop 16:9</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode("phone")}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 transition-colors cursor-pointer select-none whitespace-nowrap ${
+                    previewMode === "phone"
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <IconDeviceMobile size={13} />
+                  <span>Phone 9:19.5</span>
+                </button>
+              </div>
+            )}
+
+            {/* Visual Container */}
+            <div className="w-full flex items-center justify-center py-6 sm:py-8 lg:py-0">
+              {previewMode === "desktop" ? (
+                /* Desktop 16:9 Frame: Has true 16:9 aspect ratio so it NEVER collapses on phones! */
+                <div className="relative w-full aspect-[16/9] max-w-xl max-h-[360px] sm:max-h-[440px] lg:max-h-[500px] border border-border/80 shadow-md overflow-hidden bg-black/30">
+                  {/* PROTECTIVE EXTRA LAYER ON IMAGE: Prevents direct right-click or drag */}
+                  <div
+                    className="absolute inset-0 z-20 cursor-default select-none"
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setProtectionNotice(true);
+                      setTimeout(() => setProtectionNotice(false), 2400);
+                    }}
+                    onDragStart={(e) => e.preventDefault()}
+                    style={{
+                      WebkitTouchCallout: "none",
+                      WebkitUserSelect: "none",
+                      userSelect: "none",
+                    }}
+                  />
+
+                  {/* Protection Notice Toast */}
+                  {protectionNotice && (
+                    <div className="absolute inset-x-3 bottom-4 z-30 bg-black/90 text-white text-center font-mono text-[11px] p-2 border border-white/20 shadow-lg backdrop-blur-md animate-fade-in pointer-events-none">
+                      <div className="flex items-center justify-center gap-1.5 text-primary">
+                        <IconLock size={13} />
+                        <span className="font-semibold">Master Quality Protected</span>
+                      </div>
+                      <span className="text-white/80 text-[10px] block mt-0.5">
+                        Please use official download buttons for full lossless 4K edition.
+                      </span>
+                    </div>
+                  )}
+
+                  <Image
+                    src={wallpaper.thumbnailUrl || wallpaper.imageUrl}
+                    alt={wallpaper.title}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    className="object-cover protected-image select-none pointer-events-none"
+                    draggable={false}
+                    priority
+                  />
+                </div>
+              ) : (
+                /* Phone 9:19.5 Frame: Scaled cleanly with true portrait crop */
+                <div className="relative w-36 sm:w-44 aspect-[9/19.5] rounded-[22px] border-4 border-foreground/30 shadow-2xl overflow-hidden bg-black">
+                  {/* PROTECTIVE EXTRA LAYER ON IMAGE */}
+                  <div
+                    className="absolute inset-0 z-20 cursor-default select-none"
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setProtectionNotice(true);
+                      setTimeout(() => setProtectionNotice(false), 2400);
+                    }}
+                    onDragStart={(e) => e.preventDefault()}
+                    style={{
+                      WebkitTouchCallout: "none",
+                      WebkitUserSelect: "none",
+                      userSelect: "none",
+                    }}
+                  />
+
+                  {protectionNotice && (
+                    <div className="absolute inset-x-2 bottom-3 z-30 bg-black/90 text-white text-center font-mono text-[10px] p-1.5 border border-white/20 shadow-lg backdrop-blur-md animate-fade-in pointer-events-none">
+                      <span className="font-semibold text-primary block">Protected</span>
+                      <span className="text-white/80 text-[9px]">Use buttons below</span>
+                    </div>
+                  )}
+
+                  <Image
+                    src={wallpaper.phoneImageUrl || `/wallpapers/phone/${wallpaper.slug}.png`}
+                    alt={wallpaper.title}
+                    fill
+                    sizes="220px"
+                    className="object-cover protected-image select-none pointer-events-none scale-105"
+                    draggable={false}
+                    priority
+                  />
+
+                  {/* Phone Mockup Screen Elements */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/30 pointer-events-none flex flex-col justify-between p-3 text-center">
+                    <div className="pt-2">
+                      <p className="font-mono text-[9px] uppercase tracking-wider text-white/80 font-medium">9:41</p>
+                    </div>
+                    <div className="h-1 w-10 bg-white/60 rounded-full mx-auto mb-1" />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right: Editorial Metadata & Actions */}
-          <div className="w-full lg:w-96 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-border bg-surface p-6 sm:p-8 overflow-y-auto">
-            <div className="flex flex-col gap-6">
+          <div className="w-full lg:w-96 flex flex-col justify-between border-t lg:border-t-0 lg:border-l border-border bg-surface p-4 sm:p-6 lg:p-8 shrink-0">
+            <div className="flex flex-col gap-4 sm:gap-5">
               {/* Category / Status */}
-              <div className="flex items-center gap-2">
-                <span className="bg-primary text-primary-foreground font-mono text-[10px] tracking-widest px-2 py-0.5 uppercase border border-primary">
-                  {wallpaper.category}
-                </span>
-                <span className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase border border-border px-2 py-0.5 bg-background">
-                  {wallpaper.orientation}
-                </span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="bg-primary text-primary-foreground font-mono text-[10px] tracking-widest px-2 py-0.5 uppercase border border-primary">
+                    {wallpaper.category}
+                  </span>
+                  {hasPhoneCrop && (
+                    <span className="bg-secondary text-secondary-foreground font-mono text-[10px] tracking-wider uppercase border border-border px-2 py-0.5 flex items-center gap-1 font-semibold">
+                      <IconDeviceMobile size={12} />
+                      <span>DUAL CROP</span>
+                    </span>
+                  )}
+                </div>
+
+                {/* Share Button (Desktop top icon) */}
+                <button
+                  onClick={handleShare}
+                  title="Share Wallpaper"
+                  className="hidden lg:flex items-center gap-1 text-xs font-mono text-muted-foreground hover:text-primary transition-colors cursor-pointer mr-10"
+                >
+                  {shareFeedback ? (
+                    <>
+                      <IconCheck size={14} className="text-emerald-600" />
+                      <span className="text-emerald-600 font-semibold">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <IconShare size={14} />
+                      <span>Share</span>
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* Title & Description */}
               <div>
-                <h2 className="font-sans text-2xl font-semibold tracking-tight text-foreground">
+                <h2 className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   {wallpaper.title}
                 </h2>
-                <p className="font-sans text-sm text-muted-foreground mt-2 leading-relaxed">
+                <p className="font-sans text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
                   {wallpaper.description}
                 </p>
               </div>
 
-              {/* Technical Specifications */}
-              <div className="flex flex-col gap-3 pt-3 border-t border-border font-mono text-xs text-muted-foreground">
-                <div className="flex items-center justify-between py-1 border-b border-border/50">
-                  <span className="flex items-center gap-1.5 uppercase">
-                    <IconDimensions size={14} className="text-primary" />
-                    Resolution
-                  </span>
-                  <span className="text-foreground font-medium">{wallpaper.resolution}</span>
-                </div>
-
-                <div className="flex items-center justify-between py-1 border-b border-border/50">
-                  <span className="uppercase">Aspect Ratio</span>
-                  <span className="text-foreground font-medium">{wallpaper.aspectRatio}</span>
-                </div>
-
-                <div className="flex items-center justify-between py-1 border-b border-border/50">
-                  <span className="flex items-center gap-1.5 uppercase">
-                    <IconColorSwatch size={14} className="text-primary" />
-                    Dominant Tone
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-3 w-3 border border-border shrink-0"
-                      style={{ backgroundColor: wallpaper.dominantColor }}
+              {/* Author Attribution with Verified Badge */}
+              <div className="border border-border bg-background p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="relative h-9 w-9 rounded-full overflow-hidden bg-white border border-border/80 flex items-center justify-center shrink-0">
+                    <Image
+                      src={author.photoURL || "/logo.png"}
+                      alt={author.displayName || "Vicky"}
+                      width={28}
+                      height={28}
+                      className="object-contain p-1"
                     />
-                    <span className="text-foreground font-medium">{wallpaper.dominantColor}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-mono uppercase text-muted-foreground">Curated By</span>
+                    <Link
+                      href={`/${author.username || "xweet"}`}
+                      className="font-sans text-xs font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1"
+                    >
+                      <span>{author.displayName || "Vicky"}</span>
+                      <span className="text-muted-foreground font-mono font-normal">(@{author.username || "xweet"})</span>
+                      {isXweetAuthor && <IconShieldCheck size={13} className="text-primary" />}
+                    </Link>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between py-1">
-                  <span className="uppercase">Collection</span>
-                  <span className="text-foreground font-medium">{wallpaper.collection}</span>
-                </div>
+                <Link
+                  href={`/${author.username || "xweet"}`}
+                  className="font-mono text-[11px] text-primary hover:underline uppercase"
+                >
+                  Portfolio →
+                </Link>
               </div>
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1.5">
-                {wallpaper.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="border border-border bg-background px-2 py-0.5 font-mono text-[10px] text-muted-foreground uppercase"
-                  >
-                    #{tag}
+              {/* Technical Specifications */}
+              <div className="flex flex-col gap-2 pt-1 border-t border-border font-mono text-xs text-muted-foreground">
+                <div className="flex items-center justify-between py-1 border-b border-border/50">
+                  <span className="flex items-center gap-1.5 uppercase text-[11px]">
+                    <IconDimensions size={13} className="text-primary" />
+                    Master Resolution
                   </span>
-                ))}
+                  <span className="text-foreground font-medium text-[11px]">{wallpaper.resolution}</span>
+                </div>
+
+                {hasPhoneCrop && (
+                  <div className="flex items-center justify-between py-1 border-b border-border/50">
+                    <span className="flex items-center gap-1.5 uppercase text-[11px]">
+                      <IconDeviceMobile size={13} className="text-primary" />
+                      Phone Edition
+                    </span>
+                    <span className="text-foreground font-medium text-[11px]">1170 × 2532 (9:19.5)</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between py-1 border-b border-border/50">
+                  <span className="flex items-center gap-1.5 uppercase text-[11px]">
+                    <IconColorSwatch size={13} className="text-primary" />
+                    Color Palette
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="h-3 w-3 rounded-none border border-border"
+                      style={{ backgroundColor: wallpaper.dominantColor }}
+                      title={wallpaper.dominantColor}
+                    />
+                    <span className="text-foreground font-medium text-[11px]">{wallpaper.dominantColor}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Bottom Actions */}
-            <div className="flex flex-col gap-3 pt-6 mt-6 border-t border-border">
+            {/* Action Buttons: Responsive for phones */}
+            <div className="mt-5 pt-3 border-t border-border flex flex-col gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={handleDownloadDesktop}
+                  className="text-xs h-10 w-full"
+                >
+                  {downloadSuccess === "desktop" ? (
+                    <>
+                      <IconCheck size={15} />
+                      <span>Downloaded</span>
+                    </>
+                  ) : (
+                    <>
+                      <IconDownload size={15} />
+                      <span>Get Desktop (4K)</span>
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={handleDownloadPhone}
+                  className="text-xs h-10 w-full"
+                >
+                  {downloadSuccess === "phone" ? (
+                    <>
+                      <IconCheck size={15} />
+                      <span>Downloaded</span>
+                    </>
+                  ) : (
+                    <>
+                      <IconDeviceMobile size={15} />
+                      <span>Get Phone (Cropped)</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+
               <Button
-                variant="primary"
-                size="lg"
-                onClick={handleDownload}
-                className="w-full"
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadBoth}
+                className="w-full text-xs h-9"
               >
-                {downloadSuccess ? (
+                {downloadSuccess === "both" ? (
                   <>
-                    <IconCheck size={18} />
-                    <span>Download Ready</span>
+                    <IconCheck size={14} />
+                    <span>Downloaded Both Editions</span>
                   </>
                 ) : (
                   <>
-                    <IconDownload size={18} />
-                    <span>Download Full Resolution</span>
+                    <IconSparkles size={14} className="text-primary" />
+                    <span>Download Bundle (Desktop + Phone)</span>
                   </>
                 )}
               </Button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pt-1">
                 <Button
                   variant="secondary"
-                  size="md"
+                  size="sm"
                   onClick={() => setBookmarked(!bookmarked)}
-                  className="flex-1 text-xs"
+                  className="flex-1 text-xs h-8"
                 >
-                  <IconBookmark size={15} className={bookmarked ? "fill-current text-primary" : ""} />
-                  <span>{bookmarked ? "Saved to Favorites" : "Bookmark"}</span>
+                  <IconBookmark size={14} className={bookmarked ? "fill-current text-primary" : ""} />
+                  <span>{bookmarked ? "Saved" : "Save"}</span>
                 </Button>
 
                 <Button
                   variant="outline"
-                  size="md"
-                  className="flex-1 text-xs"
-                  href={wallpaper.imageUrl}
-                  target="_blank"
-                  rel="noreferrer"
+                  size="sm"
+                  className="flex-1 text-xs h-8"
+                  href={`/wallpaper/${wallpaper.slug}`}
                 >
-                  <IconExternalLink size={15} />
-                  <span>Open Raw</span>
+                  <IconExternalLink size={14} />
+                  <span>Full Page</span>
                 </Button>
               </div>
             </div>
