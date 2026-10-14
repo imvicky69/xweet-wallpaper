@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://xweet.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://wallpaper.xweet.in"),
   title: {
     default: "Xweet Wallpapers — Curated Minimal Abstracts",
     template: "%s | Xweet Wallpapers",
@@ -32,19 +32,19 @@ export const metadata: Metadata = {
     "clean desktop backgrounds",
     "editorial wallpapers",
   ],
-  authors: [{ name: "Vicky", url: "https://xweet.com/xweet" }],
+  authors: [{ name: "Vicky", url: "https://wallpaper.xweet.in/xweet" }],
   creator: "Vicky (@xweet)",
   publisher: "Xweet Wallpapers",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://xweet.com",
+    url: "https://wallpaper.xweet.in",
     siteName: "Xweet Wallpapers",
     title: "Xweet Wallpapers — Curated Minimal Abstracts",
     description: "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity 4K backgrounds.",
     images: [
       {
-        url: "/wallpapers/midnight-amber.png",
+        url: "https://cdn.xweet.in/wallpapers/midnight-amber.png",
         width: 2752,
         height: 1536,
         alt: "Xweet Wallpapers Minimal Abstracts Collection",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     title: "Xweet Wallpapers — Curated Minimal Abstracts",
     description: "Curated wallpaper discovery platform for everyday screens.",
     creator: "@xweet",
-    images: ["/wallpapers/midnight-amber.png"],
+    images: ["https://cdn.xweet.in/wallpapers/midnight-amber.png"],
   },
   robots: {
     index: true,

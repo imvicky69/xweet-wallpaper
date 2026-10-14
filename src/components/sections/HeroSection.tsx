@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
 import { Wallpaper } from "@/types/wallpaper";
+import { getCdnImageUrl } from "@/lib/wallpapers";
 
 interface HeroSlide {
   wallpaper: Wallpaper;
@@ -94,7 +95,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             className="absolute inset-0"
           >
             <Image
-              src={active.wallpaper.thumbnailUrl || active.wallpaper.imageUrl}
+              src={getCdnImageUrl(active.wallpaper.thumbnailUrl || active.wallpaper.imageUrl)}
               alt=""
               fill
               sizes="100vw"
@@ -206,7 +207,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       className="absolute inset-0"
                     >
                       <Image
-                        src={active.wallpaper.imageUrl}
+                        src={getCdnImageUrl(active.wallpaper.imageUrl)}
                         alt={active.wallpaper.title}
                         fill
                         sizes="(max-width: 1024px) 100vw, 50vw"
@@ -254,7 +255,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         size="sm"
                         variant="primary"
                         className="text-xs h-8 px-3"
-                        href={active.wallpaper.imageUrl}
+                        href={getCdnImageUrl(active.wallpaper.imageUrl)}
                         target="_blank"
                         rel="noreferrer"
                         download={`${active.wallpaper.slug}-desktop-4k.png`}
@@ -296,7 +297,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       className="absolute inset-0"
                     >
                       <Image
-                        src={active.wallpaper.phoneImageUrl || active.wallpaper.imageUrl}
+                        src={getCdnImageUrl(active.wallpaper.phoneImageUrl || active.wallpaper.imageUrl)}
                         alt="Mobile Wallpaper Crop"
                         fill
                         sizes="200px"

@@ -7,6 +7,18 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "cdn.xweet.in",
+      },
+      {
+        protocol: "https",
+        hostname: "xweet.in",
+      },
+      {
+        protocol: "https",
+        hostname: "wallpaper.xweet.in",
+      },
+      {
+        protocol: "https",
         hostname: "cdn.xweet.com",
       },
       {

@@ -13,6 +13,7 @@ import {
   IconSparkles,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
+import { getCdnImageUrl } from "@/lib/wallpapers";
 import { Button } from "@/components/ui/Button";
 
 // Import Swiper styles
@@ -108,7 +109,7 @@ export const FeaturedWallpaperCarousel: React.FC<FeaturedWallpaperCarouselProps>
                       />
 
                       <Image
-                        src={wp.thumbnailUrl || wp.imageUrl}
+                        src={getCdnImageUrl(wp.thumbnailUrl || wp.imageUrl)}
                         alt={wp.title}
                         fill
                         sizes="(max-width: 1024px) 100vw, 70vw"
@@ -150,7 +151,7 @@ export const FeaturedWallpaperCarousel: React.FC<FeaturedWallpaperCarouselProps>
                           size="sm"
                           variant="primary"
                           className="text-xs"
-                          href={wp.imageUrl}
+                          href={getCdnImageUrl(wp.imageUrl)}
                           target="_blank"
                           rel="noreferrer"
                           download={`${wp.slug}-desktop-4k.png`}
@@ -169,7 +170,7 @@ export const FeaturedWallpaperCarousel: React.FC<FeaturedWallpaperCarouselProps>
             <div className="border border-border bg-background p-3">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/30">
                 <Image
-                  src={featuredList[0].imageUrl}
+                  src={getCdnImageUrl(featuredList[0].imageUrl)}
                   alt={featuredList[0].title}
                   fill
                   sizes="100vw"

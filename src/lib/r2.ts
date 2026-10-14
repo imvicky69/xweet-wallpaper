@@ -4,7 +4,7 @@ const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID || "";
 const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID || "";
 const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY || "";
 export const bucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME || "xweet-wallpapers";
-export const publicCdnDomain = process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN || "https://cdn.xweet.com";
+export const publicCdnDomain = process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN || "https://cdn.xweet.in";
 
 export const r2Client = new S3Client({
   region: "auto",

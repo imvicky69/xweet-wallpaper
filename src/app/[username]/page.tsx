@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       type: "profile",
-      url: `https://xweet.com/${isCurator ? "xweet" : username}`,
+      url: `https://wallpaper.xweet.in/${isCurator ? "xweet" : username}`,
       siteName: "Xweet Wallpapers",
       images: [
         {

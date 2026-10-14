@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { WALLPAPERS } from "@/lib/wallpapers";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://xweet.com";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://wallpaper.xweet.in";
 
   // Core pages
   const staticRoutes: MetadataRoute.Sitemap = [

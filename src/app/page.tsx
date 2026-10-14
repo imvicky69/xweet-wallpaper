@@ -139,11 +139,11 @@ export default function Home() {
             "@context": "https://schema.org",
             "@type": "WebSite",
             name: "Xweet Wallpapers",
-            url: "https://xweet.com",
+            url: "https://wallpaper.xweet.in",
             description: "Curated wallpaper discovery platform for everyday screens.",
             potentialAction: {
               "@type": "SearchAction",
-              target: "https://xweet.com/?search={search_term_string}",
+              target: "https://wallpaper.xweet.in/?search={search_term_string}",
               "query-input": "required name=search_term_string",
             },
           }),

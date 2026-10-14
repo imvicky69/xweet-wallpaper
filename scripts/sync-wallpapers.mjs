@@ -138,6 +138,11 @@ async function syncWallpapers() {
       }
     }
 
+    const CDN = process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN || "https://cdn.xweet.in";
+    const desktopUrl = `${CDN}/wallpapers/${slug}.png`;
+    const phoneUrl = `${CDN}/wallpapers/phone/${slug}.png`;
+    const thumbUrl = `${CDN}/wallpapers/thumbnails/${slug}.webp`;
+
     // Normalize author to Vicky (@xweet) if curator or use existing
     const author = {
       id: "xweet",
@@ -154,10 +159,10 @@ async function syncWallpapers() {
       slug,
       title,
       description: data.description || `Curated minimal abstract wallpaper for focused screens.`,
-      imageUrl: localDesktopRel,
-      thumbnailUrl: localThumbRel,
+      imageUrl: desktopUrl,
+      thumbnailUrl: thumbUrl,
       hasPhoneCrop: true,
-      phoneImageUrl: localPhoneRel,
+      phoneImageUrl: phoneUrl,
       resolution: data.resolution || "2752 × 1536",
       aspectRatio: data.aspectRatio || "16:9",
       orientation: data.orientation || "desktop",
@@ -208,7 +213,7 @@ export const COLLECTIONS: Collection[] = [
     slug: "minimal-abstracts",
     title: "Minimal Abstracts",
     description: "AI-generated and curated by Xweet. Quiet forms, chromatic diffusions, and organic textures.",
-    coverImageUrl: "/wallpapers/midnight-amber.png",
+    coverImageUrl: "https://cdn.xweet.in/wallpapers/midnight-amber.png",
     count: ${wallpapers.length},
     tags: ["Minimal", "Abstract", "4K", "Tactile"],
   },
@@ -217,6 +222,18 @@ export const COLLECTIONS: Collection[] = [
 export const CATEGORIES = ${JSON.stringify(Array.from(uniqueCategories), null, 2)};
 
 export const WALLPAPERS: Wallpaper[] = ${JSON.stringify(wallpapers, null, 2)};
+
+/**
+ * Ensures wallpaper, phone crop, or thumbnail URLs point to the public Cloudflare R2 CDN.
+ * Handles legacy relative paths gracefully.
+ */
+export function getCdnImageUrl(url?: string | null): string {
+  if (!url) return "";
+  if (url.startsWith("/wallpapers/")) {
+    return \`https://cdn.xweet.in\${url}\`;
+  }
+  return url;
+}
 `;
 
   fs.writeFileSync(path.resolve(process.cwd(), "src/lib/wallpapers.ts"), wallpapersTsContent, "utf-8");

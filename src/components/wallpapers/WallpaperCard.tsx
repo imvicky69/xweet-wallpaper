@@ -13,6 +13,7 @@ import {
   IconShare,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
+import { getCdnImageUrl } from "@/lib/wallpapers";
 
 interface WallpaperCardProps {
   wallpaper: Wallpaper;
@@ -37,7 +38,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
     } else {
       // Direct high quality desktop download trigger
       const link = document.createElement("a");
-      link.href = wallpaper.imageUrl;
+      link.href = getCdnImageUrl(wallpaper.imageUrl);
       link.download = `${wallpaper.slug}-desktop-4k.png`;
       link.target = "_blank";
       link.rel = "noreferrer";
@@ -106,7 +107,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
         />
 
         <Image
-          src={wallpaper.thumbnailUrl || wallpaper.imageUrl}
+          src={getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl)}
           alt={wallpaper.title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

@@ -20,6 +20,7 @@ import {
   IconLock,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
+import { getCdnImageUrl } from "@/lib/wallpapers";
 import { Button } from "@/components/ui/Button";
 
 interface WallpaperQuickViewModalProps {
@@ -84,22 +85,24 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
 
   const handleDownloadDesktop = () => {
     setDownloadSuccess("desktop");
-    downloadFile(wallpaper.imageUrl, `${wallpaper.slug}-desktop-4k.png`);
+    const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
+    downloadFile(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadPhone = () => {
     setDownloadSuccess("phone");
-    const phoneUrl = wallpaper.phoneImageUrl || `/wallpapers/phone/${wallpaper.slug}.png`;
+    const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
     downloadFile(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadBoth = () => {
     setDownloadSuccess("both");
-    downloadFile(wallpaper.imageUrl, `${wallpaper.slug}-desktop-4k.png`);
+    const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
+    downloadFile(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
     setTimeout(() => {
-      const phoneUrl = wallpaper.phoneImageUrl || `/wallpapers/phone/${wallpaper.slug}.png`;
+      const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
       downloadFile(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
     }, 450);
     setTimeout(() => setDownloadSuccess(null), 2500);
@@ -240,7 +243,7 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                   )}
 
                   <Image
-                    src={wallpaper.thumbnailUrl || wallpaper.imageUrl}
+                    src={getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl)}
                     alt={wallpaper.title}
                     fill
                     sizes="(max-width: 1024px) 100vw, 60vw"
@@ -276,7 +279,7 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                   )}
 
                   <Image
-                    src={wallpaper.phoneImageUrl || `/wallpapers/phone/${wallpaper.slug}.png`}
+                    src={getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`)}
                     alt={wallpaper.title}
                     fill
                     sizes="220px"

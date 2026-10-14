@@ -20,7 +20,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { WallpaperCard } from "@/components/wallpapers/WallpaperCard";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
-import { WALLPAPERS } from "@/lib/wallpapers";
+import { WALLPAPERS, getCdnImageUrl } from "@/lib/wallpapers";
 import { Wallpaper } from "@/types/wallpaper";
 
 interface WallpaperDetailClientProps {
@@ -70,22 +70,24 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
 
   const handleDownloadDesktop = () => {
     setDownloadSuccess("desktop");
-    downloadFile(wallpaper.imageUrl, "desktop-4k");
+    const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
+    downloadFile(desktopUrl, "desktop-4k");
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadPhone = () => {
     setDownloadSuccess("phone");
-    const phoneUrl = wallpaper.phoneImageUrl || `/wallpapers/phone/${wallpaper.slug}.png`;
+    const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
     downloadFile(phoneUrl, "phone-1170x2532");
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadBoth = () => {
     setDownloadSuccess("both");
-    downloadFile(wallpaper.imageUrl, "desktop-4k");
+    const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
+    downloadFile(desktopUrl, "desktop-4k");
     setTimeout(() => {
-      const phoneUrl = wallpaper.phoneImageUrl || `/wallpapers/phone/${wallpaper.slug}.png`;
+      const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
       downloadFile(phoneUrl, "phone-1170x2532");
     }, 450);
     setTimeout(() => setDownloadSuccess(null), 2500);
@@ -109,24 +111,24 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
     name: `${wallpaper.title} Wallpaper`,
     caption: wallpaper.description,
     description: wallpaper.description,
-    contentUrl: wallpaper.imageUrl,
-    thumbnailUrl: wallpaper.imageUrl,
+    contentUrl: getCdnImageUrl(wallpaper.imageUrl),
+    thumbnailUrl: getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl),
     keywords: wallpaper.tags.join(", "),
     creator: {
       "@type": "Organization",
       name: "Xweet",
-      url: "https://xweet.com",
+      url: "https://wallpaper.xweet.in",
     },
     publisher: {
       "@type": "Organization",
       name: "Xweet Wallpapers",
       logo: {
         "@type": "ImageObject",
-        url: "https://xweet.com/logo.png",
+        url: "https://wallpaper.xweet.in/logo.png",
       },
     },
-    license: "https://xweet.com/terms",
-    acquireLicensePage: "https://xweet.com",
+    license: "https://wallpaper.xweet.in/terms",
+    acquireLicensePage: "https://wallpaper.xweet.in",
     isPartOf: {
       "@type": "Collection",
       name: wallpaper.collection || "Minimal Abstracts",
@@ -267,7 +269,7 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                 {previewMode === "desktop" ? (
                   <div className="relative w-full aspect-[16/9] shadow-2xl">
                     <Image
-                      src={wallpaper.imageUrl}
+                      src={getCdnImageUrl(wallpaper.imageUrl)}
                       alt={`${wallpaper.title} 4K Desktop Wallpaper`}
                       fill
                       priority
@@ -281,7 +283,7 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                   <div className="py-6 sm:py-8">
                     <div className="relative w-[220px] sm:w-[300px] aspect-[9/19.5] rounded-[36px] sm:rounded-[42px] border-[5px] sm:border-[6px] border-border/80 overflow-hidden shadow-2xl bg-black">
                       <Image
-                        src={wallpaper.phoneImageUrl || `/wallpapers/phone/${wallpaper.slug}.png`}
+                        src={getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`)}
                         alt={`${wallpaper.title} Mobile Wallpaper Crop`}
                         fill
                         priority

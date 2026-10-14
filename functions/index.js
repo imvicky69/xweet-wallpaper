@@ -17,7 +17,7 @@ const r2Client = new S3Client({
 });
 
 const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || "xweet";
-const PUBLIC_CDN = (process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN || "https://cdn.xweet.com").replace(/\/$/, "");
+const PUBLIC_CDN = (process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN || "https://cdn.xweet.in").replace(/\/$/, "");
 
 /**
  * Helper to upload buffer to Cloudflare R2

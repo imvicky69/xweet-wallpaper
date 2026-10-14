@@ -43,14 +43,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       "minimal wallpaper",
       "aesthetic background",
     ],
-    authors: [{ name: "Xweet", url: "https://xweet.com/xweet" }],
+    authors: [{ name: "Xweet", url: "https://wallpaper.xweet.in/xweet" }],
     creator: "Xweet",
     publisher: "Xweet Wallpapers",
     openGraph: {
       title,
       description,
       type: "website",
-      url: `https://xweet.com/wallpaper/${wallpaper.slug}`,
+      url: `https://wallpaper.xweet.in/wallpaper/${wallpaper.slug}`,
       siteName: "Xweet Wallpapers",
       images: [
         {
