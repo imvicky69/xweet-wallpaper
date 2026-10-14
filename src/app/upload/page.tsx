@@ -448,12 +448,22 @@ export default function UploadPage() {
       }
 
       if (!res.ok) {
-        const errorDetail =
-          data?.error ||
-          data?.message ||
-          (responseText && responseText.length < 300
-            ? responseText
-            : `Server returned error (${res.status}: ${res.statusText || "Internal Server Error"})`);
+        let errorDetail = data?.message || data?.error;
+        if (!errorDetail) {
+          if (responseText) {
+            const titleMatch =
+              responseText.match(/<title>([^<]+)<\/title>/i) ||
+              responseText.match(/<h[12]>([^<]+)<\/h[12]>/i);
+            if (titleMatch) {
+              errorDetail = `Server Gateway: ${titleMatch[1].trim()}`;
+            } else if (responseText.length < 300) {
+              errorDetail = responseText.trim();
+            }
+          }
+        }
+        if (!errorDetail) {
+          errorDetail = `Server returned error (${res.status}: ${res.statusText || "Internal Server Error"})`;
+        }
         throw new Error(errorDetail);
       }
 

@@ -2,7 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminAuth, adminDb, hasAdminCredentials } from "@/lib/firebase/admin";
 import { uploadToR2 } from "@/lib/r2";
 import { Wallpaper, AuthorRef, AspectRatio } from "@/types/wallpaper";
-import sharp from "sharp";
+// Lazy/safe sharp loader to avoid crashing in serverless runtimes where native linux binaries are missing
+async function getSharpInstance(buffer: Buffer) {
+  try {
+    const mod = await import("sharp");
+    const sharpFn = (mod as any).default || mod;
+    return sharpFn(buffer);
+  } catch (err: any) {
+    console.warn("Sharp native module unavailable or failed in runtime:", err?.message);
+    return null;
+  }
+}
 
 export const maxDuration = 60;
 
@@ -160,10 +170,13 @@ export async function POST(req: NextRequest) {
       let naturalWidth = 1170;
       let naturalHeight = 2532;
       try {
-        const meta = await sharp(mobileBuffer).metadata();
-        if (meta.width && meta.height) {
-          naturalWidth = meta.width;
-          naturalHeight = meta.height;
+        const instance = await getSharpInstance(mobileBuffer);
+        if (instance) {
+          const meta = await instance.metadata();
+          if (meta.width && meta.height) {
+            naturalWidth = meta.width;
+            naturalHeight = meta.height;
+          }
         }
       } catch (metaErr) {
         console.warn("Could not read mobile image metadata with sharp:", metaErr);
@@ -173,12 +186,15 @@ export async function POST(req: NextRequest) {
       const aspectRatio: AspectRatio = "9:19.5";
 
       // Fast, lightweight WebP thumbnail (effort: 1 prevents Vercel CPU timeout)
-      let thumbnailBuffer: Buffer;
+      let thumbnailBuffer: Buffer = mobileBuffer;
       try {
-        thumbnailBuffer = await sharp(mobileBuffer)
-          .resize({ width: 800, withoutEnlargement: true })
-          .webp({ quality: 88, effort: 1 })
-          .toBuffer();
+        const instance = await getSharpInstance(mobileBuffer);
+        if (instance) {
+          thumbnailBuffer = await instance
+            .resize({ width: 800, withoutEnlargement: true })
+            .webp({ quality: 88, effort: 1 })
+            .toBuffer();
+        }
       } catch (thumbErr) {
         console.warn("Thumbnail generation failed, falling back to original buffer:", thumbErr);
         thumbnailBuffer = mobileBuffer;
@@ -263,10 +279,13 @@ export async function POST(req: NextRequest) {
       let naturalWidth = 3840;
       let naturalHeight = 2160;
       try {
-        const meta = await sharp(desktopBuffer).metadata();
-        if (meta.width && meta.height) {
-          naturalWidth = meta.width;
-          naturalHeight = meta.height;
+        const instance = await getSharpInstance(desktopBuffer);
+        if (instance) {
+          const meta = await instance.metadata();
+          if (meta.width && meta.height) {
+            naturalWidth = meta.width;
+            naturalHeight = meta.height;
+          }
         }
       } catch (metaErr) {
         console.warn("Could not read desktop metadata with sharp:", metaErr);
@@ -275,12 +294,15 @@ export async function POST(req: NextRequest) {
       const customRes = formData.get("resolution")?.toString() || `${naturalWidth} × ${naturalHeight}`;
 
       // Fast, lightweight 1200px Retina WebP thumbnail (effort: 1 takes <50ms)
-      let thumbnailBuffer: Buffer;
+      let thumbnailBuffer: Buffer = desktopBuffer;
       try {
-        thumbnailBuffer = await sharp(desktopBuffer)
-          .resize({ width: 1200, withoutEnlargement: true })
-          .webp({ quality: 88, effort: 1 })
-          .toBuffer();
+        const instance = await getSharpInstance(desktopBuffer);
+        if (instance) {
+          thumbnailBuffer = await instance
+            .resize({ width: 1200, withoutEnlargement: true })
+            .webp({ quality: 88, effort: 1 })
+            .toBuffer();
+        }
       } catch (thumbErr) {
         console.warn("Thumbnail generation failed, falling back to desktop buffer:", thumbErr);
         thumbnailBuffer = desktopBuffer;
@@ -295,8 +317,8 @@ export async function POST(req: NextRequest) {
 
       let phoneCdnUrl: string | undefined = undefined;
       let phoneKey: string | undefined = undefined;
-      let phoneBuffer: Buffer | undefined = undefined;
-      let phoneExt = "png";
+      let phoneBuffer: Buffer = desktopBuffer;
+      let phoneExt = desktopExt || "png";
 
       if (formatMode === "dual") {
         if (phoneFile) {
@@ -305,44 +327,50 @@ export async function POST(req: NextRequest) {
         } else {
           // Extract 9:19.5 phone crop using sharp with fast compression
           try {
-            const targetAspect = 9 / 19.5;
-            let extractLeft = 0;
-            let extractTop = 0;
-            let extractWidth = naturalWidth;
-            let extractHeight = naturalHeight;
+            const instance = await getSharpInstance(desktopBuffer);
+            if (instance) {
+              const targetAspect = 9 / 19.5;
+              let extractLeft = 0;
+              let extractTop = 0;
+              let extractWidth = naturalWidth;
+              let extractHeight = naturalHeight;
 
-            if (naturalWidth / naturalHeight >= targetAspect) {
-              extractHeight = naturalHeight;
-              extractWidth = Math.min(naturalWidth, Math.round(naturalHeight * targetAspect));
-              const maxOffset = naturalWidth - extractWidth;
-              const pct = Math.max(0, Math.min(100, isNaN(cropPosition) ? 50 : cropPosition));
-              extractLeft = Math.round((pct / 100) * maxOffset);
-              extractTop = 0;
+              if (naturalWidth / naturalHeight >= targetAspect) {
+                extractHeight = naturalHeight;
+                extractWidth = Math.min(naturalWidth, Math.round(naturalHeight * targetAspect));
+                const maxOffset = naturalWidth - extractWidth;
+                const pct = Math.max(0, Math.min(100, isNaN(cropPosition) ? 50 : cropPosition));
+                extractLeft = Math.round((pct / 100) * maxOffset);
+                extractTop = 0;
+              } else {
+                extractWidth = naturalWidth;
+                extractHeight = Math.min(naturalHeight, Math.round(naturalWidth / targetAspect));
+                const maxOffset = naturalHeight - extractHeight;
+                const pct = Math.max(0, Math.min(100, isNaN(cropPosition) ? 50 : cropPosition));
+                extractTop = Math.round((pct / 100) * maxOffset);
+                extractLeft = 0;
+              }
+
+              phoneBuffer = await instance
+                .extract({
+                  left: extractLeft,
+                  top: extractTop,
+                  width: extractWidth,
+                  height: extractHeight,
+                })
+                .resize({
+                  width: 1170,
+                  height: 2532,
+                  fit: "cover",
+                })
+                .png({ compressionLevel: 4 }) // Level 4 is 20x faster than level 7, prevents server timeout
+                .toBuffer();
+
+              phoneExt = "png";
             } else {
-              extractWidth = naturalWidth;
-              extractHeight = Math.min(naturalHeight, Math.round(naturalWidth / targetAspect));
-              const maxOffset = naturalHeight - extractHeight;
-              const pct = Math.max(0, Math.min(100, isNaN(cropPosition) ? 50 : cropPosition));
-              extractTop = Math.round((pct / 100) * maxOffset);
-              extractLeft = 0;
+              phoneBuffer = desktopBuffer;
+              phoneExt = desktopExt;
             }
-
-            phoneBuffer = await sharp(desktopBuffer)
-              .extract({
-                left: extractLeft,
-                top: extractTop,
-                width: extractWidth,
-                height: extractHeight,
-              })
-              .resize({
-                width: 1170,
-                height: 2532,
-                fit: "cover",
-              })
-              .png({ compressionLevel: 4 }) // Level 4 is 20x faster than level 7, prevents server timeout
-              .toBuffer();
-
-            phoneExt = "png";
           } catch (cropErr) {
             console.warn("Direct phone crop failed, falling back to desktop buffer:", cropErr);
             phoneBuffer = desktopBuffer;
