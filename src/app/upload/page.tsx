@@ -81,6 +81,31 @@ export default function UploadPage() {
   const [tagsInput, setTagsInput] = useState("lockscreen, minimal, dark");
   const [autoSyncHashtags, setAutoSyncHashtags] = useState(true);
 
+  // Auto-detected title from uploaded image filename
+  const [detectedTitle, setDetectedTitle] = useState("");
+  const [autoApplyDetectedTitle, setAutoApplyDetectedTitle] = useState(true);
+
+  // Helper to convert filename to beautiful title case
+  const formatTitleFromFilename = (filename: string): string => {
+    const withoutExt = filename.replace(/\.[^/.]+$/, "");
+    const cleaned = withoutExt
+      .replace(/[-_](4k|5k|8k|uhd|hd|wallpaper|lockscreen|mobile|desktop|companion|phone|\d+x\d+)/gi, "")
+      .replace(/[_-]+/g, " ")
+      .trim();
+    return cleaned
+      .replace(/\s+/g, " ")
+      .split(" ")
+      .map((word, i) => {
+        if (!word) return "";
+        const lower = word.toLowerCase();
+        if (i > 0 && ["in", "the", "a", "an", "and", "or", "of", "for", "on", "at", "to", "with"].includes(lower)) {
+          return lower;
+        }
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join(" ");
+  };
+
   // Files & URLs
   const [mobileFile, setMobileFile] = useState<File | null>(null);
   const [mobilePreviewUrl, setMobilePreviewUrl] = useState<string>("");
@@ -191,6 +216,13 @@ export default function UploadPage() {
       const url = URL.createObjectURL(file);
       setMobilePreviewUrl(url);
 
+      // Auto-detect and format clean title from image filename
+      const detected = formatTitleFromFilename(file.name);
+      setDetectedTitle(detected);
+      if (!title.trim() || autoApplyDetectedTitle) {
+        setTitle(detected);
+      }
+
       const img = new window.Image();
       img.onload = () => {
         const w = img.naturalWidth || 1170;
@@ -209,6 +241,13 @@ export default function UploadPage() {
       setDesktopFile(file);
       const url = URL.createObjectURL(file);
       setDesktopPreviewUrl(url);
+
+      // Auto-detect and format clean title from image filename
+      const detected = formatTitleFromFilename(file.name);
+      setDetectedTitle(detected);
+      if (!title.trim() || autoApplyDetectedTitle) {
+        setTitle(detected);
+      }
 
       const img = new window.Image();
       img.onload = () => {
@@ -683,17 +722,66 @@ export default function UploadPage() {
 
               {/* 2. TITLE */}
               <div>
-                <label className="block font-mono text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                  Wallpaper Title <span className="text-primary">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder={formatMode === "mobile" ? "e.g. Neon Horizon Lockscreen" : "e.g. Serene Terracotta Fold"}
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="h-11 w-full rounded-none border border-border bg-surface px-4 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                    Wallpaper Title <span className="text-primary">*</span>
+                  </label>
+
+                  {detectedTitle && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTitle(detectedTitle);
+                        setAutoApplyDetectedTitle(true);
+                      }}
+                      className={`font-mono text-[11px] flex items-center gap-1 cursor-pointer transition-colors ${
+                        title === detectedTitle
+                          ? "text-primary font-medium"
+                          : "text-primary hover:underline"
+                      }`}
+                      title="Apply auto-detected title from filename"
+                    >
+                      <IconSparkles size={12} />
+                      <span>
+                        {title === detectedTitle
+                          ? "Detected from filename"
+                          : `Use filename: "${detectedTitle}"`}
+                      </span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    placeholder={formatMode === "mobile" ? "e.g. Neon Horizon Lockscreen" : "e.g. Serene Terracotta Fold"}
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      setAutoApplyDetectedTitle(false);
+                    }}
+                    className="h-11 w-full rounded-none border border-border bg-surface px-4 font-sans text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  />
+                </div>
+
+                {detectedTitle && title !== detectedTitle && (
+                  <div className="flex items-center justify-between mt-1.5 text-[11px] font-mono text-muted-foreground">
+                    <span className="truncate max-w-[280px] sm:max-w-md">
+                      Detected from file: <strong className="text-foreground font-medium">&quot;{detectedTitle}&quot;</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTitle(detectedTitle);
+                        setAutoApplyDetectedTitle(true);
+                      }}
+                      className="text-primary hover:underline cursor-pointer shrink-0 ml-2"
+                    >
+                      Restore
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* 3. EXTENSIBLE CATEGORY SELECTOR */}
