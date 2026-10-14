@@ -8,11 +8,13 @@ import { FeaturedWallpaperCarousel } from "@/components/sections/FeaturedWallpap
 import { WallpaperFilters } from "@/components/wallpapers/WallpaperFilters";
 import { WallpaperGrid } from "@/components/wallpapers/WallpaperGrid";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
-import { WALLPAPERS, CATEGORIES } from "@/lib/wallpapers";
+import { CATEGORIES } from "@/lib/wallpapers";
+import { useWallpapers } from "@/hooks/useWallpapers";
 import { Wallpaper, Orientation } from "@/types/wallpaper";
 import { IconSearch } from "@tabler/icons-react";
 
 export default function Home() {
+  const { wallpapers } = useWallpapers();
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedOrientation, setSelectedOrientation] = useState<Orientation>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -20,14 +22,14 @@ export default function Home() {
 
   // Dynamic categories including default and custom categories
   const dynamicCategories = useMemo(() => {
-    const list = Array.from(new Set(WALLPAPERS.map((w) => w.category).filter(Boolean)));
+    const list = Array.from(new Set(wallpapers.map((w) => w.category).filter(Boolean)));
     const merged = new Set(["All", ...CATEGORIES.filter((c) => c !== "All"), ...list]);
     return Array.from(merged);
-  }, []);
+  }, [wallpapers]);
 
   // Filter logic
   const filteredWallpapers = useMemo(() => {
-    return WALLPAPERS.filter((wp) => {
+    return wallpapers.filter((wp) => {
       // Category match
       const matchesCategory =
         selectedCategory === "All" ||
@@ -49,7 +51,7 @@ export default function Home() {
 
       return matchesCategory && matchesOrientation && matchesSearch;
     });
-  }, [selectedCategory, selectedOrientation, searchQuery]);
+  }, [wallpapers, selectedCategory, selectedOrientation, searchQuery]);
 
   const resetFilters = () => {
     setSelectedCategory("All");
@@ -68,13 +70,13 @@ export default function Home() {
       <main className="flex-1">
         {/* 2. Hero Section: Auto-Fading Background + Rotating Word + Phone Crop & Zoom */}
         <HeroSection
-          wallpapers={WALLPAPERS}
+          wallpapers={wallpapers}
           onPreview={setActivePreview}
         />
 
         {/* 3. A Few Exclusive Drops (Swiper Carousel) */}
         <FeaturedWallpaperCarousel
-          wallpapers={WALLPAPERS}
+          wallpapers={wallpapers}
           onPreview={setActivePreview}
         />
 

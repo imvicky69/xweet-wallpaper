@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -20,7 +20,8 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { WallpaperCard } from "@/components/wallpapers/WallpaperCard";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
-import { WALLPAPERS, getCdnImageUrl } from "@/lib/wallpapers";
+import { getCdnImageUrl } from "@/lib/wallpapers";
+import { useWallpapers } from "@/hooks/useWallpapers";
 import { triggerDirectDownload } from "@/lib/download";
 import { Wallpaper } from "@/types/wallpaper";
 
@@ -29,6 +30,7 @@ interface WallpaperDetailClientProps {
 }
 
 export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClientProps) {
+  const { wallpapers: allWallpapers } = useWallpapers();
   const [previewMode, setPreviewMode] = useState<"desktop" | "phone">("desktop");
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
   const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
@@ -106,10 +108,20 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
     setTimeout(() => setCopiedHex(null), 2000);
   };
 
-  // Related wallpapers from the same collection
-  const relatedWallpapers = WALLPAPERS.filter(
-    (wp) => wp.slug !== wallpaper.slug && wp.collection === wallpaper.collection
-  ).slice(0, 4);
+  // Related wallpapers from the same collection or category
+  const relatedWallpapers = useMemo(() => {
+    const pool = allWallpapers.length > 0 ? allWallpapers : [wallpaper];
+    const matches = pool.filter(
+      (wp) =>
+        wp.slug !== wallpaper.slug &&
+        (wp.collection === wallpaper.collection || wp.category === wallpaper.category)
+    );
+    if (matches.length >= 4) return matches.slice(0, 4);
+    const fallbacks = pool.filter(
+      (wp) => wp.slug !== wallpaper.slug && !matches.some((m) => m.slug === wp.slug)
+    );
+    return [...matches, ...fallbacks].slice(0, 4);
+  }, [allWallpapers, wallpaper]);
 
   // Schema.org Structured Data for SEO ImageObject
   const jsonLd = {

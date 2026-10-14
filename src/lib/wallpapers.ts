@@ -17,7 +17,7 @@ export const COLLECTIONS: Collection[] = [
     title: "Minimal Abstracts",
     description: "AI-generated and curated by Xweet. Quiet forms, chromatic diffusions, and organic textures.",
     coverImageUrl: "https://cdn.xweet.in/wallpapers/midnight-amber.png",
-    count: 16,
+    count: 17,
     tags: ["Minimal", "Abstract", "4K", "Tactile"],
   },
 ];
@@ -37,7 +37,8 @@ export const CATEGORIES = [
   "Monochrome Abstract",
   "Earthy Minimal",
   "Modern Abstract",
-  "Warm Dark Minimal"
+  "Warm Dark Minimal",
+  "flower"
 ];
 
 export const MOBILE_CATEGORIES = [
@@ -57,6 +58,50 @@ export const MOBILE_CATEGORIES = [
 ];
 
 export const WALLPAPERS: Wallpaper[] = [
+  {
+    "id": "wp_1791979952605",
+    "slug": "sunflowers-in-soft-morning-light-952605",
+    "title": "Sunflowers in Soft Morning Light",
+    "description": "#minimal #4k #editorial #clean",
+    "imageUrl": "https://cdn.xweet.in/wallpapers/sunflowers-in-soft-morning-light-952605/desktop.png",
+    "thumbnailUrl": "https://cdn.xweet.in/wallpapers/sunflowers-in-soft-morning-light-952605/thumbnail.webp",
+    "hasPhoneCrop": true,
+    "phoneImageUrl": "https://cdn.xweet.in/wallpapers/sunflowers-in-soft-morning-light-952605/phone.png",
+    "resolution": "1672 × 941",
+    "aspectRatio": "16:9",
+    "orientation": "desktop",
+    "category": "flower",
+    "collection": "flower",
+    "dominantColor": "#111B2A",
+    "paletteHex": "#111B2A",
+    "palette": [
+      "#111B2A",
+      "#344153",
+      "#D99562"
+    ],
+    "tags": [
+      "minimal",
+      "4k",
+      "editorial",
+      "clean"
+    ],
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens.",
+      "joinedAt": "2026-01-01"
+    },
+    "views": 0,
+    "downloads": 0,
+    "isFeatured": false,
+    "featured": false,
+    "isNew": true,
+    "publishedAt": "2026-10-14T12:12:38.290Z",
+    "createdAt": 1791979958290
+  },
   {
     "id": "wp-01",
     "slug": "midnight-amber",

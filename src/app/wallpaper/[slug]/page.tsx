@@ -1,11 +1,34 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { db } from "@/lib/firebase/client";
 import { WALLPAPERS } from "@/lib/wallpapers";
+import { Wallpaper } from "@/types/wallpaper";
 import WallpaperDetailClient from "./WallpaperDetailClient";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+async function getWallpaperData(slug: string): Promise<Wallpaper | null> {
+  const localMatch = WALLPAPERS.find((wp) => wp.slug === slug);
+  if (localMatch) return localMatch;
+
+  try {
+    const q = query(collection(db, "wallpapers"), where("slug", "==", slug), limit(1));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const data = snap.docs[0].data() as Wallpaper;
+      return {
+        ...data,
+        id: data.id || snap.docs[0].id,
+      };
+    }
+  } catch (err: any) {
+    console.warn("Could not query Firestore for wallpaper slug:", slug, err?.message);
+  }
+  return null;
 }
 
 export async function generateStaticParams() {
@@ -16,7 +39,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolved = await params;
-  const wallpaper = WALLPAPERS.find((wp) => wp.slug === resolved.slug);
+  const wallpaper = await getWallpaperData(resolved.slug);
 
   if (!wallpaper) {
     return {
@@ -71,9 +94,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-function WallpaperContainer({ paramsPromise }: { paramsPromise: Promise<{ slug: string }> }) {
-  const resolved = use(paramsPromise);
-  const wallpaper = WALLPAPERS.find((wp) => wp.slug === resolved.slug);
+async function WallpaperContainer({ paramsPromise }: { paramsPromise: Promise<{ slug: string }> }) {
+  const resolved = await paramsPromise;
+  const wallpaper = await getWallpaperData(resolved.slug);
 
   if (!wallpaper) {
     notFound();

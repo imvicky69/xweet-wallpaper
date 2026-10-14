@@ -139,9 +139,9 @@ async function syncWallpapers() {
     }
 
     const CDN = process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN || "https://cdn.xweet.in";
-    const desktopUrl = `${CDN}/wallpapers/${slug}.png`;
-    const phoneUrl = `${CDN}/wallpapers/phone/${slug}.png`;
-    const thumbUrl = `${CDN}/wallpapers/thumbnails/${slug}.webp`;
+    const desktopUrl = data.imageUrl || `${CDN}/wallpapers/${slug}.png`;
+    const phoneUrl = data.phoneImageUrl || `${CDN}/wallpapers/phone/${slug}.png`;
+    const thumbUrl = data.thumbnailUrl || `${CDN}/wallpapers/thumbnails/${slug}.webp`;
 
     // Normalize author to Vicky (@xweet) if curator or use existing
     const author = {
@@ -220,6 +220,22 @@ export const COLLECTIONS: Collection[] = [
 ];
 
 export const CATEGORIES = ${JSON.stringify(Array.from(uniqueCategories), null, 2)};
+
+export const MOBILE_CATEGORIES = [
+  "Lockscreen",
+  "AMOLED Mobile",
+  "Dark Abstract",
+  "Minimal Mobile",
+  "Anime Vertical",
+  "Cyberpunk Mobile",
+  "Aesthetic Portrait",
+  "Nature Vertical",
+  "Typography Lockscreen",
+  "Warm Minimal",
+  "Pastel Gradient",
+  "Monochrome Abstract",
+  "Warm Dark Abstract"
+];
 
 export const WALLPAPERS: Wallpaper[] = ${JSON.stringify(wallpapers, null, 2)};
 

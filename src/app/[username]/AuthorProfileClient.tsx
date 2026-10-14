@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { WallpaperGrid } from "@/components/wallpapers/WallpaperGrid";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
-import { WALLPAPERS } from "@/lib/wallpapers";
+import { useWallpapers } from "@/hooks/useWallpapers";
 import { Wallpaper } from "@/types/wallpaper";
 import {
   IconShieldCheck,
@@ -25,6 +25,7 @@ interface AuthorProfileClientProps {
 export default function AuthorProfileClient({ initialUsername }: AuthorProfileClientProps) {
   const username = decodeURIComponent(initialUsername || "xweet").toLowerCase();
   const { profile: loggedInProfile } = useAuth();
+  const { wallpapers } = useWallpapers();
   const [activePreview, setActivePreview] = useState<Wallpaper | null>(null);
 
   const isCurator = ["xweet", "vikky", "vicky", "rajvicky97988"].includes(username);
@@ -43,16 +44,20 @@ export default function AuthorProfileClient({ initialUsername }: AuthorProfileCl
         loggedInProfile?.username?.toLowerCase() === "vicky" ||
         loggedInProfile?.username?.toLowerCase() === "rajvicky97988"));
 
-  // Filter wallpapers authored by this user: curator gets all 16 platform master wallpapers
+  // Filter wallpapers authored by this user: curator gets platform master wallpapers + their drops
   const authorWallpapers = useMemo(() => {
     if (isCurator) {
-      return WALLPAPERS;
+      return wallpapers.filter(
+        (wp) =>
+          !wp.author?.username ||
+          ["xweet", "vikky", "vicky", "rajvicky97988"].includes(wp.author.username.toLowerCase()) ||
+          wp.author.isVerified
+      );
     }
-    const matches = WALLPAPERS.filter(
+    return wallpapers.filter(
       (wp) => wp.author?.username?.toLowerCase() === username
     );
-    return matches;
-  }, [username, isCurator]);
+  }, [username, isCurator, wallpapers]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
