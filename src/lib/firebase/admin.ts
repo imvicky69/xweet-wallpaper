@@ -6,6 +6,12 @@ import path from "path";
 
 let adminApp: App;
 
+export const hasAdminCredentials: boolean = Boolean(
+  (typeof process !== "undefined" && fs.existsSync(path.resolve(process.cwd(), "serviceAccountKey.json"))) ||
+  process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
+  (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY)
+);
+
 function getAdminApp(): App {
   if (getApps().length > 0) {
     return getApp();
