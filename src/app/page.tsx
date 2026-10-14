@@ -18,6 +18,13 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activePreview, setActivePreview] = useState<Wallpaper | null>(null);
 
+  // Dynamic categories including default and custom categories
+  const dynamicCategories = useMemo(() => {
+    const list = Array.from(new Set(WALLPAPERS.map((w) => w.category).filter(Boolean)));
+    const merged = new Set(["All", ...CATEGORIES.filter((c) => c !== "All"), ...list]);
+    return Array.from(merged);
+  }, []);
+
   // Filter logic
   const filteredWallpapers = useMemo(() => {
     return WALLPAPERS.filter((wp) => {
@@ -109,7 +116,7 @@ export default function Home() {
             {/* Filter Bar */}
             <div className="mb-6 sm:mb-10">
               <WallpaperFilters
-                categories={CATEGORIES}
+                categories={dynamicCategories}
                 selectedCategory={selectedCategory}
                 onSelectCategory={setSelectedCategory}
                 selectedOrientation={selectedOrientation}

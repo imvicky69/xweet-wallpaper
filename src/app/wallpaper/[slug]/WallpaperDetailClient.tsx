@@ -43,7 +43,11 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
       const isMobile =
         window.innerWidth < 768 ||
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      if (isMobile && (wallpaper.hasPhoneCrop || Boolean(wallpaper.phoneImageUrl))) {
+      const isMobileWp =
+        wallpaper.orientation === "mobile" ||
+        wallpaper.aspectRatio === "9:19.5" ||
+        wallpaper.aspectRatio === "9:16";
+      if (isMobileWp || (isMobile && (wallpaper.hasPhoneCrop || Boolean(wallpaper.phoneImageUrl)))) {
         setPreviewMode("phone");
       }
     }
@@ -78,8 +82,10 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
 
   const handleDownloadPhone = () => {
     setDownloadSuccess("phone");
-    const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
-    triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
+    const phoneUrl = getCdnImageUrl(
+      wallpaper.phoneImageUrl || wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`
+    );
+    triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone.png`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
@@ -205,17 +211,19 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
               {/* Preview Mode Switcher */}
               <div className="flex items-center justify-between bg-surface border border-border p-2">
                 <div className="flex items-center gap-1 text-xs font-mono">
-                  <button
-                    onClick={() => setPreviewMode("desktop")}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors cursor-pointer ${
-                      previewMode === "desktop"
-                        ? "bg-foreground text-background font-semibold"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <IconDeviceDesktop size={14} />
-                    <span>Desktop (16:9)</span>
-                  </button>
+                  {wallpaper.orientation !== "mobile" && (
+                    <button
+                      onClick={() => setPreviewMode("desktop")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors cursor-pointer ${
+                        previewMode === "desktop"
+                          ? "bg-foreground text-background font-semibold"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <IconDeviceDesktop size={14} />
+                      <span>Desktop (16:9)</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={() => setPreviewMode("phone")}
@@ -226,7 +234,7 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                     }`}
                   >
                     <IconDeviceMobile size={14} />
-                    <span>Phone Lockscreen</span>
+                    <span>{wallpaper.orientation === "mobile" ? "Mobile Lockscreen (9:19.5)" : "Phone Lockscreen"}</span>
                   </button>
                 </div>
 
@@ -284,8 +292,8 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                   <div className="py-6 sm:py-8">
                     <div className="relative w-[220px] sm:w-[300px] aspect-[9/19.5] rounded-[36px] sm:rounded-[42px] border-[5px] sm:border-[6px] border-border/80 overflow-hidden shadow-2xl bg-black">
                       <Image
-                        src={getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`)}
-                        alt={`${wallpaper.title} Mobile Wallpaper Crop`}
+                        src={getCdnImageUrl(wallpaper.phoneImageUrl || wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`)}
+                        alt={`${wallpaper.title} Mobile Wallpaper`}
                         fill
                         priority
                         sizes="320px"
@@ -422,22 +430,24 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                         )}
                       </button>
 
-                      <button
-                        onClick={handleDownloadDesktop}
-                        className="w-full flex items-center justify-center gap-2 h-10 px-4 bg-surface text-foreground font-sans text-xs font-semibold uppercase tracking-wider border border-border hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer"
-                      >
-                        {downloadSuccess === "desktop" ? (
-                          <>
-                            <IconCheck size={15} />
-                            <span>Downloaded 4K Desktop</span>
-                          </>
-                        ) : (
-                          <>
-                            <IconDownload size={15} />
-                            <span>Download Desktop (4K PNG)</span>
-                          </>
-                        )}
-                      </button>
+                      {wallpaper.orientation !== "mobile" && (
+                        <button
+                          onClick={handleDownloadDesktop}
+                          className="w-full flex items-center justify-center gap-2 h-10 px-4 bg-surface text-foreground font-sans text-xs font-semibold uppercase tracking-wider border border-border hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer"
+                        >
+                          {downloadSuccess === "desktop" ? (
+                            <>
+                              <IconCheck size={15} />
+                              <span>Downloaded 4K Desktop</span>
+                            </>
+                          ) : (
+                            <>
+                              <IconDownload size={15} />
+                              <span>Download Desktop (4K PNG)</span>
+                            </>
+                          )}
+                        </button>
+                      )}
                     </>
                   ) : (
                     <>
@@ -478,22 +488,24 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                     </>
                   )}
 
-                  <button
-                    onClick={handleDownloadBoth}
-                    className="w-full flex items-center justify-center gap-2 h-10 px-4 bg-background text-muted-foreground font-sans text-xs hover:text-foreground hover:border-foreground border border-border/70 transition-all duration-200 cursor-pointer"
-                  >
-                    {downloadSuccess === "both" ? (
-                      <>
-                        <IconCheck size={14} />
-                        <span>Downloaded Both Editions</span>
-                      </>
-                    ) : (
-                      <>
-                        <IconSparkles size={14} className="text-primary" />
-                        <span>Download Desktop + Mobile Bundle</span>
-                      </>
-                    )}
-                  </button>
+                  {wallpaper.orientation !== "mobile" && (
+                    <button
+                      onClick={handleDownloadBoth}
+                      className="w-full flex items-center justify-center gap-2 h-10 px-4 bg-background text-muted-foreground font-sans text-xs hover:text-foreground hover:border-foreground border border-border/70 transition-all duration-200 cursor-pointer"
+                    >
+                      {downloadSuccess === "both" ? (
+                        <>
+                          <IconCheck size={14} />
+                          <span>Downloaded Both Editions</span>
+                        </>
+                      ) : (
+                        <>
+                          <IconSparkles size={14} className="text-primary" />
+                          <span>Download Desktop + Mobile Bundle</span>
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 

@@ -40,6 +40,22 @@ export const CATEGORIES = [
   "Warm Dark Minimal"
 ];
 
+export const MOBILE_CATEGORIES = [
+  "Lockscreen",
+  "AMOLED Mobile",
+  "Dark Abstract",
+  "Minimal Mobile",
+  "Anime Vertical",
+  "Cyberpunk Mobile",
+  "Aesthetic Portrait",
+  "Nature Vertical",
+  "Typography Lockscreen",
+  "Warm Minimal",
+  "Pastel Gradient",
+  "Monochrome Abstract",
+  "Warm Dark Abstract"
+];
+
 export const WALLPAPERS: Wallpaper[] = [
   {
     "id": "wp-01",

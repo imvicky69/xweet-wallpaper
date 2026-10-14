@@ -37,10 +37,17 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
     if (onDownload) {
       onDownload(wallpaper);
     } else {
-      triggerDirectDownload(
-        getCdnImageUrl(wallpaper.imageUrl),
-        `${wallpaper.slug}-desktop-4k.png`
-      );
+      if (wallpaper.orientation === "mobile") {
+        triggerDirectDownload(
+          getCdnImageUrl(wallpaper.phoneImageUrl || wallpaper.imageUrl),
+          `${wallpaper.slug}-mobile.png`
+        );
+      } else {
+        triggerDirectDownload(
+          getCdnImageUrl(wallpaper.imageUrl),
+          `${wallpaper.slug}-desktop-4k.png`
+        );
+      }
     }
     setTimeout(() => setIsDownloaded(false), 2200);
   };
@@ -68,7 +75,10 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
     }
   };
 
-  const isPortrait = wallpaper.aspectRatio === "9:16";
+  const isPortrait =
+    wallpaper.aspectRatio === "9:16" ||
+    wallpaper.aspectRatio === "9:19.5" ||
+    wallpaper.orientation === "mobile";
   const author = wallpaper.author || {
     id: "xweet",
     username: "xweet",
@@ -120,7 +130,15 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
                 NEW
               </span>
             )}
-            {hasPhoneCompanion && (
+            {wallpaper.orientation === "mobile" ? (
+              <span
+                title="Mobile Lockscreen Wallpaper"
+                className="bg-surface/95 text-primary font-mono text-[9px] tracking-wider px-1.5 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-semibold"
+              >
+                <IconDeviceMobile size={11} />
+                <span>MOBILE ONLY</span>
+              </span>
+            ) : hasPhoneCompanion ? (
               <span
                 title="Includes Phone Lockscreen Crop"
                 className="bg-surface/95 text-primary font-mono text-[9px] tracking-wider px-1.5 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-semibold"
@@ -128,7 +146,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
                 <IconDeviceMobile size={11} />
                 <span>+PHONE</span>
               </span>
-            )}
+            ) : null}
           </div>
 
           <div className="flex items-center gap-1 pointer-events-auto">

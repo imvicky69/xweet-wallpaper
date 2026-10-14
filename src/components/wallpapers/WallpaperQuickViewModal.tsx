@@ -47,13 +47,17 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
       document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleKeyDown);
 
-      // On phone / mobile devices, default to Phone view instead of desktop!
+      // If mobile wallpaper, always default to Phone preview!
+      const isMobileWp =
+        wallpaper.orientation === "mobile" ||
+        wallpaper.aspectRatio === "9:19.5" ||
+        wallpaper.aspectRatio === "9:16";
       const isMobile =
         window.innerWidth < 768 ||
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
       const hasPhone = wallpaper.hasPhoneCrop || Boolean(wallpaper.phoneImageUrl);
-      setPreviewMode(isMobile && hasPhone ? "phone" : "desktop");
+      setPreviewMode(isMobileWp || (isMobile && hasPhone) ? "phone" : "desktop");
     }
     return () => {
       document.body.style.overflow = "";
@@ -93,8 +97,10 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
 
   const handleDownloadPhone = () => {
     setDownloadSuccess("phone");
-    const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
-    triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
+    const phoneUrl = getCdnImageUrl(
+      wallpaper.phoneImageUrl || wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`
+    );
+    triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone.png`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
@@ -180,7 +186,7 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
           <div className="relative flex-1 bg-black/5 min-h-[260px] sm:min-h-[340px] lg:min-h-[560px] overflow-hidden flex flex-col items-center justify-center p-3 sm:p-6 lg:p-8 shrink-0">
             
             {/* Aspect Preview Switcher */}
-            {hasPhoneCrop && (
+            {hasPhoneCrop && wallpaper.orientation !== "mobile" && (
               <div className="absolute top-3 left-3 z-30 flex items-center gap-1 border border-border bg-surface/95 p-1 font-mono text-[10px] sm:text-[11px] backdrop-blur-xs select-none">
                 <button
                   type="button"
@@ -311,12 +317,17 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                   <span className="bg-primary text-primary-foreground font-mono text-[10px] tracking-widest px-2 py-0.5 uppercase border border-primary">
                     {wallpaper.category}
                   </span>
-                  {hasPhoneCrop && (
+                  {wallpaper.orientation === "mobile" ? (
+                    <span className="bg-secondary text-secondary-foreground font-mono text-[10px] tracking-wider uppercase border border-border px-2 py-0.5 flex items-center gap-1 font-semibold">
+                      <IconDeviceMobile size={12} />
+                      <span>MOBILE ONLY</span>
+                    </span>
+                  ) : hasPhoneCrop ? (
                     <span className="bg-secondary text-secondary-foreground font-mono text-[10px] tracking-wider uppercase border border-border px-2 py-0.5 flex items-center gap-1 font-semibold">
                       <IconDeviceMobile size={12} />
                       <span>DUAL CROP</span>
                     </span>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Share Button (Desktop top icon) */}
@@ -448,45 +459,47 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                     )}
                   </Button>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      onClick={handleDownloadDesktop}
-                      className="text-xs h-10 w-full"
-                    >
-                      {downloadSuccess === "desktop" ? (
-                        <>
-                          <IconCheck size={15} />
-                          <span>Downloaded 4K</span>
-                        </>
-                      ) : (
-                        <>
-                          <IconDownload size={15} />
-                          <span>Get Desktop (4K)</span>
-                        </>
-                      )}
-                    </Button>
+                  {wallpaper.orientation !== "mobile" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={handleDownloadDesktop}
+                        className="text-xs h-10 w-full"
+                      >
+                        {downloadSuccess === "desktop" ? (
+                          <>
+                            <IconCheck size={15} />
+                            <span>Downloaded 4K</span>
+                          </>
+                        ) : (
+                          <>
+                            <IconDownload size={15} />
+                            <span>Get Desktop (4K)</span>
+                          </>
+                        )}
+                      </Button>
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDownloadBoth}
-                      className="w-full text-xs h-10"
-                    >
-                      {downloadSuccess === "both" ? (
-                        <>
-                          <IconCheck size={14} />
-                          <span>Downloaded Both</span>
-                        </>
-                      ) : (
-                        <>
-                          <IconSparkles size={14} className="text-primary" />
-                          <span>Bundle (Both)</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDownloadBoth}
+                        className="w-full text-xs h-10"
+                      >
+                        {downloadSuccess === "both" ? (
+                          <>
+                            <IconCheck size={14} />
+                            <span>Downloaded Both</span>
+                          </>
+                        ) : (
+                          <>
+                            <IconSparkles size={14} className="text-primary" />
+                            <span>Bundle (Both)</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
