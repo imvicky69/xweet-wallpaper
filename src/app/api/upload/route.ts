@@ -96,12 +96,13 @@ export async function POST(req: NextRequest) {
     const phoneFile = (formData.get("phoneImage") || formData.get("mobileImage")) as File | null;
 
     // 4. Generate clean Slug and Keys
-    const slugBase = title
+    const customSlug = formData.get("slug")?.toString().trim();
+    const slugBase = (customSlug || title)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "") || "wallpaper";
     const wallpaperId = `wp_${Date.now()}`;
-    const slug = `${slugBase}-${wallpaperId.slice(-6)}`;
+    const slug = slugBase;
 
     // Parse Tags
     const tags = tagsString

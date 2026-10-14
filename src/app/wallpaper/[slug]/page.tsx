@@ -15,6 +15,12 @@ async function getWallpaperData(slug: string): Promise<Wallpaper | null> {
   const localMatch = WALLPAPERS.find((wp) => wp.slug === slug);
   if (localMatch) return localMatch;
 
+  // Fallback: match without trailing legacy numeric timestamp (e.g. -952605)
+  const cleanMatch = WALLPAPERS.find(
+    (wp) => wp.slug.replace(/-\d{4,}$/, "") === slug
+  );
+  if (cleanMatch) return cleanMatch;
+
   try {
     const q = query(collection(db, "wallpapers"), where("slug", "==", slug), limit(1));
     const snap = await getDocs(q);

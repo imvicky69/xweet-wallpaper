@@ -114,7 +114,7 @@ exports.uploadWallpaper = onCall(
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
     const wallpaperId = `wp_${Date.now()}`;
-    const slug = `${slugBase}-${wallpaperId.slice(-6)}`;
+    const slug = slugBase;
 
     // 4. Upload Desktop Image Buffer to Cloudflare R2
     const desktopBuffer = Buffer.from(desktopBase64, "base64");
