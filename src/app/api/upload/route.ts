@@ -16,6 +16,15 @@ async function getSharpInstance(buffer: Buffer) {
 
 export const maxDuration = 60;
 
+export async function GET() {
+  return NextResponse.json({
+    status: "ok",
+    service: "Xweet Wallpaper Upload Pipeline",
+    methodsAllowed: ["POST"],
+    message: "This is an API route. To upload a wallpaper, visit /upload in your browser or send an authenticated POST request.",
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Authenticate Request via Firebase ID Token

@@ -4,6 +4,14 @@ import { getPresignedUploadUrl } from "@/lib/r2";
 
 export const maxDuration = 60;
 
+export async function GET() {
+  return NextResponse.json({
+    status: "ok",
+    service: "Xweet Wallpaper Presign Pipeline",
+    methodsAllowed: ["POST"],
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
