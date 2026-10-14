@@ -22,16 +22,19 @@ export async function uploadToR2({
   key,
   buffer,
   contentType,
+  cacheControl = "public, max-age=31536000, immutable",
 }: {
   key: string;
   buffer: Buffer | Uint8Array;
   contentType: string;
+  cacheControl?: string;
 }): Promise<string> {
   const command = new PutObjectCommand({
     Bucket: bucketName,
     Key: key,
     Body: buffer,
     ContentType: contentType,
+    CacheControl: cacheControl,
   });
 
   await r2Client.send(command);

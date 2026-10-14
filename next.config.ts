@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   images: {
     qualities: [75, 80, 85, 90, 92],
+    // Cache optimized images on server/edge for 1 year instead of default 60s
+    minimumCacheTTL: 31536000,
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2560],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
         protocol: "https",
@@ -43,6 +48,28 @@ const nextConfig: NextConfig = {
         hostname: "plus.unsplash.com",
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        // Cache direct wallpaper download streams for 1 year
+        source: "/api/download(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, s-maxage=31536000, immutable",
+          },
+          {
+            key: "CDN-Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+          {
+            key: "Cloudflare-CDN-Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
   },
   turbopack: {
     rules: {

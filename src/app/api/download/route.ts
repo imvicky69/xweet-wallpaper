@@ -26,9 +26,21 @@ export async function GET(request: NextRequest) {
       return new NextResponse("Forbidden domain", { status: 403 });
     }
 
-    const res = await fetch(imageUrl);
+    // Support conditional ETag validation to save 100% of read bandwidth on re-downloads
+    const clientEtag = request.headers.get("if-none-match");
+
+    const res = await fetch(imageUrl, {
+      cache: "force-cache",
+      next: { revalidate: 31536000 },
+    });
+
     if (!res.ok) {
       return new NextResponse("Failed to fetch image from CDN", { status: res.status });
+    }
+
+    const etag = res.headers.get("etag") || `"${imageUrl.split("/").pop()}"`;
+    if (clientEtag && clientEtag === etag) {
+      return new NextResponse(null, { status: 304 });
     }
 
     const contentType = res.headers.get("content-type") || "image/png";
@@ -39,7 +51,10 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": contentType,
         "Content-Disposition": `attachment; filename="${sanitizedFilename}"`,
-        "Cache-Control": "public, max-age=86400, s-maxage=86400",
+        "Cache-Control": "public, max-age=31536000, s-maxage=31536000, immutable",
+        "CDN-Cache-Control": "public, max-age=31536000, immutable",
+        "Cloudflare-CDN-Cache-Control": "public, max-age=31536000, immutable",
+        "ETag": etag,
       },
     });
   } catch (error) {
