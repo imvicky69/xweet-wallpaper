@@ -111,6 +111,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
           alt={wallpaper.title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          quality={88}
           className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] protected-image pointer-events-none select-none"
           draggable={false}
         />

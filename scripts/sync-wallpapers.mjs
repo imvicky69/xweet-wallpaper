@@ -123,17 +123,17 @@ async function syncWallpapers() {
         console.log(`  ↓ Downloading thumbnail from ${data.thumbnailUrl}...`);
         const downloaded = await downloadRemoteFile(data.thumbnailUrl, localThumbFile);
         if (!downloaded && fs.existsSync(localDesktopFile)) {
-          console.log(`  ⚡ Generating 800px WebP thumbnail via Sharp...`);
+          console.log(`  ⚡ Generating 1600px Retina WebP thumbnail via Sharp...`);
           await sharp(localDesktopFile)
-            .resize({ width: 800, withoutEnlargement: true })
-            .webp({ quality: 85 })
+            .resize({ width: 1600, withoutEnlargement: true })
+            .webp({ quality: 92, effort: 6 })
             .toFile(localThumbFile);
         }
       } else if (fs.existsSync(localDesktopFile)) {
-        console.log(`  ⚡ Generating 800px WebP thumbnail via Sharp...`);
+        console.log(`  ⚡ Generating 1600px Retina WebP thumbnail via Sharp...`);
         await sharp(localDesktopFile)
-          .resize({ width: 800, withoutEnlargement: true })
-          .webp({ quality: 85 })
+          .resize({ width: 1600, withoutEnlargement: true })
+          .webp({ quality: 92, effort: 6 })
           .toFile(localThumbFile);
       }
     }

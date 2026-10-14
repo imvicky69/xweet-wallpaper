@@ -109,10 +109,11 @@ export const FeaturedWallpaperCarousel: React.FC<FeaturedWallpaperCarouselProps>
                       />
 
                       <Image
-                        src={getCdnImageUrl(wp.thumbnailUrl || wp.imageUrl)}
+                        src={getCdnImageUrl(wp.imageUrl)}
                         alt={wp.title}
                         fill
                         sizes="(max-width: 1024px) 100vw, 70vw"
+                        quality={90}
                         className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] protected-image select-none pointer-events-none"
                         draggable={false}
                       />

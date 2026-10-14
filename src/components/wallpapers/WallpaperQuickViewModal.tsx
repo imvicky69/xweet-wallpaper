@@ -243,10 +243,11 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                   )}
 
                   <Image
-                    src={getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl)}
+                    src={getCdnImageUrl(wallpaper.imageUrl)}
                     alt={wallpaper.title}
                     fill
                     sizes="(max-width: 1024px) 100vw, 60vw"
+                    quality={92}
                     className="object-cover protected-image select-none pointer-events-none"
                     draggable={false}
                     priority
