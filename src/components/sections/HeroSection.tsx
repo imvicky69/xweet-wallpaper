@@ -5,14 +5,8 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconArrowDown,
-  IconEye,
-  IconDownload,
   IconSparkles,
   IconLock,
-  IconDeviceMobile,
-  IconDeviceDesktop,
-  IconChevronLeft,
-  IconChevronRight,
   IconPlayerPause,
   IconPlayerPlay,
 } from "@tabler/icons-react";
@@ -101,16 +95,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     []
   );
 
-  const handleNextSlide = useCallback(() => {
-    setActiveIndex((prev) => (prev + 1) % heroSlides.length);
-    setProgress(0);
-  }, [heroSlides.length]);
-
-  const handlePrevSlide = useCallback(() => {
-    setActiveIndex((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
-    setProgress(0);
-  }, [heroSlides.length]);
-
   // Smooth progress bar and auto-advance timer
   useEffect(() => {
     if (isPaused || isHovered) return;
@@ -138,7 +122,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <motion.div
             key={active.wallpaper.id}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.14 }}
+            animate={{ opacity: 0.12 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0"
@@ -170,7 +154,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="flex items-center gap-2.5 mb-5 flex-wrap">
               <span className="h-2 w-2 bg-primary shrink-0 animate-pulse" />
               <span className="font-mono text-xs font-semibold text-primary uppercase tracking-widest">
-                Curated Drops
+                A fresh look, every day.
               </span>
               <span className="text-border">|</span>
 
@@ -258,64 +242,28 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
           </div>
 
-          {/* Right Column: Harmonious Dual-Device Showcase (Desktop 4K + Synchronized Phone Lockscreen) */}
+          {/* Right Column: Pure Laptop & Phone Viewed Wallpaper Mockup (No clutter, No extra elements) */}
           <div
-            className="lg:col-span-6 relative"
+            className="lg:col-span-6 relative flex items-center justify-center py-4"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            {/* Gallery Card Frame */}
-            <div className="border border-border bg-surface p-3 sm:p-4 shadow-sm transition-all duration-300 hover:border-primary/50">
-              
-              {/* Header Status Bar with Device Badges and Next/Prev Arrows */}
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-border/80">
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1.5 font-mono text-[11px] text-foreground font-semibold">
-                    <IconDeviceDesktop size={14} className="text-primary" />
-                    <span>DESKTOP 4K</span>
-                  </span>
-                  <span className="text-border">•</span>
-                  <span className="font-mono text-[10px] text-muted-foreground">
-                    {active.wallpaper.resolution || "2752 × 1536"}
-                  </span>
-                </div>
+            {/* Ambient Base Shadow */}
+            <div className="absolute bottom-2 inset-x-8 h-8 bg-black/25 blur-2xl rounded-full pointer-events-none" />
 
-                <div className="flex items-center gap-2">
-                  <span className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 uppercase tracking-wider font-semibold">
-                    <IconDeviceMobile size={11} />
-                    <span>Dual Crop Sync</span>
-                  </span>
+            {/* Laptop Mockup Wrapper */}
+            <div
+              onClick={() => onPreview(active.wallpaper)}
+              className="relative w-full max-w-[520px] transition-transform duration-300 hover:scale-[1.015] cursor-pointer group select-none"
+              title="Click to inspect wallpaper"
+            >
+              {/* Laptop Screen Lid */}
+              <div className="relative rounded-t-[14px] sm:rounded-t-[18px] bg-[#1a1a1e] p-[7px] sm:p-[9px] pb-0 border border-neutral-700/60 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
+                {/* Camera Notch Dot */}
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-neutral-900 border border-neutral-700/80 z-20 pointer-events-none" />
 
-                  {/* Manual Arrow Controls */}
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={handlePrevSlide}
-                      aria-label="Previous wallpaper"
-                      className="h-6 w-6 flex items-center justify-center border border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary transition-colors cursor-pointer"
-                      title="Previous Wallpaper"
-                    >
-                      <IconChevronLeft size={13} />
-                    </button>
-                    <button
-                      onClick={handleNextSlide}
-                      aria-label="Next wallpaper"
-                      className="h-6 w-6 flex items-center justify-center border border-border bg-background text-muted-foreground hover:text-foreground hover:border-primary transition-colors cursor-pointer"
-                      title="Next Wallpaper"
-                    >
-                      <IconChevronRight size={13} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stage: Desktop Canvas + Harmonious Overlapping Phone Lockscreen Frame */}
-              <div className="relative pb-6 sm:pb-8">
-                
-                {/* 1. Desktop 16:10 Canvas */}
-                <div
-                  onClick={() => onPreview(active.wallpaper)}
-                  className="relative aspect-[16/10] w-full overflow-hidden bg-black/60 border border-border group cursor-pointer"
-                >
+                {/* Display Glass (16:10 Laptop Screen) */}
+                <div className="relative aspect-[16/10] w-full rounded-t-[6px] sm:rounded-t-[8px] overflow-hidden bg-black shadow-inner">
                   {/* Protective Layer */}
                   <div
                     className="absolute inset-0 z-10 select-none cursor-pointer"
@@ -323,7 +271,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     onDragStart={(e) => e.preventDefault()}
                   />
 
-                  {/* Desktop Image: Pure Synchronized Cross-fade (No mode="wait" gap) */}
+                  {/* Synchronized 4K Master Wallpaper */}
                   <AnimatePresence>
                     <motion.div
                       key={active.wallpaper.id}
@@ -338,130 +286,87 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         alt={active.wallpaper.title}
                         fill
                         sizes="(max-width: 1024px) 100vw, 50vw"
+                        quality={92}
                         priority
                         className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
                       />
                     </motion.div>
                   </AnimatePresence>
 
-                  {/* Category Pill on Desktop Canvas */}
-                  <div className="absolute top-3 left-3 z-20 pointer-events-none">
-                    <span className="bg-black/70 text-white font-mono text-[10px] tracking-widest px-2 py-0.5 uppercase border border-white/20 backdrop-blur-xs">
-                      {active.wallpaper.category}
-                    </span>
-                  </div>
+                  {/* Subtle Screen Glare Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent pointer-events-none" />
                 </div>
+              </div>
 
-                {/* 2. Synchronized Phone Mockup (Locked in identical transition time) */}
+              {/* Laptop Lower Base / Keyboard Deck */}
+              <div className="relative -mt-[1px] h-[11px] sm:h-[15px] w-[104%] -left-[2%] bg-gradient-to-b from-[#2e2e34] via-[#1c1c20] to-[#101013] rounded-b-[10px] sm:rounded-b-[14px] border-t border-neutral-600/60 shadow-[0_20px_35px_rgba(0,0,0,0.4)] flex justify-center">
+                {/* Trackpad Thumb Notch */}
+                <div className="w-14 sm:w-20 h-1 sm:h-1.5 bg-neutral-800/90 rounded-b-md" />
+              </div>
+
+              {/* Phone Mockup (Standing Elegantly Overlapping on the Right) */}
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPreview(active.wallpaper);
+                }}
+                className="absolute -bottom-4 sm:-bottom-6 right-2 sm:right-0 w-[110px] sm:w-[145px] md:w-[155px] aspect-[9/19.5] rounded-[24px] sm:rounded-[28px] border-[4px] sm:border-[5px] border-[#18181b] bg-black shadow-[0_25px_60px_rgba(0,0,0,0.7)] overflow-hidden ring-1 ring-white/10 z-20 transition-transform duration-300 hover:scale-[1.03] cursor-pointer"
+                title="Click to view lockscreen preview"
+              >
+                {/* Protective Layer */}
                 <div
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPreview(active.wallpaper);
-                  }}
-                  className="absolute bottom-0 right-1 sm:-right-3 lg:-right-4 w-32 sm:w-40 lg:w-44 aspect-[9/19.5] rounded-[22px] sm:rounded-[26px] border-[4px] sm:border-[5px] border-neutral-900 bg-black shadow-[0_22px_45px_rgba(0,0,0,0.55)] overflow-hidden cursor-pointer group z-20 transition-transform duration-300 hover:scale-[1.02]"
-                  title="Click to view lockscreen preview"
-                >
-                  {/* Protective Layer */}
-                  <div
-                    className="absolute inset-0 z-10 select-none cursor-pointer"
-                    onContextMenu={(e) => e.preventDefault()}
-                    onDragStart={(e) => e.preventDefault()}
-                  />
+                  className="absolute inset-0 z-10 select-none cursor-pointer"
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
+                />
 
-                  {/* Synchronized Phone Crop: Locks in 1:1 with desktop image */}
-                  <AnimatePresence>
-                    <motion.div
-                      key={active.wallpaper.id}
-                      initial={{ opacity: 0, scale: 1.05 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-                      className="absolute inset-0"
-                    >
-                      <Image
-                        src={getCdnImageUrl(
-                          active.wallpaper.phoneImageUrl || active.wallpaper.imageUrl
-                        )}
-                        alt={`${active.wallpaper.title} Phone Lockscreen Crop`}
-                        fill
-                        sizes="220px"
-                        priority
-                        className="object-cover select-none pointer-events-none"
-                        draggable={false}
-                      />
-                    </motion.div>
-                  </AnimatePresence>
+                {/* Synchronized Phone Crop */}
+                <AnimatePresence>
+                  <motion.div
+                    key={active.wallpaper.id}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute inset-0"
+                  >
+                    <Image
+                      src={getCdnImageUrl(
+                        active.wallpaper.phoneImageUrl || active.wallpaper.imageUrl
+                      )}
+                      alt={`${active.wallpaper.title} Phone Lockscreen Crop`}
+                      fill
+                      sizes="200px"
+                      quality={92}
+                      priority
+                      className="object-cover select-none pointer-events-none"
+                      draggable={false}
+                    />
+                  </motion.div>
+                </AnimatePresence>
 
-                  {/* Realistic iPhone Dynamic Island */}
-                  <div className="absolute top-2 inset-x-0 flex justify-center z-30 pointer-events-none">
-                    <div className="h-3 w-14 sm:w-16 bg-black rounded-full shadow-xs" />
+                {/* iPhone Dynamic Island */}
+                <div className="absolute top-2 inset-x-0 flex justify-center z-30 pointer-events-none">
+                  <div className="h-3 w-12 sm:w-14 bg-black rounded-full shadow-xs" />
+                </div>
+
+                {/* Minimalist Lock Screen Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/60 p-2 sm:p-2.5 flex flex-col justify-between text-white pointer-events-none select-none">
+                  <div className="pt-4 sm:pt-5 flex flex-col items-center">
+                    <IconLock size={10} className="text-white/80 mb-0.5" />
+                    <span className="font-mono text-lg sm:text-xl font-light tracking-tight drop-shadow-md">
+                      09:41
+                    </span>
+                    <span className="font-sans text-[8px] sm:text-[9px] text-white/90 drop-shadow-sm font-medium">
+                      Wednesday, Oct 14
+                    </span>
                   </div>
 
-                  {/* Realistic Minimalist Lock Screen Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/60 p-2.5 sm:p-3 flex flex-col justify-between text-white pointer-events-none select-none">
-                    <div className="pt-5 sm:pt-6 flex flex-col items-center">
-                      <IconLock size={11} className="text-white/80 mb-0.5" />
-                      <span className="font-mono text-xl sm:text-2xl font-light tracking-tight drop-shadow-md">
-                        09:41
-                      </span>
-                      <span className="font-sans text-[9px] sm:text-[10px] text-white/90 drop-shadow-sm font-medium">
-                        Wednesday, Oct 14
-                      </span>
-                    </div>
-
-                    <div className="pb-1 sm:pb-1.5 flex flex-col items-center gap-1">
-                      <span className="bg-black/70 backdrop-blur-xs text-[8px] sm:text-[9px] font-mono tracking-wider px-2 py-0.5 rounded-full border border-white/20 uppercase flex items-center gap-1 font-semibold">
-                        <IconDeviceMobile size={10} />
-                        PHONE CROP
-                      </span>
-                      <div className="h-1 w-10 bg-white/80 rounded-full mt-0.5" />
-                    </div>
+                  <div className="pb-1 sm:pb-1.5 flex justify-center">
+                    <div className="h-1 w-9 bg-white/80 rounded-full" />
                   </div>
                 </div>
               </div>
-
-              {/* 3. Showcase Metadata & Actions Footer: Placed SAFELY below artwork canvas */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border mt-1">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] text-primary uppercase tracking-wider font-semibold">
-                      {active.wallpaper.category}
-                    </span>
-                    <span className="text-border">•</span>
-                    <span className="font-sans text-xs text-muted-foreground">
-                      Curated by Vicky (@xweet)
-                    </span>
-                  </div>
-                  <h3 className="font-sans text-lg sm:text-xl font-bold text-foreground mt-0.5">
-                    {active.wallpaper.title}
-                  </h3>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => onPreview(active.wallpaper)}
-                    className="text-xs h-8 px-3"
-                  >
-                    <IconEye size={13} />
-                    <span>Inspect</span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    className="text-xs h-8 px-3.5"
-                    href={getCdnImageUrl(active.wallpaper.imageUrl)}
-                    target="_blank"
-                    rel="noreferrer"
-                    download={`${active.wallpaper.slug}-desktop-4k.png`}
-                  >
-                    <IconDownload size={13} />
-                    <span>Get 4K</span>
-                  </Button>
-                </div>
-              </div>
-
             </div>
           </div>
 
