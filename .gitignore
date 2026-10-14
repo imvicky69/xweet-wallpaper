@@ -25,6 +25,9 @@ ui-debug.log*
 # testing
 /coverage
 
+# wallpaper assets (served directly via Cloudflare R2 CDN)
+/public/wallpapers/
+
 # next.js
 /.next/
 /out/

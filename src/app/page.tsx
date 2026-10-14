@@ -131,6 +131,25 @@ export default function Home() {
       {/* 5. Minimal Editorial Footer */}
       <SiteFooter />
 
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Xweet Wallpapers",
+            url: "https://xweet.com",
+            description: "Curated wallpaper discovery platform for everyday screens.",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://xweet.com/?search={search_term_string}",
+              "query-input": "required name=search_term_string",
+            },
+          }),
+        }}
+      />
+
       {/* 6. Quick View Interactive Modal (Framer Motion) */}
       <WallpaperQuickViewModal
         wallpaper={activePreview}

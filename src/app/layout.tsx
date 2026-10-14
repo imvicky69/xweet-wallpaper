@@ -15,12 +15,64 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://xweet.com"),
-  title: "Xweet Wallpapers — Curated Minimal Abstracts",
-  description: "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity backgrounds.",
+  title: {
+    default: "Xweet Wallpapers — Curated Minimal Abstracts",
+    template: "%s | Xweet Wallpapers",
+  },
+  description: "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity 4K backgrounds.",
+  keywords: [
+    "Xweet",
+    "Xweet Wallpapers",
+    "4K desktop wallpaper",
+    "phone wallpaper",
+    "minimalist wallpapers",
+    "abstract wallpapers",
+    "lockscreen wallpaper",
+    "aesthetic backgrounds",
+    "clean desktop backgrounds",
+    "editorial wallpapers",
+  ],
+  authors: [{ name: "Vicky", url: "https://xweet.com/xweet" }],
+  creator: "Vicky (@xweet)",
+  publisher: "Xweet Wallpapers",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://xweet.com",
+    siteName: "Xweet Wallpapers",
+    title: "Xweet Wallpapers — Curated Minimal Abstracts",
+    description: "Curated wallpaper discovery platform for everyday screens. Warm editorial minimalism, crisp geometry, and high-fidelity 4K backgrounds.",
+    images: [
+      {
+        url: "/wallpapers/midnight-amber.png",
+        width: 2752,
+        height: 1536,
+        alt: "Xweet Wallpapers Minimal Abstracts Collection",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Xweet Wallpapers — Curated Minimal Abstracts",
+    description: "Curated wallpaper discovery platform for everyday screens.",
+    creator: "@xweet",
+    images: ["/wallpapers/midnight-amber.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   icons: {
     icon: "/favicon.png",
     shortcut: "/favicon.png",
-    apple: "/favicon.png",
+    apple: "/logo.png",
   },
 };
 
