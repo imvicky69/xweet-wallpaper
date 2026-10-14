@@ -44,8 +44,31 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { filename, contentType, slug } = body;
+    const wallpaperSlug = body.slug || `wp-${Date.now()}`;
 
+    // Batch items mode
+    if (Array.isArray(body.items)) {
+      const urls: Record<string, { uploadUrl: string; cdnUrl: string; key: string }> = {};
+      for (const item of body.items) {
+        const ext = item.filename?.split(".").pop()?.toLowerCase() || (item.type === "thumbnail" ? "webp" : "png");
+        const variantName = item.type || (item.filename?.toLowerCase().includes("phone") ? "phone" : "desktop");
+        const key = `wallpapers/${wallpaperSlug}/${variantName}.${ext}`;
+        const presigned = await getPresignedUploadUrl({
+          key,
+          contentType: item.contentType || "image/png",
+        });
+        urls[variantName] = presigned;
+      }
+
+      return NextResponse.json({
+        success: true,
+        slug: wallpaperSlug,
+        urls,
+      });
+    }
+
+    // Single item mode
+    const { filename, contentType, type } = body;
     if (!filename || !contentType) {
       return NextResponse.json(
         { error: "Missing required fields: 'filename' and 'contentType' are required." },
@@ -54,8 +77,8 @@ export async function POST(req: NextRequest) {
     }
 
     const ext = filename.split(".").pop()?.toLowerCase() || "png";
-    const wallpaperSlug = slug || `wp-${Date.now()}`;
-    const key = `wallpapers/${wallpaperSlug}/${filename.toLowerCase().includes("phone") ? "phone" : "desktop"}.${ext}`;
+    const variantName = type || (filename.toLowerCase().includes("phone") ? "phone" : filename.toLowerCase().includes("thumb") ? "thumbnail" : "desktop");
+    const key = `wallpapers/${wallpaperSlug}/${variantName}.${ext}`;
 
     const presigned = await getPresignedUploadUrl({
       key,

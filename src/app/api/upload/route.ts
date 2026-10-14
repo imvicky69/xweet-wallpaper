@@ -313,22 +313,33 @@ export async function POST(req: NextRequest) {
                 extractLeft = 0;
               }
 
-              phoneBuffer = await instance
-                .extract({
-                  left: extractLeft,
-                  top: extractTop,
-                  width: extractWidth,
-                  height: extractHeight,
-                })
-                .resize({
-                  width: 1170,
-                  height: 2532,
-                  fit: "cover",
-                })
-                .png({ compressionLevel: 4 }) // Level 4 is 20x faster than level 7, prevents server timeout
-                .toBuffer();
+              let cropPipeline = instance.extract({
+                left: extractLeft,
+                top: extractTop,
+                width: extractWidth,
+                height: extractHeight,
+              });
 
-              phoneExt = "png";
+              // Never artificially upscale if extracted area is already within native resolution
+              if (extractWidth > 1290 || extractHeight > 2796) {
+                cropPipeline = cropPipeline.resize({
+                  width: 1290,
+                  height: 2796,
+                  fit: "cover",
+                });
+              }
+
+              // Format-aware high quality encoding: prevents file size inflation
+              if (desktopExt === "jpg" || desktopExt === "jpeg") {
+                phoneBuffer = await cropPipeline.jpeg({ quality: 95, mozjpeg: true }).toBuffer();
+                phoneExt = "jpg";
+              } else if (desktopExt === "webp") {
+                phoneBuffer = await cropPipeline.webp({ quality: 95, effort: 4 }).toBuffer();
+                phoneExt = "webp";
+              } else {
+                phoneBuffer = await cropPipeline.png({ compressionLevel: 8 }).toBuffer();
+                phoneExt = "png";
+              }
             } else {
               phoneBuffer = desktopBuffer;
               phoneExt = desktopExt;

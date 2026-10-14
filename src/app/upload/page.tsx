@@ -28,6 +28,7 @@ import {
   IconPalette,
 } from "@tabler/icons-react";
 import { CATEGORIES, MOBILE_CATEGORIES } from "@/lib/wallpapers";
+import { Wallpaper } from "@/types/wallpaper";
 
 type UploadMode = "mobile" | "dual" | "desktop";
 
@@ -306,39 +307,119 @@ export default function UploadPage() {
     }
   };
 
-  // Convert large files (> 3.5MB) to high-fidelity WebP on client to stay safely under Vercel's 4.5MB limit
-  const optimizeLargeImageForUpload = async (file: File): Promise<Blob> => {
-    return new Promise((resolve) => {
-      // If already under 3.5 MB, send original file directly
-      if (file.size <= 3.5 * 1024 * 1024) {
-        return resolve(file);
-      }
-
+  // Generate pristine phone crop blob directly from original image bitmap without artificial upscaling
+  const generatePhoneCropBlob = async (
+    file: File,
+    cropPos: number
+  ): Promise<{ blob: Blob; width: number; height: number; format: string }> => {
+    return new Promise((resolve, reject) => {
       const img = new window.Image();
       const objUrl = URL.createObjectURL(file);
       img.onload = () => {
         URL.revokeObjectURL(objUrl);
+        const naturalWidth = img.naturalWidth || 3840;
+        const naturalHeight = img.naturalHeight || 2160;
+        const targetAspect = 9 / 19.5;
+        const imgAspect = naturalWidth / naturalHeight;
+
+        let extractWidth: number;
+        let extractHeight: number;
+        let extractLeft: number;
+        let extractTop: number;
+
+        if (imgAspect >= targetAspect) {
+          extractHeight = naturalHeight;
+          extractWidth = Math.min(naturalWidth, Math.round(naturalHeight * targetAspect));
+          const maxOffset = naturalWidth - extractWidth;
+          const pct = Math.max(0, Math.min(100, isNaN(cropPos) ? 50 : cropPos));
+          extractLeft = Math.round((pct / 100) * maxOffset);
+          extractTop = 0;
+        } else {
+          extractWidth = naturalWidth;
+          extractHeight = Math.min(naturalHeight, Math.round(naturalWidth / targetAspect));
+          const maxOffset = naturalHeight - extractHeight;
+          const pct = Math.max(0, Math.min(100, isNaN(cropPos) ? 50 : cropPos));
+          extractTop = Math.round((pct / 100) * maxOffset);
+          extractLeft = 0;
+        }
+
         const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
+        canvas.width = extractWidth;
+        canvas.height = extractHeight;
         const ctx = canvas.getContext("2d");
-        if (!ctx) return resolve(file);
+        if (!ctx) return reject(new Error("Canvas context not available"));
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(
+          img,
+          extractLeft,
+          extractTop,
+          extractWidth,
+          extractHeight,
+          0,
+          0,
+          extractWidth,
+          extractHeight
+        );
 
-        // High quality WebP 95% compresses a 15MB PNG to ~1.8MB with zero visual loss
+        const isJpeg = file.type === "image/jpeg" || file.type === "image/jpg";
+        const isWebp = file.type === "image/webp";
+        const outputMime = isJpeg ? "image/jpeg" : isWebp ? "image/webp" : "image/png";
+        const outputQuality = isJpeg || isWebp ? 0.96 : undefined;
+        const format = isJpeg ? "jpg" : isWebp ? "webp" : "png";
+
         canvas.toBlob(
           (blob) => {
-            if (blob && blob.size < file.size) {
-              resolve(blob);
+            if (blob) {
+              resolve({ blob, width: extractWidth, height: extractHeight, format });
             } else {
-              resolve(file);
+              reject(new Error("Failed to generate phone crop"));
             }
           },
+          outputMime,
+          outputQuality
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objUrl);
+        reject(new Error("Failed to decode image file for phone crop"));
+      };
+      img.src = objUrl;
+    });
+  };
+
+  // Generate lightweight WebP preview thumbnail for fast catalog grid load
+  const generateThumbnailBlob = async (file: File): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      const objUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objUrl);
+        const maxDim = 800;
+        let w = img.naturalWidth || 800;
+        let h = img.naturalHeight || 800;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(file);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(
+          (blob) => resolve(blob || file),
           "image/webp",
-          0.95
+          0.88
         );
       };
       img.onerror = () => {
@@ -349,7 +430,7 @@ export default function UploadPage() {
     });
   };
 
-  // Form Submit Handler
+  // Form Submit Handler: Direct Cloudflare R2 transfer preserving 100% full master quality
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
@@ -391,96 +472,176 @@ export default function UploadPage() {
     try {
       if (!user) throw new Error("Your session expired. Please sign in again.");
 
-      // 1. Get Firebase ID Token for verification
-      const idToken = await user.getIdToken();
-
-      // 2. Prepare Multipart Form Data
-      const formData = new FormData();
-      formData.append("formatMode", formatMode);
-      formData.append("title", title.trim());
-      formData.append("description", fullDescription);
-      formData.append("category", finalCategory);
-      formData.append("resolution", resolution);
-      formData.append("dominantColor", dominantColor);
-      formData.append("tags", tagsInput);
-      formData.append("cropPosition", cropPosition.toString());
-
-      // Prepare single primary image file
       const sourceFile = formatMode === "mobile" ? mobileFile : desktopFile;
       if (!sourceFile) {
         throw new Error("No wallpaper image file selected.");
       }
 
-      // Optimize file if > 3.5MB to guarantee request body stays under Vercel's 4.5MB limit
-      let finalFile: Blob = sourceFile;
-      if (sourceFile.size > 3.5 * 1024 * 1024) {
-        showToast(
-          "info",
-          "Optimizing Master Payload",
-          "Converting high-res asset to WebP to ensure seamless cloud delivery..."
-        );
-        finalFile = await optimizeLargeImageForUpload(sourceFile);
+      showToast(
+        "info",
+        "Uploading Original Master",
+        `Transferring untouched ${sourceFile.name} (${(sourceFile.size / (1024 * 1024)).toFixed(2)} MB) to Cloudflare R2...`
+      );
+
+      // Clean editorial slug from title
+      const slugBase = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "") || "wallpaper";
+      const wallpaperId = `wp_${Date.now()}`;
+      const slug = slugBase;
+
+      // Master extension
+      const masterExt = sourceFile.name.split(".").pop()?.toLowerCase() || (sourceFile.type.includes("jpeg") ? "jpg" : "png");
+      const masterVariant = formatMode === "mobile" ? "phone" : "desktop";
+
+      // Prepare items for direct presigned upload
+      const uploadItems: Array<{ type: string; filename: string; contentType: string }> = [
+        {
+          type: masterVariant,
+          filename: `${masterVariant}.${masterExt}`,
+          contentType: sourceFile.type || "image/png",
+        },
+        {
+          type: "thumbnail",
+          filename: "thumbnail.webp",
+          contentType: "image/webp",
+        },
+      ];
+
+      let phoneCropResult: { blob: Blob; width: number; height: number; format: string } | null = null;
+      if (formatMode === "dual") {
+        phoneCropResult = await generatePhoneCropBlob(sourceFile, cropPosition);
+        uploadItems.push({
+          type: "phone",
+          filename: `phone.${phoneCropResult.format}`,
+          contentType: phoneCropResult.blob.type || `image/${phoneCropResult.format}`,
+        });
       }
 
-      // Append exactly one primary master file to avoid payload duplication
-      if (formatMode === "mobile") {
-        formData.append("phoneImage", finalFile, sourceFile.name);
-      } else {
-        formData.append("desktopImage", finalFile, sourceFile.name);
-      }
-
-      // 3. Post to Secured Route with robust error capture
-      const res = await fetch("/api/upload", {
+      // 1. Get Presigned URLs
+      const idToken = await user.getIdToken();
+      const presignRes = await fetch("/api/upload/presign", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
         },
-        body: formData,
+        body: JSON.stringify({ slug, items: uploadItems }),
       });
 
-      // Safely read response text first to prevent JSON syntax crash
-      const responseText = await res.text();
-      let data: any = null;
-      try {
-        data = JSON.parse(responseText);
-      } catch {
-        // Non-JSON response (e.g. gateway error, 500 HTML)
+      const presignData = await presignRes.json();
+      if (!presignRes.ok || !presignData.urls) {
+        throw new Error(presignData.error || "Failed to initialize Cloudflare R2 upload pipeline.");
       }
 
-      if (!res.ok) {
-        let errorDetail = data?.message || data?.error;
-        if (!errorDetail) {
-          if (responseText) {
-            const titleMatch =
-              responseText.match(/<title>([^<]+)<\/title>/i) ||
-              responseText.match(/<h[12]>([^<]+)<\/h[12]>/i);
-            if (titleMatch) {
-              errorDetail = `Server Gateway: ${titleMatch[1].trim()}`;
-            } else if (responseText.length < 300) {
-              errorDetail = responseText.trim();
+      // 2. Direct R2 Upload: Master File (100% UNTOUCHED, EXACT ORIGINAL BYTES)
+      const masterPresign = presignData.urls[masterVariant];
+      const masterUploadRes = await fetch(masterPresign.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": sourceFile.type || "image/png" },
+        body: sourceFile,
+      });
+
+      if (!masterUploadRes.ok) {
+        throw new Error(`Master upload to Cloudflare R2 failed (HTTP ${masterUploadRes.status})`);
+      }
+
+      // 3. Direct R2 Upload: Fast Retina Thumbnail
+      const thumbBlob = await generateThumbnailBlob(sourceFile);
+      const thumbPresign = presignData.urls["thumbnail"];
+      await fetch(thumbPresign.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "image/webp" },
+        body: thumbBlob,
+      });
+
+      // 4. Direct R2 Upload: Pristine Phone Crop
+      let phoneCdnUrl: string | undefined = undefined;
+      let phoneKey: string | undefined = undefined;
+      if (formatMode === "dual" && phoneCropResult) {
+        const phonePresign = presignData.urls["phone"];
+        const phoneUploadRes = await fetch(phonePresign.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": phoneCropResult.blob.type || `image/${phoneCropResult.format}` },
+          body: phoneCropResult.blob,
+        });
+        if (phoneUploadRes.ok) {
+          phoneCdnUrl = phonePresign.cdnUrl;
+          phoneKey = phonePresign.key;
+        }
+      } else if (formatMode === "mobile") {
+        phoneCdnUrl = masterPresign.cdnUrl;
+        phoneKey = masterPresign.key;
+      }
+
+      const desktopCdnUrl = formatMode === "mobile" ? undefined : masterPresign.cdnUrl;
+      const thumbnailCdnUrl = thumbPresign.cdnUrl;
+
+      // 5. Index Wallpaper in Firestore
+      const isXweet = profile?.username?.toLowerCase() === "xweet" || profile?.isVerified;
+
+      const wallpaperPayload: Wallpaper = {
+        id: wallpaperId,
+        slug,
+        title: title.trim(),
+        description: fullDescription,
+        imageUrl: desktopCdnUrl || phoneCdnUrl!,
+        thumbnailUrl: thumbnailCdnUrl,
+        desktopAsset: desktopCdnUrl
+          ? {
+              key: masterPresign.key,
+              url: desktopCdnUrl,
+              width: imageDimensions.width,
+              height: imageDimensions.height,
+              resolution,
+              aspectRatio: "16:9",
+              fileSizeBytes: sourceFile.size, // Exact original bytes preserved
+              format: masterExt as any,
             }
-          }
-        }
-        if (!errorDetail) {
-          errorDetail = `Server returned error (${res.status}: ${res.statusText || "Internal Server Error"})`;
-        }
-        throw new Error(errorDetail);
-      }
+          : undefined,
+        hasPhoneCrop: Boolean(phoneCdnUrl),
+        phoneImageUrl: phoneCdnUrl,
+        phoneAsset: phoneCdnUrl
+          ? {
+              key: phoneKey!,
+              url: phoneCdnUrl,
+              width: phoneCropResult ? phoneCropResult.width : imageDimensions.width,
+              height: phoneCropResult ? phoneCropResult.height : imageDimensions.height,
+              resolution: phoneCropResult ? `${phoneCropResult.width} × ${phoneCropResult.height}` : resolution,
+              aspectRatio: "9:19.5",
+              fileSizeBytes: phoneCropResult ? phoneCropResult.blob.size : sourceFile.size,
+              format: (phoneCropResult ? phoneCropResult.format : masterExt) as any,
+            }
+          : undefined,
+        resolution,
+        aspectRatio: formatMode === "mobile" ? "9:19.5" : "16:9",
+        orientation: formatMode === "mobile" ? "mobile" : "desktop",
+        category: finalCategory,
+        collection: finalCategory,
+        dominantColor,
+        tags: parsedHashtags.map((t) => t.replace(/^#/, "")),
+        author: {
+          id: isXweet ? "xweet" : user.uid,
+          username: profile?.username || "xweet",
+          displayName: profile?.displayName || "Vicky",
+          photoURL: profile?.photoURL || "/logo.png",
+          isVerified: isXweet,
+        },
+        views: 0,
+        downloads: 0,
+        isNew: true,
+        publishedAt: new Date().toISOString(),
+        createdAt: Date.now(),
+      };
 
-      // 4. Client-side Firestore sync fallback if serverless environment lacks service account
-      if (data?.wallpaper && !data?.firestoreSaved) {
-        try {
-          await setDoc(doc(db, "wallpapers", data.wallpaper.id), data.wallpaper);
-        } catch (clientDbErr: any) {
-          console.warn("Client Firestore backup sync note:", clientDbErr?.message);
-        }
-      }
+      await setDoc(doc(db, "wallpapers", wallpaperId), wallpaperPayload);
 
       setSuccess(true);
       showToast(
         "success",
-        "Drop Published Successfully!",
-        `"${title}" is stored in Cloudflare R2 and indexed.`
+        "Drop Published in Full Master Quality!",
+        `"${title}" (${(sourceFile.size / (1024 * 1024)).toFixed(2)} MB) is preserved at 100% original quality in Cloudflare R2.`
       );
 
       setTimeout(() => {

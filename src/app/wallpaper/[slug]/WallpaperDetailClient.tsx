@@ -78,7 +78,8 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
   const handleDownloadDesktop = () => {
     setDownloadSuccess("desktop");
     const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
-    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
+    const ext = wallpaper.desktopAsset?.format || desktopUrl.split(".").pop()?.split("?")[0] || "png";
+    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.${ext}`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
@@ -87,17 +88,20 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
     const phoneUrl = getCdnImageUrl(
       wallpaper.phoneImageUrl || wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`
     );
-    triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone.png`);
+    const ext = wallpaper.phoneAsset?.format || phoneUrl.split(".").pop()?.split("?")[0] || "png";
+    triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone.${ext}`);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadBoth = () => {
     setDownloadSuccess("both");
     const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
-    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.png`);
+    const dExt = wallpaper.desktopAsset?.format || desktopUrl.split(".").pop()?.split("?")[0] || "png";
+    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.${dExt}`);
     setTimeout(() => {
       const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
-      triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone-1170x2532.png`);
+      const pExt = wallpaper.phoneAsset?.format || phoneUrl.split(".").pop()?.split("?")[0] || "png";
+      triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone.${pExt}`);
     }, 450);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
