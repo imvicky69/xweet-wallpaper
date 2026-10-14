@@ -7,8 +7,6 @@ import {
   IconArrowDown,
   IconSparkles,
   IconLock,
-  IconPlayerPause,
-  IconPlayerPlay,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
 import { Wallpaper } from "@/types/wallpaper";
@@ -26,16 +24,13 @@ interface HeroSectionProps {
 }
 
 const SLIDE_DURATION_MS = 5500;
-const PROGRESS_TICK_MS = 50;
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   wallpapers,
   onPreview,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [progress, setProgress] = useState(0);
 
   // Curated hero slides pulling from real wallpapers
   const heroSlides: HeroSlide[] = useMemo(() => {
@@ -87,30 +82,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     });
   }, [heroSlides]);
 
-  const handleSelectSlide = useCallback(
-    (idx: number) => {
-      setActiveIndex(idx);
-      setProgress(0);
-    },
-    []
-  );
-
-  // Smooth progress bar and auto-advance timer
+  // Auto-advance timer (pauses when user hovers over the laptop/phone mockup)
   useEffect(() => {
-    if (isPaused || isHovered) return;
-
+    if (isHovered) return;
     const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          setActiveIndex((curr) => (curr + 1) % heroSlides.length);
-          return 0;
-        }
-        return prev + (PROGRESS_TICK_MS / SLIDE_DURATION_MS) * 100;
-      });
-    }, PROGRESS_TICK_MS);
-
+      setActiveIndex((curr) => (curr + 1) % heroSlides.length);
+    }, SLIDE_DURATION_MS);
     return () => clearInterval(timer);
-  }, [isPaused, isHovered, heroSlides.length]);
+  }, [isHovered, heroSlides.length]);
 
   const active = heroSlides[activeIndex] || heroSlides[0];
 
@@ -149,49 +128,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           
           {/* Left Column: Dynamic Editorial Typography & Controls */}
           <div className="lg:col-span-6 flex flex-col justify-center">
-            
-            {/* Slide Controller Bar with Animated Progress Indicators */}
-            <div className="flex items-center gap-2.5 mb-5 flex-wrap">
-              <span className="h-2 w-2 bg-primary shrink-0 animate-pulse" />
-              <span className="font-mono text-xs font-semibold text-primary uppercase tracking-widest">
-                A fresh look, every day.
-              </span>
-              <span className="text-border">|</span>
-
-              {/* Numbered Jump Buttons with Progress Fill */}
-              <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                {heroSlides.map((slide, idx) => (
-                  <button
-                    key={slide.wallpaper.id}
-                    onClick={() => handleSelectSlide(idx)}
-                    className={`relative h-6 px-2.5 border transition-all cursor-pointer overflow-hidden ${
-                      activeIndex === idx
-                        ? "bg-surface text-foreground border-primary font-bold shadow-xs"
-                        : "bg-surface/60 border-border text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <span className="relative z-10">0{idx + 1}</span>
-                    {activeIndex === idx && (
-                      <div
-                        className="absolute bottom-0 left-0 h-0.5 bg-primary transition-all ease-linear"
-                        style={{ width: `${progress}%` }}
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              {/* Pause/Play Toggle Button */}
-              <button
-                onClick={() => setIsPaused(!isPaused)}
-                aria-label={isPaused ? "Resume slideshow" : "Pause slideshow"}
-                className="h-6 w-6 flex items-center justify-center border border-border bg-surface text-muted-foreground hover:text-foreground hover:border-primary transition-colors cursor-pointer text-xs ml-1"
-                title={isPaused ? "Resume Auto-Slide" : "Pause Auto-Slide"}
-              >
-                {isPaused ? <IconPlayerPlay size={11} /> : <IconPlayerPause size={11} />}
-              </button>
-            </div>
-
             {/* Headline with Synchronized Animated Word */}
             <h1 className="font-sans text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-tight text-foreground leading-[1.06]">
               Your screen deserves{" "}
