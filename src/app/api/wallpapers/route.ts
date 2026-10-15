@@ -78,6 +78,8 @@ function formatWallpaperDto(wp: Wallpaper, origin: string) {
  * Flexible, public REST API to query wallpapers for external apps, widgets, and services.
  */
 export async function GET(request: NextRequest) {
+  try {
+
   const origin = request.nextUrl.origin || "https://wallpaper.xweet.in";
   const { searchParams } = new URL(request.url);
 
@@ -98,9 +100,11 @@ export async function GET(request: NextRequest) {
 
   if (adminDb) {
     try {
-      const snap = await adminDb.collection("wallpapers").get();
-      if (!snap.empty) {
-        wallpapersList = snap.docs.map((doc) =>
+      const fetchPromise = adminDb.collection("wallpapers").get();
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000));
+      const snap = await Promise.race([fetchPromise, timeoutPromise]);
+      if (snap && !snap.empty) {
+        wallpapersList = snap.docs.map((doc: any) =>
           normalizeWallpaper({
             id: doc.id,
             ...doc.data(),
@@ -255,4 +259,10 @@ export async function GET(request: NextRequest) {
       },
     }
   );
+
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Wallpapers API Catch:', err);
+    return NextResponse.json({ success: false, error: msg }, { status: 500, headers: corsHeaders });
+  }
 }
