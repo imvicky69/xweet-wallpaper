@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase/admin";
 import { WALLPAPERS, normalizeWallpaper, getCdnImageUrl } from "@/lib/wallpapers";
 import { Wallpaper } from "@/types/wallpaper";
 
@@ -98,10 +97,12 @@ export async function GET(request: NextRequest) {
   // 2. Load Wallpapers (Firestore Primary, In-Memory Static Catalog Resilient Fallback)
   let wallpapersList: Wallpaper[] = [];
 
-  if (adminDb) {
-    try {
+  try {
+    const adminMod = await import("@/lib/firebase/admin");
+    const adminDb = adminMod.adminDb;
+    if (adminDb) {
       const fetchPromise = adminDb.collection("wallpapers").get();
-      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000));
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500));
       const snap = await Promise.race([fetchPromise, timeoutPromise]);
       if (snap && !snap.empty) {
         wallpapersList = snap.docs.map((doc: any) =>
@@ -111,9 +112,9 @@ export async function GET(request: NextRequest) {
           })
         );
       }
-    } catch (e: unknown) {
-      console.warn("Firestore wallpapers collection read note:", e instanceof Error ? e.message : e);
     }
+  } catch (e: unknown) {
+    // Graceful fallback to static wallpapers catalog
   }
 
   if (wallpapersList.length === 0) {
