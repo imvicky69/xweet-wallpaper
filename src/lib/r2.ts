@@ -1,4 +1,10 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const clean = (val?: string, fallback = "") => {
@@ -6,18 +12,20 @@ const clean = (val?: string, fallback = "") => {
   return val.trim().replace(/^["']|["']$/g, "").trim() || fallback;
 };
 
-const accountId = clean(process.env.CLOUDFLARE_R2_ACCOUNT_ID, "e066fe539ea2c049a749b6062d3b35a9");
-const accessKeyId = clean(process.env.CLOUDFLARE_R2_ACCESS_KEY_ID, "257e32e56446be74a606b54456efc7c1");
-const secretAccessKey = clean(process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY, "93fe294b4e7f360a4bad038c4590e32c834bc7113f83f1b17c9ea7f1cbaefcda");
+const accountId = clean(process.env.CLOUDFLARE_R2_ACCOUNT_ID);
+const accessKeyId = clean(process.env.CLOUDFLARE_R2_ACCESS_KEY_ID);
+const secretAccessKey = clean(process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY);
 export const bucketName = clean(process.env.CLOUDFLARE_R2_BUCKET_NAME, "xweet");
 export const publicCdnDomain = clean(process.env.NEXT_PUBLIC_R2_PUBLIC_DOMAIN, "https://cdn.xweet.in");
 
+export const isR2Configured = Boolean(accountId && accessKeyId && secretAccessKey);
+
 export const r2Client = new S3Client({
   region: "auto",
-  endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+  endpoint: accountId ? `https://${accountId}.r2.cloudflarestorage.com` : undefined,
   credentials: {
-    accessKeyId,
-    secretAccessKey,
+    accessKeyId: accessKeyId || "",
+    secretAccessKey: secretAccessKey || "",
   },
 });
 
@@ -76,4 +84,65 @@ export async function getPresignedUploadUrl({
   const cdnUrl = `${cleanDomain}/${cleanKey}`;
 
   return { uploadUrl, cdnUrl, key };
+}
+
+/**
+ * Downloads an object buffer directly from Cloudflare R2
+ */
+export async function getObjectFromR2(key: string): Promise<Buffer | null> {
+  try {
+    const cleanKey = key.replace(/^\//, "");
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: cleanKey,
+    });
+    const response = await r2Client.send(command);
+    if (!response.Body) return null;
+    const byteArray = await response.Body.transformToByteArray();
+    return Buffer.from(byteArray);
+  } catch (error: any) {
+    console.warn(`Failed to retrieve ${key} from R2:`, error?.message);
+    return null;
+  }
+}
+
+/**
+ * Deletes a single object from Cloudflare R2
+ */
+export async function deleteFromR2(key: string): Promise<boolean> {
+  try {
+    const cleanKey = key.replace(/^\//, "");
+    const command = new DeleteObjectCommand({
+      Bucket: bucketName,
+      Key: cleanKey,
+    });
+    await r2Client.send(command);
+    return true;
+  } catch (error: any) {
+    console.warn(`Failed to delete ${key} from R2:`, error?.message);
+    return false;
+  }
+}
+
+/**
+ * Deletes multiple objects in batch from Cloudflare R2
+ */
+export async function deleteMultipleFromR2(keys: string[]): Promise<number> {
+  if (!keys.length) return 0;
+  try {
+    const objects = keys.map((k) => ({ Key: k.replace(/^\//, "") }));
+    const command = new DeleteObjectsCommand({
+      Bucket: bucketName,
+      Delete: {
+        Objects: objects,
+        Quiet: true,
+      },
+    });
+    const response = await r2Client.send(command);
+    const errors = response.Errors?.length || 0;
+    return keys.length - errors;
+  } catch (error: any) {
+    console.warn("Failed batch delete from R2:", error?.message);
+    return 0;
+  }
 }

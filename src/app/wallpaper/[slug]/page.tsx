@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
-import { WALLPAPERS } from "@/lib/wallpapers";
+import { WALLPAPERS, normalizeWallpaper } from "@/lib/wallpapers";
 import { Wallpaper } from "@/types/wallpaper";
 import WallpaperDetailClient from "./WallpaperDetailClient";
 
@@ -13,23 +13,23 @@ interface PageProps {
 
 async function getWallpaperData(slug: string): Promise<Wallpaper | null> {
   const localMatch = WALLPAPERS.find((wp) => wp.slug === slug);
-  if (localMatch) return localMatch;
+  if (localMatch) return normalizeWallpaper(localMatch);
 
   // Fallback: match without trailing legacy numeric timestamp (e.g. -952605)
   const cleanMatch = WALLPAPERS.find(
     (wp) => wp.slug.replace(/-\d{4,}$/, "") === slug
   );
-  if (cleanMatch) return cleanMatch;
+  if (cleanMatch) return normalizeWallpaper(cleanMatch);
 
   try {
     const q = query(collection(db, "wallpapers"), where("slug", "==", slug), limit(1));
     const snap = await getDocs(q);
     if (!snap.empty) {
-      const data = snap.docs[0].data() as Wallpaper;
-      return {
+      const data = snap.docs[0].data();
+      return normalizeWallpaper({
         ...data,
         id: data.id || snap.docs[0].id,
-      };
+      });
     }
   } catch (err: any) {
     console.warn("Could not query Firestore for wallpaper slug:", slug, err?.message);
@@ -69,8 +69,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       canonical: canonicalUrl,
     },
     keywords: [
-      ...wallpaper.tags,
-      wallpaper.category,
+      ...(wallpaper.tags || []),
+      wallpaper.category || "Modern Abstract",
       wallpaper.collection || "Minimal Abstracts",
       "Xweet",
       "Xweet Wallpapers",
@@ -94,10 +94,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       modifiedTime: new Date(wallpaper.createdAt || Date.now()).toISOString(),
       url: canonicalUrl,
       siteName: "Xweet Wallpapers",
-      tags: wallpaper.tags,
+      tags: wallpaper.tags || [],
       images: [
         {
-          url: wallpaper.imageUrl,
+          url: wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.webp`,
           width: wallpaper.desktopAsset?.width || 2752,
           height: wallpaper.desktopAsset?.height || 1536,
           alt: `${wallpaper.title} Minimal Abstract Wallpaper`,
@@ -110,7 +110,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: pageTitle,
       description,
       creator: "@xweet",
-      images: [wallpaper.imageUrl],
+      images: [wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.webp`],
     },
   };
 }
@@ -137,7 +137,7 @@ async function WallpaperContainer({ paramsPromise }: { paramsPromise: Promise<{ 
         "@type": "ListItem",
         position: 2,
         name: wallpaper.collection || wallpaper.category || "Minimal Abstracts",
-        item: `https://wallpaper.xweet.in/?category=${encodeURIComponent(wallpaper.category)}`,
+        item: `https://wallpaper.xweet.in/?category=${encodeURIComponent(wallpaper.category || "All")}`,
       },
       {
         "@type": "ListItem",
@@ -154,9 +154,9 @@ async function WallpaperContainer({ paramsPromise }: { paramsPromise: Promise<{ 
     name: `${wallpaper.title} Wallpaper`,
     caption: wallpaper.description,
     description: wallpaper.description,
-    contentUrl: wallpaper.imageUrl,
-    thumbnailUrl: wallpaper.thumbnailUrl || wallpaper.imageUrl,
-    keywords: wallpaper.tags.join(", "),
+    contentUrl: wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.webp`,
+    thumbnailUrl: wallpaper.thumbnailUrl || wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.webp`,
+    keywords: (wallpaper.tags || []).join(", "),
     creator: {
       "@type": "Person",
       name: wallpaper.author?.displayName || "Vicky",

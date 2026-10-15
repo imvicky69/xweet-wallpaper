@@ -16,60 +16,125 @@ export interface AuthorRef {
 }
 
 /**
- * Cloudflare R2 Asset variant specifications
+ * 2D Bounding crop coordinates extracted from 4K master image for phone vertical lockscreen
+ */
+export interface WallpaperCropCoords {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Storage specifications for the single master WebP file on Cloudflare R2
+ */
+export interface WallpaperStorage {
+  r2Key: string; // e.g. 'wallpapers/midnight-amber.webp'
+  format: "webp" | "png" | "jpg" | "avif";
+  phoneCropCoords?: WallpaperCropCoords;
+}
+
+export interface WallpaperClassification {
+  category: string;
+  collection: string;
+  aspectRatio: AspectRatio;
+  resolution: string;
+}
+
+export interface WallpaperStyling {
+  dominantColor: string;
+  paletteHex?: string;
+  palette?: string[];
+  tags: string[];
+}
+
+export interface WallpaperFlags {
+  isFeatured?: boolean;
+  isNew?: boolean;
+  hasPhoneCrop?: boolean;
+}
+
+export interface WallpaperMetadata {
+  publishedAt: string;
+  createdAt: number;
+}
+
+export interface WallpaperMonetization {
+  affiliateMood?: string;
+}
+
+/**
+ * Cloudflare R2 Asset variant specifications (legacy / transient)
  */
 export interface WallpaperAsset {
-  key: string; // Cloudflare R2 object key (e.g. 'wallpapers/serene-terracotta/desktop.webp')
-  url: string; // Public CDN URL (e.g. 'https://cdn.xweet.com/wallpapers/serene-terracotta/desktop.webp')
-  width: number; // e.g. 3840
-  height: number; // e.g. 2160
-  resolution: string; // e.g. '3840 × 2160' or '4K UHD'
-  aspectRatio: AspectRatio; // '16:9' or '16:10' or '9:16'
-  fileSizeBytes?: number; // Raw bytes size
+  key: string;
+  url: string;
+  width: number;
+  height: number;
+  resolution: string;
+  aspectRatio: AspectRatio;
+  fileSizeBytes?: number;
   format?: "webp" | "jpg" | "png" | "avif";
 }
 
 /**
- * Optimized Wallpaper Document Payload stored in Firestore
+ * Clean Wallpaper Document stored in Firestore
  */
-export interface Wallpaper {
-  id: string; // Firestore document ID
-  slug: string; // URL slug e.g. 'serene-terracotta-fold'
-  title: string; // Display title
-  description: string; // Editorial description
-
-  // Primary Desktop Asset in Cloudflare R2
-  imageUrl: string; // Main image URL for fast display
-  desktopAsset?: WallpaperAsset; // Full R2 desktop asset details
-  thumbnailUrl?: string; // Lightweight preview for fast grid load
-
-  // Optional Phone Crop Asset
-  hasPhoneCrop?: boolean; // True if author included a mobile crop
-  phoneImageUrl?: string; // Mobile cropped image URL
-  phoneAsset?: WallpaperAsset; // Full R2 phone asset details
-
-  // Specifications & Categorization
-  resolution: string; // e.g. '3840 × 2160'
-  aspectRatio: AspectRatio; // '16:9'
-  orientation: "desktop" | "mobile";
-  category: string; // 'Warm Neutrals', 'Abstract Textures', etc.
-  collection?: string;
-  dominantColor: string; // Hex color e.g. '#D6C7B2'
-  paletteHex?: string;
-  palette?: string[]; // 3-5 extracted tones
-  tags: string[];
-
-  // Author Attribution
+export interface WallpaperDoc {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  classification: WallpaperClassification;
+  styling: WallpaperStyling;
+  flags: WallpaperFlags;
+  metadata: WallpaperMetadata;
   author: AuthorRef;
+  storage: WallpaperStorage;
+  monetization?: WallpaperMonetization;
+}
 
-  // Stats & Flags
-  views?: number;
-  downloads?: number;
+/**
+ * Normalized Wallpaper with top-level convenience accessors
+ */
+export interface Wallpaper extends WallpaperDoc {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+
+  // New clean schema fields
+  classification: WallpaperClassification;
+  styling: WallpaperStyling;
+  flags: WallpaperFlags;
+  metadata: WallpaperMetadata;
+  author: AuthorRef;
+  storage: WallpaperStorage;
+  monetization?: WallpaperMonetization;
+
+  // Convenience / backward compatibility fields (guaranteed by normalizeWallpaper)
+  imageUrl: string;
+  thumbnailUrl: string;
+  phoneImageUrl?: string;
+  category: string;
+  collection: string;
+  resolution: string;
+  aspectRatio: AspectRatio;
+  orientation: "desktop" | "mobile";
+  dominantColor: string;
+  paletteHex?: string;
+  palette?: string[];
+  tags: string[];
   isFeatured?: boolean;
   featured?: boolean;
   isNew?: boolean;
-  publishedAt: string; // ISO string
-  createdAt?: number; // Epoch timestamp for sorting
+  hasPhoneCrop?: boolean;
+  publishedAt: string;
+  createdAt: number;
+  views?: number;
+  downloads?: number;
+  desktopAsset?: WallpaperAsset;
+  phoneAsset?: WallpaperAsset;
 }
 
 export interface Collection {

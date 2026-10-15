@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
-import { WALLPAPERS as STATIC_WALLPAPERS } from "@/lib/wallpapers";
+import { WALLPAPERS as STATIC_WALLPAPERS, normalizeWallpaper } from "@/lib/wallpapers";
 import { Wallpaper } from "@/types/wallpaper";
 
 /**
@@ -15,16 +15,18 @@ function mergeWallpapers(firestoreItems: Wallpaper[], staticItems: Wallpaper[]):
 
   // 1. Add static base items
   for (const item of staticItems) {
-    const key = item.slug || item.id;
-    if (key) map.set(key, item);
+    const normalized = normalizeWallpaper(item);
+    const key = normalized.slug || normalized.id;
+    if (key) map.set(key, normalized);
   }
 
   // 2. Overlay Firestore items (fresh cloud drops take precedence)
   for (const item of firestoreItems) {
-    const key = item.slug || item.id;
+    const normalized = normalizeWallpaper(item);
+    const key = normalized.slug || normalized.id;
     if (key) {
       const existing = map.get(key);
-      map.set(key, { ...existing, ...item });
+      map.set(key, { ...existing, ...normalized });
     }
   }
 
@@ -52,11 +54,13 @@ export function useWallpapers() {
         (snapshot) => {
           const remoteItems: Wallpaper[] = [];
           snapshot.forEach((doc) => {
-            const data = doc.data() as Wallpaper;
-            remoteItems.push({
-              ...data,
-              id: data.id || doc.id,
-            });
+            const data = doc.data();
+            remoteItems.push(
+              normalizeWallpaper({
+                ...data,
+                id: data.id || doc.id,
+              })
+            );
           });
 
           const combined = mergeWallpapers(remoteItems, STATIC_WALLPAPERS);

@@ -260,9 +260,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     className="absolute inset-0"
                   >
                     <Image
-                      src={getCdnImageUrl(
-                        active.wallpaper.phoneImageUrl || active.wallpaper.imageUrl
-                      )}
+                      src={`/api/download/${active.wallpaper.slug}?type=phone-4k&inline=true`}
                       alt={`${active.wallpaper.title} Phone Lockscreen Crop`}
                       fill
                       sizes="200px"

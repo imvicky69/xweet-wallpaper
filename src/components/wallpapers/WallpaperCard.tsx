@@ -17,10 +17,11 @@ import {
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
 import { getCdnImageUrl } from "@/lib/wallpapers";
-import { triggerDirectDownload } from "@/lib/download";
+import { triggerDynamicDownload } from "@/lib/download";
 
 interface WallpaperCardProps {
   wallpaper: Wallpaper;
+  viewMode?: "desktop" | "mobile" | "auto";
   onPreview?: (wallpaper: Wallpaper) => void;
   onDownload?: (wallpaper: Wallpaper) => void;
   onEdit?: (wallpaper: Wallpaper) => void;
@@ -29,6 +30,7 @@ interface WallpaperCardProps {
 
 export const WallpaperCard: React.FC<WallpaperCardProps> = ({
   wallpaper,
+  viewMode = "auto",
   onPreview,
   onDownload,
   onEdit,
@@ -44,16 +46,10 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
     if (onDownload) {
       onDownload(wallpaper);
     } else {
-      if (wallpaper.orientation === "mobile") {
-        triggerDirectDownload(
-          getCdnImageUrl(wallpaper.phoneImageUrl || wallpaper.imageUrl),
-          `${wallpaper.slug}-mobile.png`
-        );
+      if (wallpaper.orientation === "mobile" || viewMode === "mobile") {
+        triggerDynamicDownload(wallpaper.slug, "phone-4k", "webp");
       } else {
-        triggerDirectDownload(
-          getCdnImageUrl(wallpaper.imageUrl),
-          `${wallpaper.slug}-desktop-4k.png`
-        );
+        triggerDynamicDownload(wallpaper.slug, "desktop-4k", "webp");
       }
     }
     setTimeout(() => setIsDownloaded(false), 2200);
@@ -86,6 +82,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
     wallpaper.aspectRatio === "9:16" ||
     wallpaper.aspectRatio === "9:19.5" ||
     wallpaper.orientation === "mobile";
+
   const author = wallpaper.author || {
     id: "xweet",
     username: "xweet",
@@ -96,17 +93,27 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
   const isXweetAuthor = author.username?.toLowerCase() === "xweet" || author.isVerified;
   const hasPhoneCompanion = wallpaper.hasPhoneCrop || Boolean(wallpaper.phoneImageUrl);
 
+  // Dynamic aspect ratio based on active viewMode
+  const frameAspectRatioClass =
+    viewMode === "mobile"
+      ? "aspect-[9/16]"
+      : viewMode === "desktop"
+      ? "aspect-[16/10]"
+      : isPortrait
+      ? "aspect-[9/16]"
+      : "aspect-[9/16] sm:aspect-[16/10]";
+
+  const cropStamp = wallpaper.storage?.phoneCropCoords?.x ?? 0;
+  const phonePreviewSrc = `/api/download/${wallpaper.slug}?type=phone-4k&inline=true&v=${cropStamp}`;
+  const desktopPreviewSrc = getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl);
+
   return (
     <article
       onClick={() => onPreview && onPreview(wallpaper)}
-      className="group relative flex flex-col border border-border bg-surface rounded-none overflow-hidden cursor-pointer transition-all duration-200 hover:border-primary/70"
+      className="group relative flex flex-col border border-border bg-surface rounded-none overflow-hidden cursor-pointer transition-all duration-200 hover:border-primary/70 shadow-2xs hover:shadow-md"
     >
       {/* Artwork Frame */}
-      <div
-        className={`relative w-full overflow-hidden bg-muted/30 ${
-          isPortrait ? "aspect-[9/16]" : "aspect-[16/10]"
-        }`}
-      >
+      <div className={`relative w-full overflow-hidden bg-muted/30 ${frameAspectRatioClass}`}>
         {/* PROTECTIVE LAYER ON IMAGE: Prevents direct right-click or drag-saving */}
         <div
           className="absolute inset-0 z-10 select-none cursor-pointer"
@@ -119,50 +126,84 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
           }}
         />
 
-        <Image
-          src={getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl)}
-          alt={wallpaper.title}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          quality={88}
-          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] protected-image pointer-events-none select-none"
-          draggable={false}
-        />
+        {/* 1. Mobile Phone Cropped View (Visible on mobile viewports or when viewMode is 'mobile') */}
+        <div
+          className={`absolute inset-0 ${
+            viewMode === "desktop" ? "hidden" : viewMode === "mobile" ? "block" : "block sm:hidden"
+          }`}
+        >
+          <Image
+            src={phonePreviewSrc}
+            alt={`${wallpaper.title} Phone Lockscreen`}
+            fill
+            sizes="(max-width: 640px) 50vw, 33vw"
+            quality={90}
+            unoptimized
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] protected-image pointer-events-none select-none"
+            draggable={false}
+          />
+
+          {/* Delicate Mobile Lockscreen Silhouette Badge (Dynamic Notch + Clock) */}
+          <div className="absolute inset-x-0 top-0 pt-1.5 flex flex-col items-center pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
+            <div className="h-1.5 w-7 bg-black/60 rounded-full mb-0.5 border border-white/10 shadow-xs" />
+            <span className="font-mono text-[8.5px] text-white/90 font-light drop-shadow-md tracking-tight">
+              09:41
+            </span>
+          </div>
+        </div>
+
+        {/* 2. Desktop Landscape Master View (Visible on sm+ screens or when viewMode is 'desktop') */}
+        <div
+          className={`absolute inset-0 ${
+            viewMode === "mobile" ? "hidden" : viewMode === "desktop" ? "block" : "hidden sm:block"
+          }`}
+        >
+          <Image
+            src={desktopPreviewSrc}
+            alt={wallpaper.title}
+            fill
+            sizes="(max-width: 1024px) 50vw, 33vw"
+            quality={88}
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] protected-image pointer-events-none select-none"
+            draggable={false}
+          />
+        </div>
 
         {/* Top Floating Badge Bar */}
-        <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
-          <div className="flex items-center gap-1.5 pointer-events-auto">
+        <div className="absolute top-2 left-2 right-2 sm:top-3 sm:left-3 sm:right-3 z-20 flex items-center justify-between pointer-events-none">
+          <div className="flex items-center gap-1 sm:gap-1.5 pointer-events-auto">
             {wallpaper.isNew && (
-              <span className="bg-primary text-primary-foreground font-mono text-[10px] tracking-widest px-2 py-0.5 uppercase border border-primary">
+              <span className="bg-primary text-primary-foreground font-mono text-[8px] sm:text-[10px] tracking-widest px-1.5 sm:px-2 py-0.5 uppercase border border-primary font-semibold shadow-2xs">
                 NEW
               </span>
             )}
             {wallpaper.orientation === "mobile" && !wallpaper.desktopAsset ? (
               <span
                 title="Mobile Lockscreen Edition"
-                className="bg-surface/95 text-primary font-mono text-[9px] tracking-wider px-2 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-semibold shadow-2xs"
+                className="bg-surface/95 text-primary font-mono text-[8px] sm:text-[9px] tracking-wider px-1.5 sm:px-2 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-semibold shadow-2xs"
               >
-                <IconDeviceMobile size={11} className="text-primary" />
-                <span>PHONE ONLY</span>
+                <IconDeviceMobile size={10} className="text-primary" />
+                <span>PHONE</span>
               </span>
             ) : hasPhoneCompanion ? (
               <span
                 title="Dual Edition: 4K Desktop + Vertical Phone Lockscreen included"
-                className="bg-surface/95 text-primary font-mono text-[9px] tracking-wider px-2 py-0.5 border border-border flex items-center gap-1.5 backdrop-blur-xs font-semibold shadow-2xs"
+                className="bg-surface/95 text-primary font-mono text-[8px] sm:text-[9px] tracking-wider px-1.5 sm:px-2 py-0.5 border border-border flex items-center gap-1 sm:gap-1.5 backdrop-blur-xs font-semibold shadow-2xs"
               >
-                <div className="flex items-center gap-1 text-primary font-bold">
-                  <IconDeviceDesktop size={12} />
-                  <span className="text-[9px]">+</span>
-                  <IconDeviceMobile size={11} />
+                <div className="flex items-center gap-0.5 sm:gap-1 text-primary font-bold">
+                  <IconDeviceMobile size={10} />
+                  <span className="hidden sm:inline">+</span>
+                  <IconDeviceDesktop size={11} className="hidden sm:inline" />
                 </div>
-                <span>DESKTOP & PHONE</span>
+                <span className="sm:hidden">PHONE</span>
+                <span className="hidden sm:inline">DESKTOP & PHONE</span>
               </span>
             ) : (
               <span
                 title="Desktop Master Edition"
-                className="bg-surface/95 text-muted-foreground font-mono text-[9px] tracking-wider px-2 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-medium shadow-2xs"
+                className="bg-surface/95 text-muted-foreground font-mono text-[8px] sm:text-[9px] tracking-wider px-1.5 sm:px-2 py-0.5 border border-border flex items-center gap-1 backdrop-blur-xs font-medium shadow-2xs"
               >
-                <IconDeviceDesktop size={11} />
+                <IconDeviceDesktop size={10} />
                 <span>DESKTOP</span>
               </span>
             )}
@@ -179,10 +220,10 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
                 }}
                 aria-label="Edit wallpaper metadata"
                 title="Edit wallpaper metadata"
-                className="flex h-8 px-2 items-center gap-1 border border-primary bg-primary text-primary-foreground font-mono text-[10px] uppercase font-semibold hover:bg-primary-hover transition-colors shadow-xs"
+                className="flex h-7 px-1.5 sm:h-8 sm:px-2 items-center gap-1 border border-primary bg-primary text-primary-foreground font-mono text-[9px] sm:text-[10px] uppercase font-semibold hover:bg-primary-hover transition-colors shadow-xs"
               >
-                <IconPencil size={13} />
-                <span>EDIT</span>
+                <IconPencil size={11} />
+                <span className="hidden sm:inline">EDIT</span>
               </button>
             )}
 
@@ -196,9 +237,9 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
                 }}
                 aria-label="Delete wallpaper"
                 title="Delete this wallpaper drop"
-                className="flex h-8 w-8 items-center justify-center border border-destructive/40 bg-surface/90 text-destructive hover:bg-destructive hover:text-white transition-colors shadow-xs cursor-pointer"
+                className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center border border-destructive/40 bg-surface/90 text-destructive hover:bg-destructive hover:text-white transition-colors shadow-xs cursor-pointer"
               >
-                <IconTrash size={13} />
+                <IconTrash size={12} />
               </button>
             )}
 
@@ -207,32 +248,32 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
               onClick={handleShare}
               aria-label="Share wallpaper"
               title={shareCopied ? "Link Copied!" : "Share wallpaper"}
-              className={`flex h-8 w-8 items-center justify-center border transition-colors ${
+              className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center border transition-colors ${
                 shareCopied
                   ? "bg-emerald-600 border-emerald-600 text-white"
                   : "bg-surface/90 border-border text-foreground hover:text-primary hover:border-primary backdrop-blur-xs"
               }`}
             >
-              {shareCopied ? <IconCheck size={14} /> : <IconShare size={14} />}
+              {shareCopied ? <IconCheck size={13} /> : <IconShare size={13} />}
             </button>
 
             {/* Bookmark Button */}
             <button
               onClick={handleBookmark}
               aria-label="Save to favorites"
-              className={`flex h-8 w-8 items-center justify-center border transition-colors ${
+              className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center border transition-colors ${
                 bookmarked
                   ? "bg-primary border-primary text-primary-foreground"
                   : "bg-surface/90 border-border text-foreground hover:text-primary hover:border-primary backdrop-blur-xs"
               }`}
             >
-              <IconBookmark size={15} className={bookmarked ? "fill-current" : ""} />
+              <IconBookmark size={13} className={bookmarked ? "fill-current" : ""} />
             </button>
           </div>
         </div>
 
         {/* Hover Action Overlay (Desktop) */}
-        <div className="absolute inset-0 z-20 bg-foreground/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2 p-4 pointer-events-none">
+        <div className="absolute inset-0 z-20 bg-foreground/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hidden sm:flex items-center justify-center gap-2 p-4 pointer-events-none">
           {onEdit && (
             <button
               type="button"
@@ -292,66 +333,49 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
       </div>
 
       {/* Card Content Information */}
-      <div className="flex flex-col p-4 border-t border-border bg-surface">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col">
+      <div className="flex flex-col p-2.5 sm:p-4 border-t border-border bg-surface">
+        <div className="flex items-start justify-between gap-2 sm:gap-3">
+          <div className="flex flex-col min-w-0">
             <Link
               href={`/wallpaper/${wallpaper.slug}`}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="font-sans text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-1">
+              <h3 className="font-sans text-xs sm:text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-1">
                 {wallpaper.title}
               </h3>
             </Link>
-            <span className="font-sans text-xs text-muted-foreground mt-0.5">
+            <span className="font-sans text-[10px] sm:text-xs text-muted-foreground mt-0.5 line-clamp-1">
               {wallpaper.category}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            {onEdit && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(wallpaper);
-                }}
-                className="font-mono text-[10px] text-primary hover:underline flex items-center gap-1 bg-secondary/60 px-1.5 py-0.5 border border-border cursor-pointer"
-                title="Edit wallpaper metadata"
-              >
-                <IconPencil size={11} />
-                <span>EDIT</span>
-              </button>
-            )}
-            {onDelete && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(wallpaper);
-                }}
-                className="font-mono text-[10px] text-destructive hover:underline flex items-center gap-1 bg-destructive/10 px-1.5 py-0.5 border border-destructive/30 cursor-pointer"
-                title="Delete wallpaper drop"
-              >
-                <IconTrash size={11} />
-                <span>DELETE</span>
-              </button>
-            )}
-            <span className="font-mono text-[11px] text-muted-foreground shrink-0 border border-border/80 px-1.5 py-0.5 bg-background">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Quick 1-tap Download on Mobile Screens */}
+            <button
+              type="button"
+              onClick={handleDownload}
+              title="Download Phone Lockscreen (4K)"
+              aria-label="Download wallpaper"
+              className="flex sm:hidden h-7 w-7 items-center justify-center bg-primary text-primary-foreground border border-primary active:scale-95 transition-transform cursor-pointer shadow-2xs"
+            >
+              {isDownloaded ? <IconCheck size={13} /> : <IconDownload size={13} />}
+            </button>
+
+            <span className="hidden sm:inline font-mono text-[11px] text-muted-foreground shrink-0 border border-border/80 px-1.5 py-0.5 bg-background">
               {wallpaper.resolution}
             </span>
           </div>
         </div>
 
         {/* Bottom Author Attribution & Palette Strip */}
-        <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-border/50 text-[11px] font-mono text-muted-foreground">
+        <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/50 text-[10px] sm:text-[11px] font-mono text-muted-foreground">
           {/* Author Name Link with X logo pfp */}
           <Link
             href={`/${author.username || "xweet"}`}
             onClick={(e) => e.stopPropagation()}
-            className="flex items-center gap-1.5 hover:text-primary transition-colors"
+            className="flex items-center gap-1 sm:gap-1.5 hover:text-primary transition-colors min-w-0"
           >
-            <div className="relative h-4 w-4 rounded-full overflow-hidden bg-white border border-border/80 flex items-center justify-center shrink-0">
+            <div className="relative h-3.5 w-3.5 sm:h-4 sm:w-4 rounded-full overflow-hidden bg-white border border-border/80 flex items-center justify-center shrink-0">
               <Image
                 src="/logo.png"
                 alt={author.displayName || "Vicky"}
@@ -360,24 +384,24 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
                 className="object-contain p-0.5"
               />
             </div>
-            <span className="font-semibold text-foreground hover:text-primary">
+            <span className="font-semibold text-foreground hover:text-primary truncate max-w-[85px] sm:max-w-none">
               @{author.username || "xweet"}
             </span>
             {isXweetAuthor && (
-              <span title="Xweet Verified Curator" className="text-primary">
-                <IconShieldCheck size={13} />
+              <span title="Xweet Verified Curator" className="text-primary shrink-0">
+                <IconShieldCheck size={12} />
               </span>
             )}
           </Link>
 
           {/* Color Indicator */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             <span
-              className="h-2.5 w-2.5 rounded-none border border-border shrink-0"
+              className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-none border border-border shrink-0"
               style={{ backgroundColor: wallpaper.dominantColor }}
               title={`Color: ${wallpaper.dominantColor}`}
             />
-            <span className="text-[10px] text-muted-foreground/80 tracking-wider">
+            <span className="text-[9px] sm:text-[10px] text-muted-foreground/80 tracking-wider">
               {wallpaper.aspectRatio}
             </span>
           </div>

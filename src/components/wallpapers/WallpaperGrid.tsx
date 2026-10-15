@@ -4,7 +4,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { Wallpaper } from "@/types/wallpaper";
 import { WallpaperCard } from "./WallpaperCard";
 import { CatalogEndQuote } from "./CatalogEndQuote";
-import { IconPhotoOff, IconRefresh, IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
+import {
+  IconPhotoOff,
+  IconRefresh,
+  IconArrowLeft,
+  IconArrowRight,
+  IconDeviceMobile,
+  IconDeviceDesktop,
+  IconLayoutGrid,
+  IconLayoutColumns,
+} from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
 
 interface WallpaperGridProps {
@@ -43,6 +52,8 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
   onDelete,
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [viewMode, setViewMode] = useState<"auto" | "mobile" | "desktop">("auto");
+  const [mobileColumns, setMobileColumns] = useState<1 | 2>(2);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Reset to page 1 whenever the wallpapers list changes (filter or search applied)
@@ -119,12 +130,100 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
 
   return (
     <div ref={containerRef} className="w-full flex flex-col">
-      {/* 1. Wallpaper Grid: Strictly 12 items rendered per page */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      {/* 1. View Options & Layout Bar */}
+      <div className="flex items-center justify-between pb-3 mb-4 text-xs font-mono border-b border-border/60">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <span className="hidden sm:inline">Preview Mode:</span>
+          <div className="flex items-center gap-1 bg-surface border border-border p-0.5">
+            <button
+              type="button"
+              onClick={() => setViewMode("auto")}
+              title="Responsive: Phone view on phones, Desktop master on desktops"
+              className={`px-2 py-0.5 text-[11px] transition-colors cursor-pointer ${
+                viewMode === "auto"
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Adaptive
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("mobile")}
+              title="Force 4K Phone Lockscreen cropped previews"
+              className={`flex items-center gap-1 px-2 py-0.5 text-[11px] transition-colors cursor-pointer ${
+                viewMode === "mobile"
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <IconDeviceMobile size={12} />
+              <span>Phone</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("desktop")}
+              title="Force 4K Desktop master landscape previews"
+              className={`flex items-center gap-1 px-2 py-0.5 text-[11px] transition-colors cursor-pointer ${
+                viewMode === "desktop"
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <IconDeviceDesktop size={12} />
+              <span>Desktop</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Column Grid Switcher (1 col vs 2 col) + Drop Count */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex sm:hidden items-center gap-1 bg-surface border border-border p-0.5">
+            <button
+              type="button"
+              onClick={() => setMobileColumns(2)}
+              title="2-Column Mobile Feed"
+              className={`flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono transition-colors cursor-pointer ${
+                mobileColumns === 2
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <IconLayoutGrid size={11} />
+              <span>2 Col</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileColumns(1)}
+              title="1-Column Full Feed"
+              className={`flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono transition-colors cursor-pointer ${
+                mobileColumns === 1
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <IconLayoutColumns size={11} />
+              <span>1 Col</span>
+            </button>
+          </div>
+
+          <span className="font-mono text-[11px] text-muted-foreground">
+            {wallpapers.length} drops
+          </span>
+        </div>
+      </div>
+
+      {/* 2. Wallpaper Grid: 2-column mobile default (phone proportion), 3-column desktop */}
+      <div
+        className={`grid ${
+          mobileColumns === 1 ? "grid-cols-1" : "grid-cols-2"
+        } sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8`}
+      >
         {displayedWallpapers.map((wallpaper) => (
           <WallpaperCard
             key={wallpaper.id}
             wallpaper={wallpaper}
+            viewMode={viewMode}
             onPreview={onPreview}
             onEdit={onEdit}
             onDelete={onDelete}
@@ -132,11 +231,11 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
         ))}
       </div>
 
-      {/* 2. Pagination Navigation Bar (visible whenever there is more than 1 page) */}
+      {/* 3. Pagination Navigation Bar (visible whenever there is more than 1 page) */}
       {totalPages > 1 && (
         <nav
           aria-label="Wallpaper catalog pagination"
-          className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-10 border-t border-border"
+          className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 sm:pt-8 mt-8 sm:mt-10 border-t border-border"
         >
           {/* Metadata counter */}
           <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
@@ -145,71 +244,51 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
               <strong className="text-foreground font-semibold">
                 {startIndex + 1}–{endIndex}
               </strong>{" "}
-              of{" "}
-              <strong className="text-foreground font-semibold">
-                {wallpapers.length}
-              </strong>
-            </span>
-            <span className="text-border">•</span>
-            <span>
-              Page{" "}
-              <strong className="text-foreground font-semibold">
-                {validCurrentPage}
-              </strong>{" "}
-              of{" "}
-              <strong className="text-foreground font-semibold">
-                {totalPages}
-              </strong>
+              of <strong className="text-foreground font-semibold">{wallpapers.length}</strong> drops
             </span>
           </div>
 
           {/* Pagination Controls */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Previous Page Button */}
+          <div className="flex items-center gap-1.5">
+            {/* Prev Page Button */}
             <button
-              type="button"
               onClick={handlePrevPage}
               disabled={isFirstPage}
-              className={`inline-flex items-center gap-1.5 h-9 px-3.5 font-mono text-xs font-medium border transition-colors select-none rounded-none ${
-                isFirstPage
-                  ? "border-border/60 bg-muted/20 text-muted-foreground/40 cursor-not-allowed"
-                  : "border-border bg-surface text-foreground hover:border-primary hover:text-primary cursor-pointer active:scale-[0.98]"
-              }`}
               aria-label="Go to previous page"
+              className="flex items-center gap-1.5 h-8 px-3 border border-border bg-surface font-mono text-xs text-foreground hover:border-primary hover:text-primary disabled:opacity-35 disabled:pointer-events-none transition-colors cursor-pointer rounded-none"
             >
-              <IconArrowLeft size={14} />
-              <span>Prev</span>
+              <IconArrowLeft size={13} />
+              <span className="hidden sm:inline">Prev</span>
             </button>
 
-            {/* Page number buttons */}
+            {/* Numeric / Ellipsis Page Buttons */}
             <div className="flex items-center gap-1">
-              {paginationItems.map((item, idx) => {
+              {paginationItems.map((item, index) => {
                 if (item === "...") {
                   return (
                     <span
-                      key={`ellipsis-${idx}`}
-                      className="flex h-9 w-7 items-center justify-center font-mono text-xs text-muted-foreground select-none"
+                      key={`ellipsis-${index}`}
+                      className="flex h-8 w-7 items-center justify-center font-mono text-xs text-muted-foreground select-none"
                     >
-                      …
+                      ...
                     </span>
                   );
                 }
 
-                const pageNum = item as number;
-                const isActive = pageNum === validCurrentPage;
+                const pageNum = Number(item);
+                const isCurrent = pageNum === validCurrentPage;
 
                 return (
                   <button
-                    key={pageNum}
-                    type="button"
+                    key={`page-${pageNum}`}
                     onClick={() => handlePageChange(pageNum)}
-                    className={`flex h-9 min-w-9 items-center justify-center px-2.5 font-mono text-xs font-semibold border transition-colors select-none cursor-pointer rounded-none ${
-                      isActive
-                        ? "bg-primary border-primary text-primary-foreground shadow-xs"
-                        : "border-border bg-surface text-foreground hover:border-primary hover:text-primary active:scale-[0.98]"
+                    aria-current={isCurrent ? "page" : undefined}
+                    aria-label={`Page ${pageNum}`}
+                    className={`h-8 min-w-[32px] px-2 font-mono text-xs border transition-colors cursor-pointer rounded-none ${
+                      isCurrent
+                        ? "bg-primary text-primary-foreground border-primary font-semibold"
+                        : "bg-surface border-border text-foreground hover:border-primary hover:text-primary"
                     }`}
-                    aria-label={`Go to page ${pageNum}`}
-                    aria-current={isActive ? "page" : undefined}
                   >
                     {pageNum}
                   </button>
@@ -219,24 +298,19 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
 
             {/* Next Page Button */}
             <button
-              type="button"
               onClick={handleNextPage}
               disabled={isLastPage}
-              className={`inline-flex items-center gap-1.5 h-9 px-4 font-mono text-xs font-medium border-2 transition-all select-none rounded-none ${
-                isLastPage
-                  ? "border-border/60 bg-muted/20 text-muted-foreground/40 cursor-not-allowed"
-                  : "border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-primary hover:border-primary cursor-pointer active:scale-[0.98] shadow-xs"
-              }`}
               aria-label="Go to next page"
+              className="flex items-center gap-1.5 h-8 px-3 border border-border bg-surface font-mono text-xs text-foreground hover:border-primary hover:text-primary disabled:opacity-35 disabled:pointer-events-none transition-colors cursor-pointer rounded-none"
             >
-              <span>Next Page</span>
-              <IconArrowRight size={14} />
+              <span className="hidden sm:inline">Next</span>
+              <IconArrowRight size={13} />
             </button>
           </div>
         </nav>
       )}
 
-      {/* 3. Gen-Z Finale Quote: Rendered when reaching the last page */}
+      {/* 4. Editorial Catalog Quote Sign-Off on Final Page */}
       {isLastPage && (
         <CatalogEndQuote
           onScrollToTop={scrollToGridTop}

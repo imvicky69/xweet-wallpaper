@@ -8,7 +8,16 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   images: {
-    qualities: [75, 80, 85, 90, 92],
+    localPatterns: [
+      {
+        pathname: "/**",
+      },
+      {
+        pathname: "/api/download/**",
+        search: "?*",
+      },
+    ],
+    qualities: [75, 80, 85, 88, 90, 92, 95],
     // Cache optimized images on server/edge for 1 year instead of default 60s
     minimumCacheTTL: 31536000,
     formats: ["image/avif", "image/webp"],

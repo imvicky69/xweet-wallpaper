@@ -477,10 +477,8 @@ export default function UploadPage() {
 
       showToast(
         "info",
-        "Uploading Original Master",
-        isDualUploadPhone && mobileFile
-          ? `Transferring desktop master (${(sourceFile.size / (1024 * 1024)).toFixed(2)} MB) and dedicated phone file (${(mobileFile.size / (1024 * 1024)).toFixed(2)} MB) to Cloudflare R2...`
-          : `Transferring untouched ${sourceFile.name} (${(sourceFile.size / (1024 * 1024)).toFixed(2)} MB) to Cloudflare R2...`
+        "Processing 4K Master",
+        `Converting ${sourceFile.name} (${(sourceFile.size / (1024 * 1024)).toFixed(2)} MB) into 4K WebP master...`
       );
 
       const slugBase =
@@ -488,203 +486,38 @@ export default function UploadPage() {
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/(^-|-$)/g, "") || "wallpaper";
-      const wallpaperId = `wp_${Date.now()}`;
       const slug = slugBase;
 
-      const masterExt =
-        sourceFile.name.split(".").pop()?.toLowerCase() ||
-        (sourceFile.type.includes("jpeg") ? "jpg" : "png");
-      const masterVariant = formatMode === "mobile" ? "phone" : "desktop";
-
-      const uploadItems: Array<{ type: string; filename: string; contentType: string }> = [
-        {
-          type: masterVariant,
-          filename: `${masterVariant}.${masterExt}`,
-          contentType: sourceFile.type || "image/png",
-        },
-        {
-          type: "thumbnail",
-          filename: "thumbnail.webp",
-          contentType: "image/webp",
-        },
-      ];
-
-      let phoneCropResult: { blob: Blob; width: number; height: number; format: string } | null = null;
-      let phoneExt = "png";
-
-      if (formatMode === "dual") {
-        if (isDualUploadPhone && mobileFile) {
-          phoneExt =
-            mobileFile.name.split(".").pop()?.toLowerCase() ||
-            (mobileFile.type.includes("jpeg") ? "jpg" : "png");
-          uploadItems.push({
-            type: "phone",
-            filename: `phone.${phoneExt}`,
-            contentType: mobileFile.type || `image/${phoneExt}`,
-          });
-        } else {
-          phoneCropResult = await generatePhoneCropBlob(sourceFile, cropPosition);
-          phoneExt = phoneCropResult.format;
-          uploadItems.push({
-            type: "phone",
-            filename: `phone.${phoneCropResult.format}`,
-            contentType: phoneCropResult.blob.type || `image/${phoneCropResult.format}`,
-          });
-        }
-      }
-
       const idToken = await user.getIdToken();
-      const presignRes = await fetch("/api/upload/presign", {
+      const uploadFormData = new FormData();
+      uploadFormData.append("desktopImage", sourceFile);
+      uploadFormData.append("title", title.trim());
+      uploadFormData.append("description", fullDescription);
+      uploadFormData.append("category", finalCategory);
+      uploadFormData.append("dominantColor", dominantColor);
+      uploadFormData.append("tags", parsedHashtags.map((t) => t.replace(/^#/, "")).join(","));
+      uploadFormData.append("cropPosition", cropPosition.toString());
+      uploadFormData.append("slug", slug);
+      uploadFormData.append("formatMode", formatMode);
+
+      const res = await fetch("/api/upload", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${idToken}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ slug, items: uploadItems }),
+        body: uploadFormData,
       });
 
-      const presignData = await presignRes.json();
-      if (!presignRes.ok || !presignData.urls) {
-        throw new Error(presignData.error || "Failed to initialize Cloudflare R2 upload pipeline.");
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || data.error || "Failed to process 4K master wallpaper.");
       }
-
-      // Master File Upload
-      const masterPresign = presignData.urls[masterVariant];
-      const masterUploadRes = await fetch(masterPresign.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": sourceFile.type || "image/png" },
-        body: sourceFile,
-      });
-
-      if (!masterUploadRes.ok) {
-        throw new Error(`Master upload to Cloudflare R2 failed (HTTP ${masterUploadRes.status})`);
-      }
-
-      // Fast Thumbnail Upload
-      const thumbBlob = await generateThumbnailBlob(sourceFile);
-      const thumbPresign = presignData.urls["thumbnail"];
-      await fetch(thumbPresign.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": "image/webp" },
-        body: thumbBlob,
-      });
-
-      // Phone Upload (if Dual)
-      let phoneCdnUrl: string | undefined = undefined;
-      let phoneKey: string | undefined = undefined;
-      if (formatMode === "dual") {
-        const phonePresign = presignData.urls["phone"];
-        if (isDualUploadPhone && mobileFile) {
-          const phoneUploadRes = await fetch(phonePresign.uploadUrl, {
-            method: "PUT",
-            headers: { "Content-Type": mobileFile.type || `image/${phoneExt}` },
-            body: mobileFile,
-          });
-          if (phoneUploadRes.ok) {
-            phoneCdnUrl = phonePresign.cdnUrl;
-            phoneKey = phonePresign.key;
-          }
-        } else if (phoneCropResult) {
-          const phoneUploadRes = await fetch(phonePresign.uploadUrl, {
-            method: "PUT",
-            headers: { "Content-Type": phoneCropResult.blob.type || `image/${phoneCropResult.format}` },
-            body: phoneCropResult.blob,
-          });
-          if (phoneUploadRes.ok) {
-            phoneCdnUrl = phonePresign.cdnUrl;
-            phoneKey = phonePresign.key;
-          }
-        }
-      } else if (formatMode === "mobile") {
-        phoneCdnUrl = masterPresign.cdnUrl;
-        phoneKey = masterPresign.key;
-      }
-
-      const desktopCdnUrl = formatMode === "mobile" ? undefined : masterPresign.cdnUrl;
-      const thumbnailCdnUrl = thumbPresign.cdnUrl;
-      const isXweet = profile?.username?.toLowerCase() === "xweet" || profile?.isVerified;
-
-      const wallpaperPayload: Wallpaper = {
-        id: wallpaperId,
-        slug,
-        title: title.trim(),
-        description: fullDescription,
-        imageUrl: desktopCdnUrl || phoneCdnUrl!,
-        thumbnailUrl: thumbnailCdnUrl,
-        desktopAsset: desktopCdnUrl
-          ? {
-              key: masterPresign.key,
-              url: desktopCdnUrl,
-              width: imageDimensions.width,
-              height: imageDimensions.height,
-              resolution,
-              aspectRatio: "16:9",
-              fileSizeBytes: sourceFile.size,
-              format: masterExt as any,
-            }
-          : undefined,
-        hasPhoneCrop: Boolean(phoneCdnUrl),
-        phoneImageUrl: phoneCdnUrl,
-        phoneAsset: phoneCdnUrl
-          ? {
-              key: phoneKey!,
-              url: phoneCdnUrl,
-              width: isDualUploadPhone
-                ? mobileDimensions.width
-                : phoneCropResult
-                ? phoneCropResult.width
-                : imageDimensions.width,
-              height: isDualUploadPhone
-                ? mobileDimensions.height
-                : phoneCropResult
-                ? phoneCropResult.height
-                : imageDimensions.height,
-              resolution: isDualUploadPhone
-                ? mobileResolution
-                : phoneCropResult
-                ? `${phoneCropResult.width} × ${phoneCropResult.height}`
-                : resolution,
-              aspectRatio: "9:19.5",
-              fileSizeBytes: isDualUploadPhone
-                ? mobileFile!.size
-                : phoneCropResult
-                ? phoneCropResult.blob.size
-                : sourceFile.size,
-              format: (isDualUploadPhone
-                ? phoneExt
-                : phoneCropResult
-                ? phoneCropResult.format
-                : masterExt) as any,
-            }
-          : undefined,
-        resolution,
-        aspectRatio: formatMode === "mobile" ? "9:19.5" : "16:9",
-        orientation: formatMode === "mobile" ? "mobile" : "desktop",
-        category: finalCategory,
-        collection: finalCategory,
-        dominantColor,
-        tags: parsedHashtags.map((t) => t.replace(/^#/, "")),
-        author: {
-          id: isXweet ? "xweet" : user.uid,
-          username: profile?.username || "xweet",
-          displayName: profile?.displayName || "Vicky",
-          photoURL: profile?.photoURL || "/logo.png",
-          isVerified: isXweet,
-        },
-        views: 0,
-        downloads: 0,
-        isNew: true,
-        publishedAt: new Date().toISOString(),
-        createdAt: Date.now(),
-      };
-
-      await setDoc(doc(db, "wallpapers", wallpaperId), wallpaperPayload);
 
       setSuccess(true);
       showToast(
         "success",
-        "Drop Published in Full Master Quality!",
-        `"${title}" (${(sourceFile.size / (1024 * 1024)).toFixed(2)} MB) is preserved in Cloudflare R2.`
+        "Drop Published as 4K Master!",
+        `"${title}" is compressed to true 4K WebP and indexed in Firestore.`
       );
 
       setTimeout(() => {

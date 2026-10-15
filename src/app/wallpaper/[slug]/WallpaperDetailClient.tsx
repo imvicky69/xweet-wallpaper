@@ -22,7 +22,7 @@ import { WallpaperCard } from "@/components/wallpapers/WallpaperCard";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
 import { getCdnImageUrl } from "@/lib/wallpapers";
 import { useWallpapers } from "@/hooks/useWallpapers";
-import { triggerDirectDownload } from "@/lib/download";
+import { triggerDirectDownload, triggerDynamicDownload } from "@/lib/download";
 import { Wallpaper } from "@/types/wallpaper";
 
 interface WallpaperDetailClientProps {
@@ -64,44 +64,23 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
   };
   const isXweetAuthor = author.username?.toLowerCase() === "xweet" || author.isVerified;
 
-  const downloadFile = (url: string, suffix: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${wallpaper.slug}-${suffix}.png`;
-    link.target = "_blank";
-    link.rel = "noreferrer";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const handleDownloadDesktop = () => {
     setDownloadSuccess("desktop");
-    const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
-    const ext = wallpaper.desktopAsset?.format || desktopUrl.split(".").pop()?.split("?")[0] || "png";
-    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.${ext}`);
+    triggerDynamicDownload(wallpaper.slug, "desktop-4k", "webp");
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadPhone = () => {
     setDownloadSuccess("phone");
-    const phoneUrl = getCdnImageUrl(
-      wallpaper.phoneImageUrl || wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`
-    );
-    const ext = wallpaper.phoneAsset?.format || phoneUrl.split(".").pop()?.split("?")[0] || "png";
-    triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone.${ext}`);
+    triggerDynamicDownload(wallpaper.slug, "phone-4k", "webp");
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
 
   const handleDownloadBoth = () => {
     setDownloadSuccess("both");
-    const desktopUrl = getCdnImageUrl(wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/${wallpaper.slug}.png`);
-    const dExt = wallpaper.desktopAsset?.format || desktopUrl.split(".").pop()?.split("?")[0] || "png";
-    triggerDirectDownload(desktopUrl, `${wallpaper.slug}-desktop-4k.${dExt}`);
+    triggerDynamicDownload(wallpaper.slug, "desktop-4k", "webp");
     setTimeout(() => {
-      const phoneUrl = getCdnImageUrl(wallpaper.phoneImageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`);
-      const pExt = wallpaper.phoneAsset?.format || phoneUrl.split(".").pop()?.split("?")[0] || "png";
-      triggerDirectDownload(phoneUrl, `${wallpaper.slug}-phone.${pExt}`);
+      triggerDynamicDownload(wallpaper.slug, "phone-4k", "webp");
     }, 450);
     setTimeout(() => setDownloadSuccess(null), 2500);
   };
@@ -136,7 +115,7 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
     description: wallpaper.description,
     contentUrl: getCdnImageUrl(wallpaper.imageUrl),
     thumbnailUrl: getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl),
-    keywords: wallpaper.tags.join(", "),
+    keywords: (wallpaper.tags || []).join(", "),
     creator: {
       "@type": "Organization",
       name: "Xweet",
@@ -308,11 +287,13 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                   <div className="py-6 sm:py-8">
                     <div className="relative w-[220px] sm:w-[300px] aspect-[9/19.5] rounded-[36px] sm:rounded-[42px] border-[5px] sm:border-[6px] border-border/80 overflow-hidden shadow-2xl bg-black">
                       <Image
-                        src={getCdnImageUrl(wallpaper.phoneImageUrl || wallpaper.imageUrl || `https://cdn.xweet.in/wallpapers/phone/${wallpaper.slug}.png`)}
+                        src={`/api/download/${wallpaper.slug}?type=phone-4k&inline=true&v=${wallpaper.storage?.phoneCropCoords?.x ?? 0}`}
                         alt={`${wallpaper.title} Mobile Wallpaper`}
                         fill
                         priority
-                        sizes="320px"
+                        sizes="(max-width: 640px) 100vw, 600px"
+                        quality={95}
+                        unoptimized
                         className="object-cover protected-image select-none pointer-events-none"
                         draggable={false}
                       />
@@ -353,10 +334,13 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {(wallpaper.palette || [wallpaper.dominantColor]).map((hex, i) => (
+                    {((wallpaper.palette && wallpaper.palette.length > 0)
+                      ? wallpaper.palette
+                      : [wallpaper.dominantColor || "#111B2A"]
+                    ).map((hex, i) => (
                       <button
                         key={i}
-                        onClick={() => copyToClipboard(hex)}
+                        onClick={() => copyToClipboard(hex || "#111B2A")}
                         title={`Copy ${hex}`}
                         className="group flex items-center gap-1.5 border border-border px-2 py-1 bg-background hover:border-primary transition-colors cursor-pointer"
                       >
@@ -600,7 +584,7 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                   Metadata Tags
                 </h3>
                 <div className="flex flex-wrap gap-1.5">
-                  {wallpaper.tags.map((tag) => (
+                  {(wallpaper.tags || []).map((tag) => (
                     <span
                       key={tag}
                       className="font-mono text-[11px] text-muted-foreground border border-border px-2 py-0.5 bg-background hover:border-primary hover:text-primary transition-colors"
