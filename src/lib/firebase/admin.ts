@@ -68,6 +68,11 @@ function getAdminApp(): App | null {
   return null;
 }
 
-adminApp = getAdminApp();
+try {
+  adminApp = getAdminApp();
+} catch (e) {
+  console.warn("Failed to initialize adminApp:", e);
+  adminApp = null;
+}
 export const adminAuth: Auth | null = adminApp ? getAuth(adminApp) : null;
 export const adminDb: Firestore | null = adminApp ? getFirestore(adminApp) : null;

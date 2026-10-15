@@ -22,7 +22,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
-import { getCdnImageUrl } from "@/lib/wallpapers";
+import { getCdnImageUrl, getPhoneCropStyle, getPhonePreviewUrl } from "@/lib/wallpapers";
 import { triggerDirectDownload, triggerDynamicDownload } from "@/lib/download";
 import { Button } from "@/components/ui/Button";
 
@@ -304,12 +304,12 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                   )}
 
                   <Image
-                    src={`/api/download/${wallpaper.slug}?type=phone-4k&inline=true&v=${wallpaper.storage?.phoneCropCoords?.x ?? 0}`}
-                    alt={wallpaper.title}
+                    src={getPhonePreviewUrl(wallpaper)}
+                    alt={`${wallpaper.title} Phone Lockscreen`}
                     fill
                     sizes="(max-width: 640px) 100vw, 480px"
                     quality={95}
-                    unoptimized
+                    style={getPhoneCropStyle(wallpaper)}
                     className="object-cover protected-image select-none pointer-events-none"
                     draggable={false}
                     priority

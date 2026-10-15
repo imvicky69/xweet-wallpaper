@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import sharp from "sharp";
-import { adminDb } from "@/lib/firebase/admin";
-import { getObjectFromR2, bucketName, publicCdnDomain } from "@/lib/r2";
-import { WALLPAPERS } from "@/lib/wallpapers";
+import { getObjectFromR2, publicCdnDomain } from "@/lib/r2";
+import { WALLPAPERS, normalizeWallpaper } from "@/lib/wallpapers";
 import { Wallpaper, WallpaperCropCoords } from "@/types/wallpaper";
+
 /**
  * Dynamic Cropping & Wallpaper Variant Streamer API Route
  *
@@ -33,33 +32,40 @@ export async function GET(
     // 1. Fetch Wallpaper Metadata from Firestore or fallback static catalog
     let wallpaper: Wallpaper | null = null;
 
-    if (adminDb) {
-      try {
-        const querySnapshot = await adminDb
+    try {
+      const adminMod = await import("@/lib/firebase/admin");
+      const adminDb = adminMod.adminDb;
+      if (adminDb) {
+        const queryPromise = adminDb
           .collection("wallpapers")
           .where("slug", "==", slug)
           .limit(1)
           .get();
+        const timeoutPromise = new Promise<null>((resolve) =>
+          setTimeout(() => resolve(null), 1200)
+        );
+        const snap = await Promise.race([queryPromise, timeoutPromise]);
 
-        if (!querySnapshot.empty) {
-          const docData = querySnapshot.docs[0].data();
-          wallpaper = {
-            id: querySnapshot.docs[0].id,
+        if (snap && !snap.empty) {
+          const docData = snap.docs[0].data();
+          wallpaper = normalizeWallpaper({
+            id: snap.docs[0].id,
             ...docData,
-          } as Wallpaper;
+          });
         } else {
           // Direct ID lookup fallback
-          const directDoc = await adminDb.collection("wallpapers").doc(slug).get();
-          if (directDoc.exists) {
-            wallpaper = {
-              id: directDoc.id,
-              ...directDoc.data(),
-            } as Wallpaper;
+          const directPromise = adminDb.collection("wallpapers").doc(slug).get();
+          const directSnap = await Promise.race([directPromise, timeoutPromise]);
+          if (directSnap && directSnap.exists) {
+            wallpaper = normalizeWallpaper({
+              id: directSnap.id,
+              ...directSnap.data(),
+            });
           }
         }
-      } catch (dbErr: any) {
-        console.warn("Firestore query note in download route:", dbErr?.message);
       }
+    } catch (dbErr: any) {
+      console.warn("Firestore query note in download route:", dbErr?.message);
     }
 
     if (!wallpaper) {
@@ -88,7 +94,7 @@ export async function GET(
         }
       }
     } catch (e: any) {
-      console.warn("Direct R2 read error, falling back to CDN fetch:", e?.message);
+      console.warn("Direct R2 read note, falling back to CDN fetch:", e?.message);
     }
 
     // B. Fallback: Fetch via public CDN URL
@@ -124,7 +130,7 @@ export async function GET(
       });
     }
 
-    // 4. Conditional ETag check to save 100% bandwidth on cached requests
+    // 4. Conditional ETag check to save bandwidth on cached requests
     const cropKey = wallpaper?.storage?.phoneCropCoords
       ? `${wallpaper.storage.phoneCropCoords.x}_${wallpaper.storage.phoneCropCoords.y}_${wallpaper.storage.phoneCropCoords.width}_${wallpaper.storage.phoneCropCoords.height}`
       : "default";
@@ -140,113 +146,135 @@ export async function GET(
       });
     }
 
-    // 5. Dynamic Transformation Pipeline via Sharp
-    const sharpInstance = sharp(masterBuffer);
-    const metadata = await sharpInstance.metadata();
-    const naturalWidth = metadata.width || 3840;
-    const naturalHeight = metadata.height || 2160;
+    // 5. Dynamic Transformation Pipeline (Safe dynamic import with master buffer fallback)
+    let outputBuffer: Buffer = masterBuffer;
+    let contentType =
+      requestedFormat === "png"
+        ? "image/png"
+        : requestedFormat === "jpg" || requestedFormat === "jpeg"
+        ? "image/jpeg"
+        : "image/webp";
+    let fileExtension =
+      requestedFormat === "png"
+        ? "png"
+        : requestedFormat === "jpg" || requestedFormat === "jpeg"
+        ? "jpg"
+        : "webp";
 
-    let pipeline = sharp(masterBuffer);
+    try {
+      const sharpMod = await import("sharp");
+      const sharpFn = sharpMod.default || sharpMod;
+      const sharpInstance = sharpFn(masterBuffer);
+      const metadata = await sharpInstance.metadata();
+      const naturalWidth = metadata.width || 3840;
+      const naturalHeight = metadata.height || 2160;
 
-    if (
-      type === "phone-4k" ||
-      type === "phone" ||
-      type === "mobile" ||
-      type === "lockscreen"
-    ) {
-      // Dynamic vertical cropping using stored phoneCropCoords or auto 9:16 center crop
-      const phoneCropCoords: WallpaperCropCoords | undefined =
-        wallpaper?.storage?.phoneCropCoords;
-
-      let cropLeft: number;
-      let cropTop: number;
-      let cropWidth: number;
-      let cropHeight: number;
+      let pipeline = sharpFn(masterBuffer);
 
       if (
-        phoneCropCoords &&
-        typeof phoneCropCoords.width === "number" &&
-        typeof phoneCropCoords.height === "number" &&
-        phoneCropCoords.width > 0 &&
-        phoneCropCoords.height > 0
+        type === "phone-4k" ||
+        type === "phone" ||
+        type === "mobile" ||
+        type === "lockscreen"
       ) {
-        cropLeft = Math.max(0, Math.min(naturalWidth - 1, Math.round(phoneCropCoords.x)));
-        cropTop = Math.max(0, Math.min(naturalHeight - 1, Math.round(phoneCropCoords.y)));
-        cropWidth = Math.min(naturalWidth - cropLeft, Math.round(phoneCropCoords.width));
-        cropHeight = Math.min(naturalHeight - cropTop, Math.round(phoneCropCoords.height));
-      } else {
-        // Compute standard vertical 9:16 lockscreen crop centered horizontally
-        const targetAspect = 9 / 16;
-        cropHeight = naturalHeight;
-        cropWidth = Math.min(naturalWidth, Math.round(naturalHeight * targetAspect));
-        cropLeft = Math.max(0, Math.round((naturalWidth - cropWidth) / 2));
-        cropTop = 0;
-      }
+        // Dynamic vertical cropping using stored phoneCropCoords or auto 9:16 center crop
+        const phoneCropCoords: WallpaperCropCoords | undefined =
+          wallpaper?.storage?.phoneCropCoords;
 
-      pipeline = pipeline.extract({
-        left: cropLeft,
-        top: cropTop,
-        width: cropWidth,
-        height: cropHeight,
-      });
+        let cropLeft: number;
+        let cropTop: number;
+        let cropWidth: number;
+        let cropHeight: number;
 
-      // Target true mobile Retina dimensions if master crop is sufficiently large
-      if (cropWidth > 1290 || cropHeight > 2796) {
-        pipeline = pipeline.resize({
-          width: 1290,
-          height: 2796,
-          fit: "cover",
-          position: "centre",
+        if (
+          phoneCropCoords &&
+          typeof phoneCropCoords.width === "number" &&
+          typeof phoneCropCoords.height === "number" &&
+          phoneCropCoords.width > 0 &&
+          phoneCropCoords.height > 0
+        ) {
+          cropLeft = Math.max(0, Math.min(naturalWidth - 1, Math.round(phoneCropCoords.x)));
+          cropTop = Math.max(0, Math.min(naturalHeight - 1, Math.round(phoneCropCoords.y)));
+          cropWidth = Math.min(naturalWidth - cropLeft, Math.round(phoneCropCoords.width));
+          cropHeight = Math.min(naturalHeight - cropTop, Math.round(phoneCropCoords.height));
+        } else {
+          // Compute standard vertical 9:16 lockscreen crop centered horizontally
+          const targetAspect = 9 / 16;
+          cropHeight = naturalHeight;
+          cropWidth = Math.min(naturalWidth, Math.round(naturalHeight * targetAspect));
+          cropLeft = Math.max(0, Math.round((naturalWidth - cropWidth) / 2));
+          cropTop = 0;
+        }
+
+        pipeline = pipeline.extract({
+          left: cropLeft,
+          top: cropTop,
+          width: cropWidth,
+          height: cropHeight,
         });
-      }
-    } else if (type === "desktop-1080p" || type === "1080p" || type === "fhd") {
-      // Scale down to 1080p Full HD
-      pipeline = pipeline.resize({
-        width: 1920,
-        height: 1080,
-        fit: "inside",
-        withoutEnlargement: true,
-      });
-    } else if (type === "thumbnail" || type === "thumb") {
-      // Fast edge-cached grid thumbnail
-      pipeline = pipeline.resize({
-        width: 800,
-        withoutEnlargement: true,
-      });
-    } else {
-      // Default: 4K Desktop Master. Ensure within true 4K (3840x2160)
-      if (naturalWidth > 3840 || naturalHeight > 2160) {
+
+        // Target true mobile Retina dimensions if master crop is sufficiently large
+        if (cropWidth > 1290 || cropHeight > 2796) {
+          pipeline = pipeline.resize({
+            width: 1290,
+            height: 2796,
+            fit: "cover",
+            position: "centre",
+          });
+        }
+      } else if (type === "desktop-1080p" || type === "1080p" || type === "fhd") {
+        // Scale down to 1080p Full HD
         pipeline = pipeline.resize({
-          width: 3840,
-          height: 2160,
+          width: 1920,
+          height: 1080,
           fit: "inside",
           withoutEnlargement: true,
         });
+      } else if (type === "thumbnail" || type === "thumb") {
+        // Fast edge-cached grid thumbnail
+        pipeline = pipeline.resize({
+          width: 800,
+          withoutEnlargement: true,
+        });
+      } else {
+        // Default: 4K Desktop Master. Ensure within true 4K (3840x2160)
+        if (naturalWidth > 3840 || naturalHeight > 2160) {
+          pipeline = pipeline.resize({
+            width: 3840,
+            height: 2160,
+            fit: "inside",
+            withoutEnlargement: true,
+          });
+        }
       }
+
+      // Encode into Target Image Format
+      if (requestedFormat === "png") {
+        contentType = "image/png";
+        fileExtension = "png";
+        pipeline = pipeline.png({ compressionLevel: 6 });
+      } else if (requestedFormat === "jpg" || requestedFormat === "jpeg") {
+        contentType = "image/jpeg";
+        fileExtension = "jpg";
+        pipeline = pipeline.jpeg({ quality: 95, mozjpeg: true });
+      } else {
+        contentType = "image/webp";
+        fileExtension = "webp";
+        pipeline = pipeline.webp({
+          quality: type === "thumbnail" || type === "thumb" ? 85 : 94,
+          effort: 4,
+        });
+      }
+
+      outputBuffer = await pipeline.toBuffer();
+    } catch (sharpError: any) {
+      console.warn("Sharp transformation unavailable or failed, serving master buffer fallback:", sharpError?.message);
+      outputBuffer = masterBuffer;
+      const masterExt = r2Key.endsWith(".png") ? "png" : "webp";
+      contentType = masterExt === "png" ? "image/png" : "image/webp";
+      fileExtension = masterExt;
     }
 
-    // 6. Encode into Target Image Format
-    let contentType = "image/webp";
-    let fileExtension = "webp";
-
-    if (requestedFormat === "png") {
-      contentType = "image/png";
-      fileExtension = "png";
-      pipeline = pipeline.png({ compressionLevel: 8 });
-    } else if (requestedFormat === "jpg" || requestedFormat === "jpeg") {
-      contentType = "image/jpeg";
-      fileExtension = "jpg";
-      pipeline = pipeline.jpeg({ quality: 95, mozjpeg: true });
-    } else {
-      contentType = "image/webp";
-      fileExtension = "webp";
-      pipeline = pipeline.webp({
-        quality: type === "thumbnail" || type === "thumb" ? 85 : 94,
-        effort: 4,
-      });
-    }
-
-    const outputBuffer = await pipeline.toBuffer();
     const sanitizedFilename = `${cleanSlug}-${type}.${fileExtension}`.replace(
       /[^a-zA-Z0-9_.-]/g,
       "_"

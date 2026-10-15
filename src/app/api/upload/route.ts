@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import sharp from "sharp";
 import { uploadToR2, publicCdnDomain } from "@/lib/r2";
-import { adminDb } from "@/lib/firebase/admin";
 import { Wallpaper, AuthorRef, AspectRatio, WallpaperCropCoords } from "@/types/wallpaper";
 // Lightweight JWT payload parser that runs in pure JavaScript without native Google ADC/gRPC dependencies
 function parseJwtPayload(token: string): any {
@@ -107,31 +105,50 @@ export async function POST(req: NextRequest) {
     // 5. SINGLE MASTER FILE POLICY:
     // Convert uploaded image to single compressed, high-grade WebP master at true 4K (3840x2160, quality: 94)
     const rawBuffer = Buffer.from(await sourceFile.arrayBuffer());
-    const sharpInstance = sharp(rawBuffer);
-    const meta = await sharpInstance.metadata();
-    const origWidth = meta.width || 3840;
-    const origHeight = meta.height || 2160;
+    let masterWebPBuffer: Buffer = rawBuffer;
+    let finalWidth = 3840;
+    let finalHeight = 2160;
 
-    let masterPipeline = sharp(rawBuffer);
-
-    // True 4K mastering: scale to 3840x2160 while maintaining aspect ratio
-    if (origWidth > 3840 || origHeight > 2160) {
-      masterPipeline = masterPipeline.resize({
-        width: 3840,
-        height: 2160,
-        fit: "inside",
-        withoutEnlargement: true,
-      });
+    let sharpFn: any = null;
+    try {
+      const sharpMod = await import("sharp");
+      sharpFn = sharpMod.default || sharpMod;
+    } catch (e) {
+      console.warn("Sharp dynamic import unavailable in upload:", e);
     }
 
-    const masterWebPBuffer = await masterPipeline
-      .webp({ quality: 94, effort: 4 })
-      .toBuffer();
+    if (sharpFn) {
+      try {
+        const sharpInstance = sharpFn(rawBuffer);
+        const meta = await sharpInstance.metadata();
+        const origWidth = meta.width || 3840;
+        const origHeight = meta.height || 2160;
 
-    // Verify final master dimensions
-    const processedMeta = await sharp(masterWebPBuffer).metadata();
-    const finalWidth = processedMeta.width || origWidth;
-    const finalHeight = processedMeta.height || origHeight;
+        let masterPipeline = sharpFn(rawBuffer);
+
+        // True 4K mastering: scale to 3840x2160 while maintaining aspect ratio
+        if (origWidth > 3840 || origHeight > 2160) {
+          masterPipeline = masterPipeline.resize({
+            width: 3840,
+            height: 2160,
+            fit: "inside",
+            withoutEnlargement: true,
+          });
+        }
+
+        masterWebPBuffer = await masterPipeline
+          .webp({ quality: 94, effort: 4 })
+          .toBuffer();
+
+        // Verify final master dimensions
+        const processedMeta = await sharpFn(masterWebPBuffer).metadata();
+        finalWidth = processedMeta.width || origWidth;
+        finalHeight = processedMeta.height || origHeight;
+      } catch (sharpProcErr) {
+        console.warn("Sharp processing failed, falling back to raw buffer:", sharpProcErr);
+        masterWebPBuffer = rawBuffer;
+      }
+    }
 
     // 6. Calculate Phone Crop Coordinates (9:16 vertical aspect ratio)
     const targetAspect = 9 / 16;
@@ -244,8 +261,14 @@ export async function POST(req: NextRequest) {
     };
 
     // 9. Save to Firestore collection if Admin DB is available
-    if (adminDb) {
-      await adminDb.collection("wallpapers").doc(wallpaperId).set(wallpaperPayload);
+    try {
+      const adminMod = await import("@/lib/firebase/admin");
+      const adminDb = adminMod.adminDb;
+      if (adminDb) {
+        await adminDb.collection("wallpapers").doc(wallpaperId).set(wallpaperPayload);
+      }
+    } catch (dbErr) {
+      console.warn("Could not save to firestore in upload:", dbErr);
     }
 
     return NextResponse.json({

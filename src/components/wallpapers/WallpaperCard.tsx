@@ -16,7 +16,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { Wallpaper } from "@/types/wallpaper";
-import { getCdnImageUrl } from "@/lib/wallpapers";
+import { getCdnImageUrl, getPhoneCropStyle, getPhonePreviewUrl } from "@/lib/wallpapers";
 import { triggerDynamicDownload } from "@/lib/download";
 
 interface WallpaperCardProps {
@@ -103,9 +103,9 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
       ? "aspect-[9/16]"
       : "aspect-[9/16] sm:aspect-[16/10]";
 
-  const cropStamp = wallpaper.storage?.phoneCropCoords?.x ?? 0;
-  const phonePreviewSrc = `/api/download/${wallpaper.slug}?type=phone-4k&inline=true&v=${cropStamp}`;
   const desktopPreviewSrc = getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl);
+  const phonePreviewSrc = getPhonePreviewUrl(wallpaper);
+  const phoneCropStyle = getPhoneCropStyle(wallpaper);
 
   return (
     <article
@@ -138,7 +138,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
             fill
             sizes="(max-width: 640px) 50vw, 33vw"
             quality={90}
-            unoptimized
+            style={phoneCropStyle}
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] protected-image pointer-events-none select-none"
             draggable={false}
           />

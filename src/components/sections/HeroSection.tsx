@@ -10,7 +10,7 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
 import { Wallpaper } from "@/types/wallpaper";
-import { getCdnImageUrl } from "@/lib/wallpapers";
+import { getCdnImageUrl, getPhoneCropStyle, getPhonePreviewUrl } from "@/lib/wallpapers";
 
 interface HeroSlide {
   wallpaper: Wallpaper;
@@ -260,12 +260,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     className="absolute inset-0"
                   >
                     <Image
-                      src={`/api/download/${active.wallpaper.slug}?type=phone-4k&inline=true`}
+                      src={getPhonePreviewUrl(active.wallpaper)}
                       alt={`${active.wallpaper.title} Phone Lockscreen Crop`}
                       fill
                       sizes="200px"
                       quality={92}
                       priority
+                      style={getPhoneCropStyle(active.wallpaper)}
                       className="object-cover select-none pointer-events-none"
                       draggable={false}
                     />

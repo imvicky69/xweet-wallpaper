@@ -2196,6 +2196,54 @@ export function getCdnImageUrl(url?: string | null): string {
 }
 
 /**
+ * Calculates responsive CSS object-position for phone preview cards
+ * based on saved phoneCropCoords and original master resolution.
+ */
+export function getPhoneCropStyle(wallpaper?: Wallpaper | null): React.CSSProperties {
+  if (!wallpaper) return { objectPosition: "center center" };
+
+  const coords = wallpaper.storage?.phoneCropCoords;
+  if (!coords || typeof coords.x !== "number" || typeof coords.width !== "number") {
+    return { objectPosition: "center center" };
+  }
+
+  // Parse natural resolution width
+  let naturalWidth = 2752;
+  if (wallpaper.resolution) {
+    const parts = wallpaper.resolution.split(/[×xX]/);
+    const parsedW = parseInt(parts[0]?.trim(), 10);
+    if (!isNaN(parsedW) && parsedW > 0) {
+      naturalWidth = parsedW;
+    }
+  } else if (wallpaper.aspectRatio === "16:9") {
+    naturalWidth = 2752;
+  } else if (wallpaper.aspectRatio === "16:10") {
+    naturalWidth = 3840;
+  }
+
+  const maxOffset = naturalWidth - coords.width;
+  if (maxOffset <= 0) {
+    return { objectPosition: "center center" };
+  }
+
+  const pct = Math.max(0, Math.min(100, (coords.x / maxOffset) * 100));
+  return { objectPosition: `${pct.toFixed(2)}% center` };
+}
+
+/**
+ * Returns the best CDN image URL for mobile lockscreen previews.
+ * Falls back to desktop master/thumbnail if dedicated phone asset is not present.
+ */
+export function getPhonePreviewUrl(wallpaper?: Wallpaper | null): string {
+  if (!wallpaper) return "";
+  if (wallpaper.phoneImageUrl && wallpaper.phoneImageUrl !== wallpaper.imageUrl) {
+    return getCdnImageUrl(wallpaper.phoneImageUrl);
+  }
+  return getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl);
+}
+
+
+/**
  * Normalizes any raw wallpaper (from Firestore or static fallback)
  * into the new clean schema while retaining convenience accessors.
  */

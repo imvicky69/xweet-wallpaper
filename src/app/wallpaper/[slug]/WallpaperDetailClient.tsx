@@ -20,7 +20,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { WallpaperCard } from "@/components/wallpapers/WallpaperCard";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
-import { getCdnImageUrl } from "@/lib/wallpapers";
+import { getCdnImageUrl, getPhoneCropStyle, getPhonePreviewUrl } from "@/lib/wallpapers";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { triggerDirectDownload, triggerDynamicDownload } from "@/lib/download";
 import { Wallpaper } from "@/types/wallpaper";
@@ -287,13 +287,13 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                   <div className="py-6 sm:py-8">
                     <div className="relative w-[220px] sm:w-[300px] aspect-[9/19.5] rounded-[36px] sm:rounded-[42px] border-[5px] sm:border-[6px] border-border/80 overflow-hidden shadow-2xl bg-black">
                       <Image
-                        src={`/api/download/${wallpaper.slug}?type=phone-4k&inline=true&v=${wallpaper.storage?.phoneCropCoords?.x ?? 0}`}
+                        src={getPhonePreviewUrl(wallpaper)}
                         alt={`${wallpaper.title} Mobile Wallpaper`}
                         fill
                         priority
                         sizes="(max-width: 640px) 100vw, 600px"
                         quality={95}
-                        unoptimized
+                        style={getPhoneCropStyle(wallpaper)}
                         className="object-cover protected-image select-none pointer-events-none"
                         draggable={false}
                       />
