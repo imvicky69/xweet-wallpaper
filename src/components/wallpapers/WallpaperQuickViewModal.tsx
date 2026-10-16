@@ -442,13 +442,19 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                     <IconColorSwatch size={13} className="text-primary" />
                     Color Palette
                   </span>
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className="h-3 w-3 rounded-none border border-border"
-                      style={{ backgroundColor: wallpaper.dominantColor }}
-                      title={wallpaper.dominantColor}
-                    />
-                    <span className="text-foreground font-medium text-[11px]">{wallpaper.dominantColor}</span>
+                  <div className="flex items-center gap-1">
+                    {(wallpaper.palette && wallpaper.palette.length > 0
+                      ? wallpaper.palette
+                      : [wallpaper.dominantColor || "#111B2A"]
+                    ).map((c, idx) => (
+                      <span
+                        key={idx}
+                        className="h-3 w-3 rounded-none border border-border/70 inline-block"
+                        style={{ backgroundColor: c }}
+                        title={`Color: ${c}`}
+                      />
+                    ))}
+                    <span className="text-foreground font-medium text-[11px] ml-1">{wallpaper.dominantColor}</span>
                   </div>
                 </div>
               </div>

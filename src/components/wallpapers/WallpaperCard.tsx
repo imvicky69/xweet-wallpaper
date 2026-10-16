@@ -98,7 +98,9 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
     viewMode === "mobile"
       ? "aspect-[9/16]"
       : viewMode === "desktop"
-      ? "aspect-[16/10]"
+      ? isPortrait && !wallpaper.desktopAsset
+        ? "aspect-[9/16]"
+        : "aspect-[16/10]"
       : isPortrait
       ? "aspect-[9/16]"
       : "aspect-[9/16] sm:aspect-[16/10]";
@@ -126,10 +128,14 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
           }}
         />
 
-        {/* 1. Mobile Phone Cropped View (Visible on mobile viewports or when viewMode is 'mobile') */}
+        {/* 1. Mobile Phone Cropped View (Visible on mobile viewports, or when viewMode is 'mobile', or for portrait-only wallpapers) */}
         <div
           className={`absolute inset-0 ${
-            viewMode === "desktop" ? "hidden" : viewMode === "mobile" ? "block" : "block sm:hidden"
+            viewMode === "desktop" && !isPortrait
+              ? "hidden"
+              : viewMode === "mobile" || (isPortrait && !wallpaper.desktopAsset)
+              ? "block"
+              : "block sm:hidden"
           }`}
         >
           <Image
@@ -152,10 +158,16 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
           </div>
         </div>
 
-        {/* 2. Desktop Landscape Master View (Visible on sm+ screens or when viewMode is 'desktop') */}
+        {/* 2. Desktop Landscape Master View (Visible on sm+ screens or when viewMode is 'desktop' for landscape/dual wallpapers) */}
         <div
           className={`absolute inset-0 ${
-            viewMode === "mobile" ? "hidden" : viewMode === "desktop" ? "block" : "hidden sm:block"
+            isPortrait && !wallpaper.desktopAsset
+              ? "hidden"
+              : viewMode === "mobile"
+              ? "hidden"
+              : viewMode === "desktop"
+              ? "block"
+              : "hidden sm:block"
           }`}
         >
           <Image
@@ -396,11 +408,24 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
 
           {/* Color Indicator */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            <span
-              className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-none border border-border shrink-0"
-              style={{ backgroundColor: wallpaper.dominantColor }}
-              title={`Color: ${wallpaper.dominantColor}`}
-            />
+            {wallpaper.palette && wallpaper.palette.length > 1 ? (
+              <div className="flex items-center -space-x-0.5">
+                {wallpaper.palette.slice(0, 3).map((hex, idx) => (
+                  <span
+                    key={idx}
+                    className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-none border border-border/80 shrink-0"
+                    style={{ backgroundColor: hex }}
+                    title={`Color: ${hex}`}
+                  />
+                ))}
+              </div>
+            ) : (
+              <span
+                className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-none border border-border shrink-0"
+                style={{ backgroundColor: wallpaper.dominantColor }}
+                title={`Color: ${wallpaper.dominantColor}`}
+              />
+            )}
             <span className="text-[9px] sm:text-[10px] text-muted-foreground/80 tracking-wider">
               {wallpaper.aspectRatio}
             </span>

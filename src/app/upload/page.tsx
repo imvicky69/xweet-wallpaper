@@ -69,6 +69,8 @@ export default function UploadPage() {
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [customCategoryInput, setCustomCategoryInput] = useState("");
   const [dominantColor, setDominantColor] = useState("#111B2A");
+  const [palette, setPalette] = useState<string[]>(["#111B2A", "#F0E5D2", "#263F32", "#829BAA"]);
+  const [isAutoDetectedColor, setIsAutoDetectedColor] = useState<boolean>(false);
   const [tagsInput, setTagsInput] = useState("lockscreen, minimal, dark");
   const [autoSyncHashtags, setAutoSyncHashtags] = useState(true);
 
@@ -94,6 +96,149 @@ export default function UploadPage() {
         return word.charAt(0).toUpperCase() + word.slice(1);
       })
       .join(" ");
+  };
+
+  /**
+   * Fast, accurate client-side color palette extraction using an offscreen canvas.
+   * Clusters colors into quant buckets and extracts 5 diverse, harmonious colors.
+   */
+  const extractPaletteFromImage = (img: HTMLImageElement): { dominant: string; palette: string[] } => {
+    try {
+      const canvas = document.createElement("canvas");
+      const size = 96;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return { dominant: "#111B2A", palette: ["#111B2A", "#F0E5D2", "#263F32", "#829BAA"] };
+
+      ctx.drawImage(img, 0, 0, size, size);
+      const imgData = ctx.getImageData(0, 0, size, size).data;
+
+      // Group pixels into color buckets (quantize by step of 20)
+      const step = 20;
+      const colorBuckets = new Map<string, { r: number; g: number; b: number; count: number }>();
+
+      for (let i = 0; i < imgData.length; i += 4) {
+        const a = imgData[i + 3];
+        if (a < 128) continue; // Skip transparency
+
+        const r = imgData[i];
+        const g = imgData[i + 1];
+        const b = imgData[i + 2];
+
+        const qr = Math.floor(r / step) * step;
+        const qg = Math.floor(g / step) * step;
+        const qb = Math.floor(b / step) * step;
+        const key = `${qr},${qg},${qb}`;
+
+        const existing = colorBuckets.get(key);
+        if (existing) {
+          existing.r += r;
+          existing.g += g;
+          existing.b += b;
+          existing.count += 1;
+        } else {
+          colorBuckets.set(key, { r, g, b, count: 1 });
+        }
+      }
+
+      const allBuckets = Array.from(colorBuckets.values()).map((b) => {
+        const avgR = Math.round(b.r / b.count);
+        const avgG = Math.round(b.g / b.count);
+        const avgB = Math.round(b.b / b.count);
+        const maxVal = Math.max(avgR, avgG, avgB);
+        const minVal = Math.min(avgR, avgG, avgB);
+        const sat = maxVal === 0 ? 0 : (maxVal - minVal) / maxVal;
+        return {
+          r: avgR,
+          g: avgG,
+          b: avgB,
+          count: b.count,
+          saturation: sat,
+        };
+      });
+
+      if (allBuckets.length === 0) {
+        return { dominant: "#111B2A", palette: ["#111B2A", "#F0E5D2", "#263F32", "#829BAA"] };
+      }
+
+      // Sort by pixel count for dominant color
+      allBuckets.sort((a, b) => b.count - a.count);
+      const dominantBucket = allBuckets[0];
+
+      const rgbToHex = (r: number, g: number, b: number): string => {
+        const toHex = (n: number) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, "0");
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+      };
+
+      const colorDistance = (
+        c1: { r: number; g: number; b: number },
+        c2: { r: number; g: number; b: number }
+      ) => {
+        return Math.sqrt(
+          Math.pow(c1.r - c2.r, 2) +
+          Math.pow(c1.g - c2.g, 2) +
+          Math.pow(c1.b - c2.b, 2)
+        );
+      };
+
+      const selectedColors: { r: number; g: number; b: number }[] = [dominantBucket];
+      const minDistance = 45;
+
+      // 2. Vibrant Accent: find highest saturated color with good presence and far enough from dominant
+      const vibrantCandidates = allBuckets.filter((b) => colorDistance(dominantBucket, b) >= minDistance);
+      vibrantCandidates.sort((a, b) => (b.saturation * Math.log2(b.count + 2)) - (a.saturation * Math.log2(a.count + 2)));
+      if (vibrantCandidates.length > 0 && vibrantCandidates[0].saturation > 0.15) {
+        selectedColors.push(vibrantCandidates[0]);
+      }
+
+      // 3. Diverse tones from all buckets
+      for (const bucket of allBuckets) {
+        if (selectedColors.length >= 5) break;
+        const isFarEnough = selectedColors.every((c) => colorDistance(c, bucket) >= minDistance);
+        if (isFarEnough) {
+          selectedColors.push(bucket);
+        }
+      }
+
+      // 4. If monochromatic or low contrast, relax distance threshold to guarantee 5 harmonious swatches
+      if (selectedColors.length < 5) {
+        for (const bucket of allBuckets) {
+          if (selectedColors.length >= 5) break;
+          const isFarEnough = selectedColors.every((c) => colorDistance(c, bucket) >= 22);
+          if (isFarEnough) {
+            selectedColors.push(bucket);
+          }
+        }
+      }
+
+      const paletteHex = selectedColors.map((c) => rgbToHex(c.r, c.g, c.b));
+      const dominantHex = rgbToHex(dominantBucket.r, dominantBucket.g, dominantBucket.b);
+
+      return {
+        dominant: dominantHex,
+        palette: paletteHex,
+      };
+    } catch (err) {
+      console.warn("Failed to extract color palette:", err);
+      return { dominant: "#111B2A", palette: ["#111B2A", "#F0E5D2", "#263F32", "#829BAA"] };
+    }
+  };
+
+  const reExtractPalette = () => {
+    const activeUrl = formatMode === "mobile" ? mobilePreviewUrl : (desktopPreviewUrl || mobilePreviewUrl);
+    if (!activeUrl) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const { dominant, palette: extracted } = extractPaletteFromImage(img);
+      if (extracted.length > 0) {
+        setPalette(extracted);
+        setDominantColor(dominant);
+        setIsAutoDetectedColor(true);
+        showToast("info", "Palette Detected", `Extracted ${extracted.length} colors from active image.`);
+      }
+    };
+    img.src = activeUrl;
   };
 
   // Files & URLs
@@ -213,9 +358,27 @@ export default function UploadPage() {
         if (formatMode === "mobile") {
           setImageDimensions({ width: w, height: h });
           setResolution(`${w} × ${h}`);
+
+          // Auto-extract palette from mobile wallpaper
+          const { dominant, palette: extracted } = extractPaletteFromImage(img);
+          if (extracted.length > 0) {
+            setPalette(extracted);
+            setDominantColor(dominant);
+            setIsAutoDetectedColor(true);
+          }
         } else {
           setMobileDimensions({ width: w, height: h });
           setMobileResolution(`${w} × ${h}`);
+
+          // If no desktop file yet, extract from dedicated phone image
+          if (!desktopFile) {
+            const { dominant, palette: extracted } = extractPaletteFromImage(img);
+            if (extracted.length > 0) {
+              setPalette(extracted);
+              setDominantColor(dominant);
+              setIsAutoDetectedColor(true);
+            }
+          }
         }
       };
       img.src = url;
@@ -249,6 +412,14 @@ export default function UploadPage() {
         const h = img.naturalHeight || 2160;
         setImageDimensions({ width: w, height: h });
         setResolution(`${w} × ${h}`);
+
+        // Auto-extract color palette from desktop wallpaper
+        const { dominant, palette: extracted } = extractPaletteFromImage(img);
+        if (extracted.length > 0) {
+          setPalette(extracted);
+          setDominantColor(dominant);
+          setIsAutoDetectedColor(true);
+        }
       };
       img.src = url;
     }
@@ -381,6 +552,77 @@ export default function UploadPage() {
     });
   };
 
+  const compressImageForUpload = async (
+    file: File,
+    options: { maxDim?: number; quality?: number; targetMaxBytes?: number } = {}
+  ): Promise<File> => {
+    const { maxDim = 3840, quality = 0.92, targetMaxBytes = 2.4 * 1024 * 1024 } = options;
+
+    // If file is already small (< 2.2MB) and is WebP or JPEG, keep it
+    if (file.size <= 2.2 * 1024 * 1024 && (file.type === "image/webp" || file.type === "image/jpeg")) {
+      return file;
+    }
+
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      const objUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objUrl);
+        const origW = img.naturalWidth || 3840;
+        const origH = img.naturalHeight || 2160;
+
+        let w = origW;
+        let h = origH;
+        if (w > maxDim || h > maxDim) {
+          if (w >= h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(file);
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const tryExport = (q: number) => {
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                if (blob.size > targetMaxBytes && q > 0.78) {
+                  return tryExport(q - 0.08);
+                }
+                const baseName = file.name.replace(/\.[^/.]+$/, "");
+                const newFile = new File([blob], `${baseName}.webp`, { type: "image/webp" });
+                resolve(newFile);
+              } else {
+                resolve(file);
+              }
+            },
+            "image/webp",
+            q
+          );
+        };
+
+        tryExport(quality);
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objUrl);
+        resolve(file);
+      };
+      img.src = objUrl;
+    });
+  };
+
   const generateThumbnailBlob = async (file: File): Promise<Blob> => {
     return new Promise((resolve) => {
       const img = new window.Image();
@@ -467,19 +709,42 @@ export default function UploadPage() {
     try {
       if (!user) throw new Error("Your session expired. Please sign in again.");
 
-      const sourceFile = formatMode === "mobile" ? mobileFile : desktopFile;
-      if (!sourceFile) {
-        throw new Error("No wallpaper image file selected.");
-      }
-
       const isDualUploadPhone =
         formatMode === "dual" && dualPhoneSource === "upload" && Boolean(mobileFile);
 
       showToast(
         "info",
-        "Processing 4K Master",
-        `Converting ${sourceFile.name} (${(sourceFile.size / (1024 * 1024)).toFixed(2)} MB) into 4K WebP master...`
+        "Preparing Master Upload",
+        "Optimizing 4K master payload to guarantee fast lossless cloud delivery..."
       );
+
+      // 1. Client-side WebP compression to guarantee total payload is safely under serverless 4.5MB limit
+      let finalDesktopFile: File | null = null;
+      let finalPhoneFile: File | null = null;
+
+      if (formatMode === "mobile") {
+        if (!mobileFile) throw new Error("No vertical lockscreen wallpaper file selected.");
+        finalPhoneFile = await compressImageForUpload(mobileFile, {
+          maxDim: 2796,
+          quality: 0.94,
+          targetMaxBytes: 2.2 * 1024 * 1024,
+        });
+      } else {
+        if (!desktopFile) throw new Error("No desktop wallpaper file selected.");
+        finalDesktopFile = await compressImageForUpload(desktopFile, {
+          maxDim: 3840,
+          quality: 0.92,
+          targetMaxBytes: 2.2 * 1024 * 1024,
+        });
+
+        if (isDualUploadPhone && mobileFile) {
+          finalPhoneFile = await compressImageForUpload(mobileFile, {
+            maxDim: 2796,
+            quality: 0.92,
+            targetMaxBytes: 1.6 * 1024 * 1024,
+          });
+        }
+      }
 
       const slugBase =
         title
@@ -490,11 +755,17 @@ export default function UploadPage() {
 
       const idToken = await user.getIdToken();
       const uploadFormData = new FormData();
-      uploadFormData.append("desktopImage", sourceFile);
+      if (finalDesktopFile) {
+        uploadFormData.append("desktopImage", finalDesktopFile, finalDesktopFile.name);
+      }
+      if (finalPhoneFile) {
+        uploadFormData.append("phoneImage", finalPhoneFile, finalPhoneFile.name);
+      }
       uploadFormData.append("title", title.trim());
       uploadFormData.append("description", fullDescription);
       uploadFormData.append("category", finalCategory);
       uploadFormData.append("dominantColor", dominantColor);
+      uploadFormData.append("palette", palette.join(","));
       uploadFormData.append("tags", parsedHashtags.map((t) => t.replace(/^#/, "")).join(","));
       uploadFormData.append("cropPosition", cropPosition.toString());
       uploadFormData.append("slug", slug);
@@ -508,9 +779,42 @@ export default function UploadPage() {
         body: uploadFormData,
       });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || data.error || "Failed to process 4K master wallpaper.");
+      // Safely parse server response to avoid JSON parse crashes
+      const responseText = await res.text();
+      let data: any = null;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        if (res.status === 413 || responseText.includes("Request Entity Too Large")) {
+          throw new Error("File payload was too large for cloud transfer. Please retry.");
+        }
+        throw new Error(responseText.slice(0, 240) || `Server error (${res.status}: ${res.statusText || "Internal Error"})`);
+      }
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || data?.error || "Failed to process 4K master wallpaper.");
+      }
+
+      // Client-side Firestore sync as guaranteed backup
+      if (data.wallpaper && data.wallpaper.id) {
+        try {
+          const docRef = doc(db, "wallpapers", data.wallpaper.id);
+          const wallpaperWithPalette = {
+            ...data.wallpaper,
+            styling: {
+              ...(data.wallpaper.styling || {}),
+              dominantColor,
+              paletteHex: dominantColor,
+              palette,
+            },
+            dominantColor,
+            paletteHex: dominantColor,
+            palette,
+          };
+          await setDoc(docRef, wallpaperWithPalette, { merge: true });
+        } catch (clientFsErr) {
+          console.warn("Client Firestore sync notice:", clientFsErr);
+        }
       }
 
       setSuccess(true);
@@ -809,52 +1113,74 @@ export default function UploadPage() {
                       /* OPTION A: CROPPING WORKFLOW */
                       desktopPreviewUrl ? (
                         <div className="w-full flex-1 flex flex-col justify-between gap-2 overflow-hidden min-h-0">
-                          {/* Interactive Cropper Canvas */}
-                          <div
-                            ref={cropperContainerRef}
-                            onPointerDown={handlePointerDown}
-                            onPointerMove={handlePointerMove}
-                            onPointerUp={handlePointerUp}
-                            className="relative w-full flex-1 max-h-[220px] lg:max-h-[240px] bg-black/60 border border-border overflow-hidden select-none cursor-ew-resize touch-none"
-                            title="Click or drag to frame phone lockscreen"
-                          >
-                            <img
-                              src={desktopPreviewUrl}
-                              alt="Desktop Master"
-                              className="w-full h-full object-cover select-none pointer-events-none"
-                              draggable={false}
-                            />
-
-                            {/* Left mask */}
+                          {/* Interactive Cropper Canvas + Live Phone Sync */}
+                          <div className="w-full flex-1 flex flex-col sm:flex-row items-center gap-3 overflow-hidden min-h-0">
                             <div
-                              className="absolute inset-y-0 left-0 bg-black/65 backdrop-blur-[1px] pointer-events-none"
-                              style={{ width: `${cropBoxLeftPercent}%` }}
-                            />
-                            {/* Right mask */}
-                            <div
-                              className="absolute inset-y-0 right-0 bg-black/65 backdrop-blur-[1px] pointer-events-none"
-                              style={{
-                                width: `${Math.max(0, 100 - (cropBoxLeftPercent + cropBoxWidthPercent))}%`,
-                              }}
-                            />
-
-                            {/* 9:19.5 Window */}
-                            <div
-                              className="absolute inset-y-0 border-2 border-white shadow-[0_0_20px_rgba(0,0,0,0.8)] flex flex-col justify-between p-1.5 pointer-events-none"
-                              style={{
-                                left: `${cropBoxLeftPercent}%`,
-                                width: `${cropBoxWidthPercent}%`,
-                              }}
+                              ref={cropperContainerRef}
+                              onPointerDown={handlePointerDown}
+                              onPointerMove={handlePointerMove}
+                              onPointerUp={handlePointerUp}
+                              className="relative flex-1 w-full aspect-[16/9] max-h-[220px] bg-black border border-border overflow-hidden select-none cursor-ew-resize touch-none"
+                              title="Click or drag to frame phone lockscreen"
                             >
-                              <span className="bg-primary text-primary-foreground font-mono text-[8px] px-1 py-0.2 self-start font-semibold">
-                                PHONE CROP (9:19.5)
-                              </span>
-                              <div className="self-center bg-black/80 text-white p-1 rounded-full border border-white/40">
-                                <IconArrowsHorizontal size={12} />
+                              <img
+                                src={desktopPreviewUrl}
+                                alt="Desktop Master"
+                                className="w-full h-full object-cover select-none pointer-events-none"
+                                draggable={false}
+                              />
+
+                              {/* Left mask */}
+                              <div
+                                className="absolute inset-y-0 left-0 bg-black/65 backdrop-blur-[1px] pointer-events-none"
+                                style={{ width: `${cropBoxLeftPercent}%` }}
+                              />
+                              {/* Right mask */}
+                              <div
+                                className="absolute inset-y-0 right-0 bg-black/65 backdrop-blur-[1px] pointer-events-none"
+                                style={{
+                                  width: `${Math.max(0, 100 - (cropBoxLeftPercent + cropBoxWidthPercent))}%`,
+                                }}
+                              />
+
+                              {/* 9:19.5 Window */}
+                              <div
+                                className="absolute inset-y-0 border-2 border-white shadow-[0_0_20px_rgba(0,0,0,0.8)] flex flex-col justify-between p-1.5 pointer-events-none"
+                                style={{
+                                  left: `${cropBoxLeftPercent}%`,
+                                  width: `${cropBoxWidthPercent}%`,
+                                }}
+                              >
+                                <span className="bg-primary text-primary-foreground font-mono text-[8px] px-1 py-0.2 self-start font-semibold">
+                                  PHONE CROP (9:19.5)
+                                </span>
+                                <div className="self-center bg-black/80 text-white p-1 rounded-full border border-white/40">
+                                  <IconArrowsHorizontal size={12} />
+                                </div>
+                                <span className="self-center bg-black/80 text-white font-mono text-[8px] px-1 py-0.2">
+                                  {cropPosition}%
+                                </span>
                               </div>
-                              <span className="self-center bg-black/80 text-white font-mono text-[8px] px-1 py-0.2">
-                                {cropPosition}%
-                              </span>
+                            </div>
+
+                            {/* Live Phone Companion Mockup */}
+                            <div className="hidden sm:flex flex-col items-center justify-center shrink-0">
+                              <div className="relative h-[160px] aspect-[9/19.5] rounded-[18px] border-[3px] border-neutral-700 bg-black shadow-lg overflow-hidden select-none">
+                                <img
+                                  src={desktopPreviewUrl}
+                                  alt="Live phone crop"
+                                  style={{ objectPosition: `${cropPosition}% center` }}
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60 pointer-events-none flex flex-col justify-between p-2 text-center">
+                                  <div className="self-center w-8 h-2 bg-black rounded-full border border-white/10" />
+                                  <div>
+                                    <p className="font-mono text-[7px] uppercase text-white/80">9:41</p>
+                                  </div>
+                                  <div className="w-6 h-0.5 bg-white/70 rounded-full mx-auto" />
+                                </div>
+                              </div>
+                              <span className="font-mono text-[9px] text-muted-foreground mt-1">Live Phone Crop</span>
                             </div>
                           </div>
 
@@ -929,8 +1255,8 @@ export default function UploadPage() {
                       /* OPTION B: SEPARATE DESKTOP & PHONE UPLOAD CARDS */
                       <div className="w-full flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2.5 min-h-0 overflow-y-auto">
                         {/* 1. Desktop Master Slot */}
-                        <div className="border border-border bg-background p-2.5 flex flex-col justify-between min-h-[170px]">
-                          <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground mb-1">
+                        <div className="border border-border bg-background p-2.5 flex flex-col justify-between min-h-[190px]">
+                          <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground mb-1.5 shrink-0">
                             <span className="font-semibold text-foreground uppercase flex items-center gap-1">
                               <IconDeviceDesktop size={13} className="text-primary" />
                               <span>1. Desktop Master</span>
@@ -943,31 +1269,36 @@ export default function UploadPage() {
                           </div>
 
                           {desktopPreviewUrl ? (
-                            <div className="relative flex-1 w-full border border-border overflow-hidden bg-black/40 flex items-center justify-center min-h-[90px]">
-                              <img
-                                src={desktopPreviewUrl}
-                                alt="Desktop Master"
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute top-1 left-1 bg-black/75 text-white font-mono text-[8px] px-1 py-0.5">
-                                {resolution}
+                            <div className="relative flex-1 w-full border border-border overflow-hidden bg-black/60 flex items-center justify-center p-1.5 min-h-[130px]">
+                              <div className="relative w-full aspect-[16/10] max-h-[170px] overflow-hidden border border-white/10 shadow-xs">
+                                <img
+                                  src={desktopPreviewUrl}
+                                  alt="Desktop Master"
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute top-1 left-1 bg-black/80 text-white font-mono text-[8px] px-1 py-0.5">
+                                  {resolution}
+                                </div>
+                                <div className="absolute bottom-1 right-1 bg-primary text-primary-foreground font-mono text-[7px] px-1 py-0.5 uppercase font-semibold">
+                                  16:10 / 16:9 Master
+                                </div>
                               </div>
                             </div>
                           ) : (
-                            <label className="flex-1 w-full border border-dashed border-border bg-surface flex flex-col items-center justify-center p-3 text-center hover:border-primary transition-colors cursor-pointer relative min-h-[90px]">
+                            <label className="flex-1 w-full border border-dashed border-border bg-surface flex flex-col items-center justify-center p-3 text-center hover:border-primary transition-colors cursor-pointer relative min-h-[130px]">
                               <input
                                 type="file"
                                 accept="image/*"
                                 onChange={handleDesktopFileChange}
                                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                               />
-                              <IconDeviceDesktop size={18} className="text-primary mb-1" />
+                              <IconDeviceDesktop size={20} className="text-primary mb-1" />
                               <span className="font-sans text-xs font-semibold text-foreground">Select Desktop Master</span>
                               <span className="font-mono text-[9px] text-muted-foreground">16:9 / 16:10 File</span>
                             </label>
                           )}
 
-                          <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-border/60 font-mono text-[10px]">
+                          <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-border/60 font-mono text-[10px] shrink-0">
                             <span className="text-muted-foreground truncate">
                               {desktopFile ? `${(desktopFile.size / (1024 * 1024)).toFixed(1)} MB` : "Awaiting file"}
                             </span>
@@ -987,8 +1318,8 @@ export default function UploadPage() {
                         </div>
 
                         {/* 2. Dedicated Phone Lockscreen Slot */}
-                        <div className="border border-border bg-background p-2.5 flex flex-col justify-between min-h-[170px]">
-                          <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground mb-1">
+                        <div className="border border-border bg-background p-2.5 flex flex-col justify-between min-h-[190px]">
+                          <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground mb-1.5 shrink-0">
                             <span className="font-semibold text-foreground uppercase flex items-center gap-1">
                               <IconDeviceMobile size={13} className="text-primary" />
                               <span>2. Dedicated Phone File</span>
@@ -1001,31 +1332,45 @@ export default function UploadPage() {
                           </div>
 
                           {mobilePreviewUrl ? (
-                            <div className="relative flex-1 w-full border border-border overflow-hidden bg-black/40 flex items-center justify-center min-h-[90px]">
-                              <img
-                                src={mobilePreviewUrl}
-                                alt="Phone Lockscreen"
-                                className="h-full max-h-[110px] aspect-[9/19.5] object-cover border border-white/20 shadow-xs"
-                              />
-                              <div className="absolute top-1 left-1 bg-black/75 text-white font-mono text-[8px] px-1 py-0.5">
-                                {mobileResolution}
+                            <div className="relative flex-1 w-full border border-border overflow-hidden bg-black/60 flex items-center justify-center p-1.5 min-h-[130px]">
+                              {/* Sleek Phone Lockscreen Mockup */}
+                              <div className="relative h-[160px] sm:h-[180px] aspect-[9/19.5] rounded-[18px] border-[3px] border-neutral-700 bg-black shadow-lg overflow-hidden select-none shrink-0">
+                                <img
+                                  src={mobilePreviewUrl}
+                                  alt="Phone Lockscreen"
+                                  className="w-full h-full object-cover"
+                                />
+                                {/* Phone Screen UI: Notch, Clock, Home Indicator */}
+                                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60 pointer-events-none flex flex-col justify-between p-2 text-center">
+                                  <div className="self-center w-10 h-2 bg-black rounded-full border border-white/10" />
+                                  <div>
+                                    <p className="font-mono text-[8px] uppercase text-white/80 font-medium">9:41</p>
+                                    <h5 className="font-sans text-[11px] font-light text-white tracking-tight drop-shadow-sm">
+                                      Wednesday
+                                    </h5>
+                                  </div>
+                                  <div className="w-8 h-0.5 bg-white/70 rounded-full mx-auto" />
+                                </div>
+                                <div className="absolute top-1 left-1 bg-black/80 text-white font-mono text-[7px] px-1 py-0.5 border border-white/10">
+                                  {mobileResolution}
+                                </div>
                               </div>
                             </div>
                           ) : (
-                            <label className="flex-1 w-full border border-dashed border-border bg-surface flex flex-col items-center justify-center p-3 text-center hover:border-primary transition-colors cursor-pointer relative min-h-[90px]">
+                            <label className="flex-1 w-full border border-dashed border-border bg-surface flex flex-col items-center justify-center p-3 text-center hover:border-primary transition-colors cursor-pointer relative min-h-[130px]">
                               <input
                                 type="file"
                                 accept="image/*"
                                 onChange={handleMobileFileChange}
                                 className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                               />
-                              <IconDeviceMobile size={18} className="text-primary mb-1" />
-                              <span className="font-sans text-xs font-semibold text-foreground">Select Phone File</span>
+                              <IconDeviceMobile size={20} className="text-primary mb-1" />
+                              <span className="font-sans text-xs font-semibold text-foreground">Select Dedicated Phone File</span>
                               <span className="font-mono text-[9px] text-muted-foreground">9:16 or 9:19.5 Vertical</span>
                             </label>
                           )}
 
-                          <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-border/60 font-mono text-[10px]">
+                          <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-border/60 font-mono text-[10px] shrink-0">
                             <span className="text-muted-foreground truncate">
                               {mobileFile ? `${(mobileFile.size / (1024 * 1024)).toFixed(1)} MB` : "No crop will be used"}
                             </span>
@@ -1223,35 +1568,84 @@ export default function UploadPage() {
                     )}
                   </div>
 
-                  {/* Dominant Color */}
+                  {/* Dominant Color & Auto-Detected Palette */}
                   <div>
-                    <label className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1">
-                      <IconPalette size={12} className="text-primary" />
-                      <span>Dominant Color</span>
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                        <IconPalette size={12} className="text-primary" />
+                        <span>Color Palette</span>
+                      </label>
+                      <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                        {isAutoDetectedColor ? (
+                          <span className="text-primary flex items-center gap-1 font-medium">
+                            <IconSparkles size={11} />
+                            <span>Auto-detected</span>
+                          </span>
+                        ) : (desktopPreviewUrl || mobilePreviewUrl) ? (
+                          <button
+                            type="button"
+                            onClick={reExtractPalette}
+                            className="text-primary hover:underline cursor-pointer flex items-center gap-0.5"
+                            title="Auto-detect palette from image"
+                          >
+                            <IconSparkles size={10} />
+                            <span>Detect from image</span>
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
 
                     <div className="flex items-center gap-1.5">
                       <input
                         type="color"
                         value={dominantColor}
-                        onChange={(e) => setDominantColor(e.target.value)}
-                        className="h-9 w-10 border border-border bg-background cursor-pointer p-0.5 rounded-none shrink-0"
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase();
+                          setDominantColor(val);
+                          setIsAutoDetectedColor(false);
+                          setPalette((prev) => {
+                            const next = [...prev];
+                            next[0] = val;
+                            return next;
+                          });
+                        }}
+                        className="h-9 w-9 border border-border bg-background cursor-pointer p-0.5 rounded-none shrink-0"
+                        title="Pick custom color"
                       />
                       <input
                         type="text"
                         value={dominantColor}
-                        onChange={(e) => setDominantColor(e.target.value)}
-                        className="h-9 flex-1 min-w-0 border border-border bg-surface px-2 font-mono text-[11px] text-foreground focus:border-primary focus:outline-none"
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase();
+                          setDominantColor(val);
+                          setIsAutoDetectedColor(false);
+                          if (/^#[0-9A-F]{6}$/i.test(val)) {
+                            setPalette((prev) => {
+                              const next = [...prev];
+                              next[0] = val;
+                              return next;
+                            });
+                          }
+                        }}
+                        className="h-9 flex-1 min-w-0 border border-border bg-surface px-2 font-mono text-[11px] text-foreground focus:border-primary focus:outline-none uppercase"
+                        placeholder="#111B2A"
                       />
-                      <div className="flex items-center gap-1 shrink-0">
-                        {["#111B2A", "#F0E5D2", "#263F32", "#829BAA"].map((c) => (
+                      {/* Auto-detected 5-color palette swatches */}
+                      <div className="flex items-center gap-1 shrink-0 bg-background border border-border p-1">
+                        {palette.map((c, idx) => (
                           <button
-                            key={c}
+                            key={`${c}-${idx}`}
                             type="button"
-                            onClick={() => setDominantColor(c)}
+                            onClick={() => {
+                              setDominantColor(c);
+                            }}
                             style={{ backgroundColor: c }}
-                            className="h-5 w-5 border border-border/80 hover:scale-110 transition-transform cursor-pointer"
-                            title={c}
+                            className={`h-5 w-5 border transition-all cursor-pointer relative ${
+                              dominantColor.toUpperCase() === c.toUpperCase()
+                                ? "border-primary ring-1.5 ring-primary scale-110 z-10 shadow-xs"
+                                : "border-border/60 hover:scale-105"
+                            }`}
+                            title={`Select color: ${c}`}
                           />
                         ))}
                       </div>

@@ -2202,6 +2202,20 @@ export function getCdnImageUrl(url?: string | null): string {
 export function getPhoneCropStyle(wallpaper?: Wallpaper | null): React.CSSProperties {
   if (!wallpaper) return { objectPosition: "center center" };
 
+  // If a dedicated phone image is provided, it is already framed as a vertical phone asset
+  if (wallpaper.phoneImageUrl && wallpaper.phoneImageUrl !== wallpaper.imageUrl) {
+    return { objectPosition: "center center" };
+  }
+
+  // If the wallpaper itself is portrait/mobile
+  if (
+    wallpaper.orientation === "mobile" ||
+    wallpaper.aspectRatio === "9:16" ||
+    wallpaper.aspectRatio === "9:19.5"
+  ) {
+    return { objectPosition: "center center" };
+  }
+
   const coords = wallpaper.storage?.phoneCropCoords;
   if (!coords || typeof coords.x !== "number" || typeof coords.width !== "number") {
     return { objectPosition: "center center" };

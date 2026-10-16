@@ -72,6 +72,12 @@ export async function POST(req: NextRequest) {
     const description = formData.get("description")?.toString().trim() || "";
     const category = formData.get("category")?.toString().trim() || (formatMode === "mobile" ? "Lockscreen" : "Dark Abstract");
     const dominantColor = formData.get("dominantColor")?.toString() || "#111B2A";
+    const paletteString = formData.get("palette")?.toString() || "";
+    const parsedPalette = paletteString
+      .split(",")
+      .map((c) => c.trim().toUpperCase())
+      .filter((c) => /^#[0-9A-F]{6}$/i.test(c));
+    const finalPalette = parsedPalette.length > 0 ? parsedPalette : [dominantColor];
     const tagsString = formData.get("tags")?.toString() || "";
     const cropPositionString = formData.get("cropPosition")?.toString();
     const cropPosition = cropPositionString !== undefined ? Number(cropPositionString) : 50;
@@ -180,7 +186,7 @@ export async function POST(req: NextRequest) {
       height: cropHeight,
     };
 
-    // 7. Upload ONLY the Single Master WebP to Cloudflare R2
+    // 7. Upload Master WebP to Cloudflare R2
     const masterR2Key = `wallpapers/${slug}.webp`;
     const masterCdnUrl = await uploadToR2({
       key: masterR2Key,
@@ -188,6 +194,52 @@ export async function POST(req: NextRequest) {
       contentType: "image/webp",
       cacheControl: "public, max-age=31536000, immutable",
     });
+
+    // 7b. If dedicated phone file is provided alongside desktop file in Dual Drop, process & upload it
+    let phoneCdnUrl: string | null = null;
+    let phoneR2Key: string | null = null;
+
+    if (desktopFile && phoneFile) {
+      try {
+        const phoneRawBuffer = Buffer.from(await phoneFile.arrayBuffer());
+        let phoneWebPBuffer: Buffer = phoneRawBuffer;
+
+        if (sharpFn) {
+          try {
+            let phonePipeline = sharpFn(phoneRawBuffer);
+            const phoneMeta = await sharpFn(phoneRawBuffer).metadata();
+            const origPW = phoneMeta.width || 1290;
+            const origPH = phoneMeta.height || 2796;
+
+            if (origPW > 1600 || origPH > 3200) {
+              phonePipeline = phonePipeline.resize({
+                width: 1600,
+                height: 3200,
+                fit: "inside",
+                withoutEnlargement: true,
+              });
+            }
+
+            phoneWebPBuffer = await phonePipeline
+              .webp({ quality: 94, effort: 4 })
+              .toBuffer();
+          } catch (sharpPhoneErr) {
+            console.warn("Sharp processing for phone file failed, using raw buffer:", sharpPhoneErr);
+            phoneWebPBuffer = phoneRawBuffer;
+          }
+        }
+
+        phoneR2Key = `wallpapers/${slug}-phone.webp`;
+        phoneCdnUrl = await uploadToR2({
+          key: phoneR2Key,
+          buffer: phoneWebPBuffer,
+          contentType: "image/webp",
+          cacheControl: "public, max-age=31536000, immutable",
+        });
+      } catch (phoneUploadErr) {
+        console.warn("Failed to upload dedicated phone companion:", phoneUploadErr);
+      }
+    }
 
     // Determine affiliate mood
     let affiliateMood = "dark-minimal";
@@ -220,13 +272,14 @@ export async function POST(req: NextRequest) {
       styling: {
         dominantColor,
         paletteHex: dominantColor,
-        palette: [dominantColor],
+        palette: finalPalette,
         tags,
       },
       flags: {
         isFeatured: false,
         isNew: true,
         hasPhoneCrop: true,
+        hasDedicatedPhone: Boolean(phoneCdnUrl),
       },
       metadata: {
         publishedAt: isoDate,
@@ -235,6 +288,7 @@ export async function POST(req: NextRequest) {
       author: authorProfile,
       storage: {
         r2Key: masterR2Key,
+        phoneR2Key: phoneR2Key || undefined,
         format: "webp",
         phoneCropCoords,
       },
@@ -245,7 +299,7 @@ export async function POST(req: NextRequest) {
       // Backward-compatible accessors
       imageUrl: masterCdnUrl,
       thumbnailUrl: masterCdnUrl,
-      phoneImageUrl: masterCdnUrl,
+      phoneImageUrl: phoneCdnUrl || masterCdnUrl,
       category,
       collection: category,
       resolution: detectedResolution,
@@ -253,7 +307,7 @@ export async function POST(req: NextRequest) {
       orientation: formatMode === "mobile" ? "mobile" : "desktop",
       dominantColor,
       paletteHex: dominantColor,
-      palette: [dominantColor],
+      palette: finalPalette,
       tags,
       isNew: true,
       publishedAt: isoDate,

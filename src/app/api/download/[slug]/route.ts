@@ -75,10 +75,25 @@ export async function GET(
 
     // 2. Resolve Master Asset Key / URL
     const cleanSlug = wallpaper?.slug || slug;
+    const isPhoneRequest =
+      type === "phone-4k" ||
+      type === "phone" ||
+      type === "mobile" ||
+      type === "lockscreen";
+
+    const dedicatedPhoneKey =
+      wallpaper?.storage?.phoneR2Key ||
+      (wallpaper?.phoneImageUrl && !wallpaper.phoneImageUrl.endsWith(`${cleanSlug}.webp`)
+        ? `wallpapers/${cleanSlug}-phone.webp`
+        : null);
+
     const r2Key =
+      (isPhoneRequest && dedicatedPhoneKey) ||
       wallpaper?.storage?.r2Key ||
       (wallpaper?.desktopAsset as any)?.key ||
       `wallpapers/${cleanSlug}.webp`;
+
+    let hasLoadedDedicatedPhone = false;
 
     // 3. Fetch Master Image Buffer
     let masterBuffer: Buffer | null = null;
@@ -86,6 +101,16 @@ export async function GET(
     // A. Attempt direct R2 download via S3 client
     try {
       masterBuffer = await getObjectFromR2(r2Key);
+      if (masterBuffer && isPhoneRequest && dedicatedPhoneKey && r2Key === dedicatedPhoneKey) {
+        hasLoadedDedicatedPhone = true;
+      }
+      if (!masterBuffer && isPhoneRequest && !dedicatedPhoneKey) {
+        // Check if -phone.webp exists in R2
+        masterBuffer = await getObjectFromR2(`wallpapers/${cleanSlug}-phone.webp`);
+        if (masterBuffer) {
+          hasLoadedDedicatedPhone = true;
+        }
+      }
       if (!masterBuffer && r2Key.endsWith(".webp")) {
         // Fallback check if only png exists
         masterBuffer = await getObjectFromR2(`wallpapers/${cleanSlug}.png`);
@@ -172,10 +197,11 @@ export async function GET(
       let pipeline = sharpFn(masterBuffer);
 
       if (
-        type === "phone-4k" ||
-        type === "phone" ||
-        type === "mobile" ||
-        type === "lockscreen"
+        (type === "phone-4k" ||
+          type === "phone" ||
+          type === "mobile" ||
+          type === "lockscreen") &&
+        !hasLoadedDedicatedPhone
       ) {
         // Dynamic vertical cropping using stored phoneCropCoords or auto 9:16 center crop
         const phoneCropCoords: WallpaperCropCoords | undefined =
