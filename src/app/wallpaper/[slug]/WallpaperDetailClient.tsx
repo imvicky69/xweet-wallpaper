@@ -277,7 +277,8 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                       alt={`${wallpaper.title} 4K Desktop Wallpaper`}
                       fill
                       priority
-                      sizes="(max-width: 1024px) 100vw, 66vw"
+                      sizes="(max-width: 1024px) 100vw, 75vw"
+                      quality={95}
                       className="object-cover protected-image select-none pointer-events-none"
                       draggable={false}
                     />
@@ -291,7 +292,7 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
                         alt={`${wallpaper.title} Mobile Wallpaper`}
                         fill
                         priority
-                        sizes="(max-width: 640px) 100vw, 600px"
+                        sizes="(max-width: 640px) 150vw, 1200px"
                         quality={95}
                         style={getPhoneCropStyle(wallpaper)}
                         className="object-cover protected-image select-none pointer-events-none"

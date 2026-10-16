@@ -109,6 +109,13 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
   const phonePreviewSrc = getPhonePreviewUrl(wallpaper);
   const phoneCropStyle = getPhoneCropStyle(wallpaper);
 
+  // Calculate resolution-aware sizes to compensate for the 3.16x crop factor when 16:9 is framed in 9:16
+  const isDedicatedPhoneAsset = Boolean(wallpaper.phoneImageUrl && wallpaper.phoneImageUrl !== wallpaper.imageUrl);
+  const phoneSizes = isDedicatedPhoneAsset
+    ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+    : "(max-width: 640px) 150vw, (max-width: 1024px) 100vw, 60vw";
+  const desktopSizes = "(max-width: 640px) 100vw, (max-width: 1024px) 75vw, 50vw";
+
   return (
     <article
       onClick={() => onPreview && onPreview(wallpaper)}
@@ -142,8 +149,8 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
             src={phonePreviewSrc}
             alt={`${wallpaper.title} Phone Lockscreen`}
             fill
-            sizes="(max-width: 640px) 50vw, 33vw"
-            quality={90}
+            sizes={phoneSizes}
+            quality={95}
             style={phoneCropStyle}
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] protected-image pointer-events-none select-none"
             draggable={false}
@@ -174,8 +181,8 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
             src={desktopPreviewSrc}
             alt={wallpaper.title}
             fill
-            sizes="(max-width: 1024px) 50vw, 33vw"
-            quality={88}
+            sizes={desktopSizes}
+            quality={95}
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] protected-image pointer-events-none select-none"
             draggable={false}
           />

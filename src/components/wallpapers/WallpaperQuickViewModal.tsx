@@ -270,8 +270,8 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                     src={getCdnImageUrl(wallpaper.imageUrl)}
                     alt={wallpaper.title}
                     fill
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                    quality={92}
+                    sizes="(max-width: 1024px) 100vw, 80vw"
+                    quality={95}
                     className="object-cover protected-image select-none pointer-events-none"
                     draggable={false}
                     priority
@@ -307,7 +307,7 @@ export const WallpaperQuickViewModal: React.FC<WallpaperQuickViewModalProps> = (
                     src={getPhonePreviewUrl(wallpaper)}
                     alt={`${wallpaper.title} Phone Lockscreen`}
                     fill
-                    sizes="(max-width: 640px) 100vw, 480px"
+                    sizes="(max-width: 768px) 150vw, 960px"
                     quality={95}
                     style={getPhoneCropStyle(wallpaper)}
                     className="object-cover protected-image select-none pointer-events-none"

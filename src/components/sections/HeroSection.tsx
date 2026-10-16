@@ -263,8 +263,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       src={getPhonePreviewUrl(active.wallpaper)}
                       alt={`${active.wallpaper.title} Phone Lockscreen Crop`}
                       fill
-                      sizes="200px"
-                      quality={92}
+                      sizes="(max-width: 768px) 100vw, 600px"
+                      quality={95}
                       priority
                       style={getPhoneCropStyle(active.wallpaper)}
                       className="object-cover select-none pointer-events-none"
