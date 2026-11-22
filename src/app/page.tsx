@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { HeroSection } from "@/components/sections/HeroSection";
@@ -9,17 +9,31 @@ import { WallpaperFilters } from "@/components/wallpapers/WallpaperFilters";
 import { WallpaperGrid } from "@/components/wallpapers/WallpaperGrid";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
 import CircularCarousel, { CircularCarouselItem } from "@/components/CircularCarousel";
-import { CATEGORIES, getCdnImageUrl } from "@/lib/wallpapers";
+import { CATEGORIES, getCdnImageUrl, shuffleWallpapers } from "@/lib/wallpapers";
 import { useWallpapers } from "@/hooks/useWallpapers";
-import { Wallpaper, Orientation } from "@/types/wallpaper";
+import { Wallpaper, Orientation, WallpaperSort } from "@/types/wallpaper";
 import { IconSearch, IconX } from "@tabler/icons-react";
 
 export default function Home() {
   const { wallpapers } = useWallpapers();
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedOrientation, setSelectedOrientation] = useState<Orientation>("all");
+  const [sortBy, setSortBy] = useState<WallpaperSort>("random");
+  const [shuffleSeed, setShuffleSeed] = useState<number>(0);
+  const [isMounted, setIsMounted] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activePreview, setActivePreview] = useState<Wallpaper | null>(null);
+
+  // Automatically shuffle on mount so every visit discovers a fresh random mix
+  useEffect(() => {
+    setIsMounted(true);
+    setShuffleSeed(Date.now());
+  }, []);
+
+  const handleShuffle = () => {
+    setSortBy("random");
+    setShuffleSeed(Date.now());
+  };
 
   // Dynamic categories including default and custom categories
   const dynamicCategories = useMemo(() => {
@@ -28,9 +42,9 @@ export default function Home() {
     return Array.from(merged);
   }, [wallpapers]);
 
-  // Filter logic
+  // Filter & Sort logic
   const filteredWallpapers = useMemo(() => {
-    return wallpapers.filter((wp) => {
+    let list = wallpapers.filter((wp) => {
       // Category match
       const matchesCategory =
         selectedCategory === "All" ||
@@ -63,7 +77,35 @@ export default function Home() {
 
       return matchesCategory && matchesOrientation && matchesSearch;
     });
-  }, [wallpapers, selectedCategory, selectedOrientation, searchQuery]);
+
+    // Sort & Random Shuffle Pipeline
+    if (sortBy === "random" && isMounted) {
+      // Shuffled randomly on mount & re-randomized on shuffle button click
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      list = shuffleWallpapers(list);
+    } else if (sortBy === "newest") {
+      list.sort((a, b) => {
+        const timeA = a.createdAt || (a.publishedAt ? new Date(a.publishedAt).getTime() : 0);
+        const timeB = b.createdAt || (b.publishedAt ? new Date(b.publishedAt).getTime() : 0);
+        return timeB - timeA;
+      });
+    } else if (sortBy === "featured") {
+      list.sort((a, b) => {
+        const featA = a.isFeatured ? 1 : 0;
+        const featB = b.isFeatured ? 1 : 0;
+        if (featB !== featA) return featB - featA;
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
+    } else if (sortBy === "oldest") {
+      list.sort((a, b) => {
+        const timeA = a.createdAt || (a.publishedAt ? new Date(a.publishedAt).getTime() : 0);
+        const timeB = b.createdAt || (b.publishedAt ? new Date(b.publishedAt).getTime() : 0);
+        return timeA - timeB;
+      });
+    }
+
+    return list;
+  }, [wallpapers, selectedCategory, selectedOrientation, searchQuery, sortBy, shuffleSeed, isMounted]);
 
   const resetFilters = () => {
     setSelectedCategory("All");
@@ -73,6 +115,10 @@ export default function Home() {
 
   // Curated recent drops for the 3D circular carousel
   const carouselWallpapers = useMemo(() => {
+    if (isMounted) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      return shuffleWallpapers(wallpapers).slice(0, 12);
+    }
     const drops = [...wallpapers];
     drops.sort((a, b) => {
       if (a.isNew && !b.isNew) return -1;
@@ -80,7 +126,7 @@ export default function Home() {
       return 0;
     });
     return drops.slice(0, 12);
-  }, [wallpapers]);
+  }, [wallpapers, isMounted, shuffleSeed]);
 
   const carouselItems: CircularCarouselItem[] = useMemo(() => {
     return carouselWallpapers.map((wp) => ({
@@ -190,6 +236,9 @@ export default function Home() {
                 onSelectCategory={setSelectedCategory}
                 selectedOrientation={selectedOrientation}
                 onSelectOrientation={setSelectedOrientation}
+                sortBy={sortBy}
+                onSelectSort={setSortBy}
+                onShuffle={handleShuffle}
                 totalResults={filteredWallpapers.length}
               />
             </div>
@@ -199,6 +248,7 @@ export default function Home() {
               wallpapers={filteredWallpapers}
               onPreview={setActivePreview}
               onResetFilters={resetFilters}
+              onShuffle={handleShuffle}
               isFiltered={
                 selectedCategory !== "All" ||
                 selectedOrientation !== "all" ||

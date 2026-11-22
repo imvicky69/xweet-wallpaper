@@ -16,6 +16,9 @@ functions/node_modules/
 serviceAccountKey.json
 *.pem
 
+# temporary ingest folder
+New folder/
+/New Folder
 # firebase & logs
 .firebase/
 firebase-debug.log*

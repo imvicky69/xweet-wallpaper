@@ -20,7 +20,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { WallpaperCard } from "@/components/wallpapers/WallpaperCard";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
-import { getCdnImageUrl, getPhoneCropStyle, getPhonePreviewUrl } from "@/lib/wallpapers";
+import { getCdnImageUrl, getPhoneCropStyle, getPhonePreviewUrl, shuffleWallpapers } from "@/lib/wallpapers";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { triggerDirectDownload, triggerDynamicDownload } from "@/lib/download";
 import { Wallpaper } from "@/types/wallpaper";
@@ -91,17 +91,21 @@ export default function WallpaperDetailClient({ wallpaper }: WallpaperDetailClie
     setTimeout(() => setCopiedHex(null), 2000);
   };
 
-  // Related wallpapers from the same collection or category
+  // Related wallpapers from the same collection or category (randomized for discovery)
   const relatedWallpapers = useMemo(() => {
     const pool = allWallpapers.length > 0 ? allWallpapers : [wallpaper];
-    const matches = pool.filter(
-      (wp) =>
-        wp.slug !== wallpaper.slug &&
-        (wp.collection === wallpaper.collection || wp.category === wallpaper.category)
+    const matches = shuffleWallpapers(
+      pool.filter(
+        (wp) =>
+          wp.slug !== wallpaper.slug &&
+          (wp.collection === wallpaper.collection || wp.category === wallpaper.category)
+      )
     );
     if (matches.length >= 4) return matches.slice(0, 4);
-    const fallbacks = pool.filter(
-      (wp) => wp.slug !== wallpaper.slug && !matches.some((m) => m.slug === wp.slug)
+    const fallbacks = shuffleWallpapers(
+      pool.filter(
+        (wp) => wp.slug !== wallpaper.slug && !matches.some((m) => m.slug === wp.slug)
+      )
     );
     return [...matches, ...fallbacks].slice(0, 4);
   }, [allWallpapers, wallpaper]);

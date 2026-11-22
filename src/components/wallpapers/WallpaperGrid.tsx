@@ -13,6 +13,7 @@ import {
   IconDeviceDesktop,
   IconLayoutGrid,
   IconLayoutColumns,
+  IconArrowsShuffle,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
 
@@ -24,6 +25,7 @@ interface WallpaperGridProps {
   isFiltered?: boolean;
   onEdit?: (wallpaper: Wallpaper) => void;
   onDelete?: (wallpaper: Wallpaper) => void;
+  onShuffle?: () => void;
 }
 
 /**
@@ -50,6 +52,7 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
   isFiltered = false,
   onEdit,
   onDelete,
+  onShuffle,
 }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [viewMode, setViewMode] = useState<"auto" | "mobile" | "desktop">("auto");
@@ -174,6 +177,18 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
               <span>Desktop</span>
             </button>
           </div>
+
+          {onShuffle && (
+            <button
+              type="button"
+              onClick={onShuffle}
+              title="Shuffle wallpapers randomly"
+              className="hidden sm:flex items-center gap-1 px-2 py-0.5 text-[11px] font-mono bg-surface border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors cursor-pointer select-none"
+            >
+              <IconArrowsShuffle size={12} />
+              <span>Shuffle</span>
+            </button>
+          )}
         </div>
 
         {/* Mobile Column Grid Switcher (1 col vs 2 col) + Drop Count */}

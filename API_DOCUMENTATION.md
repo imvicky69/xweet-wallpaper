@@ -26,17 +26,17 @@ GET /api/wallpapers
 
 #### Query Parameters
 
-| Parameter | Type | Default | Description |
-|---|---|---|---|
-| `q` or `search` | `string` | — | Search keyword matching title, description, category, or tags. |
-| `category` | `string` | — | Filter by style or collection (e.g. `Dark Abstract`, `Warm Minimal`, `flower`). |
-| `orientation` or `type` | `string` | `all` | Target device: `mobile` (phone lockscreens), `desktop` (16:9 / 16:10 masters), or `all`. |
-| `featured` | `boolean` | — | When `true`, returns only featured editorial staff picks. |
-| `random` | `boolean` | `false` | When `true`, shuffles the results on each request (great for "Wallpaper of the Day" widgets). |
-| `sort` | `string` | `newest` | Sort order: `newest`, `oldest`, `title`, or `random`. |
-| `limit` or `count` | `number` | `20` | Max items per page (clamped between `1` and `100`). |
-| `page` | `number` | `1` | Page offset number (1-indexed). |
-| `all` | `boolean` | `false` | When `true`, ignores pagination limits and returns the entire catalog for offline caching. |
+| Parameter                   | Type        | Default    | Description                                                                                     |
+| --------------------------- | ----------- | ---------- | ----------------------------------------------------------------------------------------------- |
+| `q` or `search`         | `string`  | —         | Search keyword matching title, description, category, or tags.                                  |
+| `category`                | `string`  | —         | Filter by style or collection (e.g. `Dark Abstract`, `Warm Minimal`, `flower`).           |
+| `orientation` or `type` | `string`  | `all`    | Target device: `mobile` (phone lockscreens), `desktop` (16:9 / 16:10 masters), or `all`.  |
+| `featured`                | `boolean` | —         | When `true`, returns only featured editorial staff picks.                                     |
+| `random`                  | `boolean` | `false`  | When `true`, shuffles the results on each request (great for "Wallpaper of the Day" widgets). |
+| `sort`                    | `string`  | `newest` | Sort order: `newest`, `oldest`, `title`, or `random`.                                   |
+| `limit` or `count`      | `number`  | `20`     | Max items per page (clamped between `1` and `100`).                                         |
+| `page`                    | `number`  | `1`      | Page offset number (1-indexed).                                                                 |
+| `all`                     | `boolean` | `false`  | When `true`, ignores pagination limits and returns the entire catalog for offline caching.    |
 
 ---
 
@@ -50,6 +50,7 @@ GET /api/wallpapers?id={id}
 ```
 
 Example:
+
 ```http
 GET https://wallpaper.xweet.in/api/wallpapers?slug=midnight-amber
 ```
@@ -66,13 +67,14 @@ GET /api/download/{slug}
 
 #### Query Parameters
 
-| Parameter | Values | Default | Description |
-|---|---|---|---|
-| `type` | `phone-4k`, `desktop-1080p`, `desktop-4k`, `thumbnail` | `desktop-4k` | Output resolution and aspect crop. |
-| `format` | `webp`, `png`, `jpg` | `webp` | Target file encoding. |
-| `inline` | `true`, `false` | `false` | When `true`, renders directly inside `<img>` without forcing a file download prompt. |
+| Parameter  | Values                                                         | Default        | Description                                                                              |
+| ---------- | -------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------- |
+| `type`   | `phone-4k`, `desktop-1080p`, `desktop-4k`, `thumbnail` | `desktop-4k` | Output resolution and aspect crop.                                                       |
+| `format` | `webp`, `png`, `jpg`                                     | `webp`       | Target file encoding.                                                                    |
+| `inline` | `true`, `false`                                            | `false`      | When `true`, renders directly inside `<img>` without forcing a file download prompt. |
 
 Examples:
+
 - **Phone Lockscreen 4K Crop:** `https://wallpaper.xweet.in/api/download/midnight-amber?type=phone-4k`
 - **Desktop 1080p Full HD PNG:** `https://wallpaper.xweet.in/api/download/midnight-amber?type=desktop-1080p&format=png`
 - **Inline Phone Preview:** `https://wallpaper.xweet.in/api/download/midnight-amber?type=phone-4k&inline=true`
@@ -210,10 +212,10 @@ curl -X GET "https://wallpaper.xweet.in/api/wallpapers?slug=midnight-amber"
 
 ## 5. HTTP Status Codes
 
-| Code | Meaning | Description |
-|---|---|---|
-| `200 OK` | Success | The query completed successfully with matching items. |
-| `204 No Content` | CORS Preflight | Returned for `OPTIONS` preflight requests. |
-| `304 Not Modified` | Cached | The client ETag matches server asset hash; zero bandwidth consumed. |
-| `404 Not Found` | Missing Item | Returned when querying a non-existent `slug`. |
-| `500 Server Error` | Unexpected | An internal server or database error occurred. |
+| Code                 | Meaning        | Description                                                         |
+| -------------------- | -------------- | ------------------------------------------------------------------- |
+| `200 OK`           | Success        | The query completed successfully with matching items.               |
+| `204 No Content`   | CORS Preflight | Returned for `OPTIONS` preflight requests.                        |
+| `304 Not Modified` | Cached         | The client ETag matches server asset hash; zero bandwidth consumed. |
+| `404 Not Found`    | Missing Item   | Returned when querying a non-existent `slug`.                     |
+| `500 Server Error` | Unexpected     | An internal server or database error occurred.                      |

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
@@ -37,7 +37,10 @@ export const FeaturedWallpaperCarousel: React.FC<FeaturedWallpaperCarouselProps>
     setIsMounted(true);
   }, []);
 
-  const featuredList = wallpapers.slice(0, 5);
+  const featuredList = useMemo(() => {
+    const featured = wallpapers.filter((w) => w.isFeatured);
+    return featured.length >= 4 ? featured.slice(0, 8) : wallpapers.slice(0, 8);
+  }, [wallpapers]);
 
   return (
     <section id="featured" className="w-full border-b border-border bg-surface py-16 lg:py-20">
@@ -98,7 +101,7 @@ export const FeaturedWallpaperCarousel: React.FC<FeaturedWallpaperCarouselProps>
               onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
               className="w-full overflow-visible"
             >
-              {featuredList.map((wp) => (
+              {featuredList.map((wp: Wallpaper) => (
                 <SwiperSlide key={wp.id}>
                   <div className="group border border-border bg-background p-3 transition-all duration-200 hover:border-primary">
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted/30">

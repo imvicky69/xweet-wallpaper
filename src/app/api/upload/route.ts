@@ -292,6 +292,12 @@ export async function POST(req: NextRequest) {
         format: "webp",
         phoneCropCoords,
       },
+      urls: {
+        phone: phoneCdnUrl || `${process.env.NEXT_PUBLIC_CDN_DOMAIN || "https://cdn.xweet.in"}/wallpapers/phone/${slug}.webp`,
+        phoneThumbnail: `${process.env.NEXT_PUBLIC_CDN_DOMAIN || "https://cdn.xweet.in"}/wallpapers/phone/thumbnails/${slug}.webp`,
+        desktop: masterCdnUrl,
+        desktopThumbnail: `${process.env.NEXT_PUBLIC_CDN_DOMAIN || "https://cdn.xweet.in"}/wallpapers/thumbnails/${slug}.webp`,
+      },
       monetization: {
         affiliateMood,
       },

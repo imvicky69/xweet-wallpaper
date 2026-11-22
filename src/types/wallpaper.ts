@@ -1,14 +1,14 @@
 export type AspectRatio = "16:9" | "9:16" | "16:10" | "21:9" | "9:19.5";
 export type Orientation = "all" | "desktop" | "mobile";
+export type WallpaperSort = "random" | "newest" | "featured" | "oldest";
 
 /**
- * Author reference stored inside the wallpaper document or referenced.
- * For 'xweet', username is 'xweet' and isVerified is always true.
+ * Author reference stored inside the wallpaper document.
  */
 export interface AuthorRef {
   id: string; // 'xweet' or Firebase Auth UID
-  username: string; // e.g. 'xweet' or 'alex_v'
-  displayName: string; // e.g. 'Xweet Studio' or 'Alex Vance'
+  username: string; // e.g. 'xweet'
+  displayName: string; // e.g. 'Vicky'
   photoURL?: string; // Avatar URL
   isVerified?: boolean; // Automatically true if username === 'xweet'
   bio?: string;
@@ -26,11 +26,12 @@ export interface WallpaperCropCoords {
 }
 
 /**
- * Storage specifications for the single master WebP file on Cloudflare R2
+ * Clean storage specifications on Cloudflare R2
  */
 export interface WallpaperStorage {
   r2Key: string; // e.g. 'wallpapers/midnight-amber.webp'
-  format: "webp" | "png" | "jpg" | "avif";
+  phoneR2Key?: string; // Optional companion phone R2 key
+  format: "webp" | "png" | "jpg" | "avif" | string;
   phoneCropCoords?: WallpaperCropCoords;
 }
 
@@ -52,6 +53,7 @@ export interface WallpaperFlags {
   isFeatured?: boolean;
   isNew?: boolean;
   hasPhoneCrop?: boolean;
+  hasDedicatedPhone?: boolean;
 }
 
 export interface WallpaperMetadata {
@@ -64,7 +66,17 @@ export interface WallpaperMonetization {
 }
 
 /**
- * Cloudflare R2 Asset variant specifications (legacy / transient)
+ * Clean, single source of truth for all permanent CDN URLs
+ */
+export interface WallpaperUrls {
+  phone: string;
+  phoneThumbnail: string;
+  desktop: string;
+  desktopThumbnail: string;
+}
+
+/**
+ * Legacy / transient asset format
  */
 export interface WallpaperAsset {
   key: string;
@@ -78,7 +90,7 @@ export interface WallpaperAsset {
 }
 
 /**
- * Clean Wallpaper Document stored in Firestore
+ * Clean, minimal Wallpaper Document stored in Firestore
  */
 export interface WallpaperDoc {
   id: string;
@@ -88,14 +100,15 @@ export interface WallpaperDoc {
   classification: WallpaperClassification;
   styling: WallpaperStyling;
   flags: WallpaperFlags;
-  metadata: WallpaperMetadata;
   author: AuthorRef;
   storage: WallpaperStorage;
+  urls: WallpaperUrls;
+  metadata: WallpaperMetadata;
   monetization?: WallpaperMonetization;
 }
 
 /**
- * Normalized Wallpaper with top-level convenience accessors
+ * Normalized Wallpaper domain model with convenience accessors
  */
 export interface Wallpaper extends WallpaperDoc {
   id: string;
@@ -103,19 +116,21 @@ export interface Wallpaper extends WallpaperDoc {
   title: string;
   description: string;
 
-  // New clean schema fields
   classification: WallpaperClassification;
   styling: WallpaperStyling;
   flags: WallpaperFlags;
-  metadata: WallpaperMetadata;
   author: AuthorRef;
   storage: WallpaperStorage;
+  urls: WallpaperUrls;
+  metadata: WallpaperMetadata;
   monetization?: WallpaperMonetization;
 
-  // Convenience / backward compatibility fields (guaranteed by normalizeWallpaper)
+  // Convenience accessors mapped directly from urls
   imageUrl: string;
   thumbnailUrl: string;
   phoneImageUrl?: string;
+  phoneUrl?: string;
+  phoneThumbnailUrl?: string;
   category: string;
   collection: string;
   resolution: string;

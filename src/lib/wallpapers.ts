@@ -17,8 +17,8 @@ export const COLLECTIONS: Collection[] = [
     title: "Minimal Abstracts",
     description: "AI-generated and curated by Xweet. Quiet forms, chromatic diffusions, and organic textures.",
     coverImageUrl: "https://cdn.xweet.in/wallpapers/midnight-amber.webp",
-    count: 37,
-    tags: ["Minimal", "Abstract", "4K", "Tactile"],
+    count: 63,
+    tags: ["Minimal", "Abstract", "4K", "Tactile", "Phone"],
   },
 ];
 
@@ -38,7 +38,13 @@ export const CATEGORIES = [
   "Earthy Minimal",
   "Modern Abstract",
   "Warm Dark Minimal",
-  "flower"
+  "flower",
+  "Nature Vertical",
+  "Lockscreen",
+  "Anime Vertical",
+  "AMOLED Mobile",
+  "Aesthetic Portrait",
+  "Minimal Mobile"
 ];
 
 export const MOBILE_CATEGORIES = [
@@ -91,11 +97,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": true,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171013
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -114,8 +117,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/midnight-amber.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/midnight-amber.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/midnight-amber.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/midnight-amber.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171013
     }
   },
   {
@@ -150,11 +160,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": true,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171099
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -173,8 +180,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "warm-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/sand-and-cream.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/sand-and-cream.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/sand-and-cream.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/sand-and-cream.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171099
     }
   },
   {
@@ -209,11 +223,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": true,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171231
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -232,8 +243,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "cool-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/ocean-mist.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/ocean-mist.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/ocean-mist.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/ocean-mist.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171231
     }
   },
   {
@@ -268,11 +286,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171350
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -291,8 +306,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/lavender-haze.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/lavender-haze.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/lavender-haze.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/lavender-haze.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171350
     }
   },
   {
@@ -327,11 +349,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171431
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -350,8 +369,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/forest-glass.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/forest-glass.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/forest-glass.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/forest-glass.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171431
     }
   },
   {
@@ -386,11 +412,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171519
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -409,8 +432,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/copper-horizon.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/copper-horizon.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/copper-horizon.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/copper-horizon.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171519
     }
   },
   {
@@ -445,11 +475,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171647
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -468,8 +495,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "cool-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/arctic-minimal.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/arctic-minimal.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/arctic-minimal.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/arctic-minimal.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171647
     }
   },
   {
@@ -504,11 +538,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171734
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -527,8 +558,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "warm-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/mocha-waves.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/mocha-waves.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/mocha-waves.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/mocha-waves.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171734
     }
   },
   {
@@ -563,11 +601,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171828
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -586,8 +621,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/pastel-sunrise.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/pastel-sunrise.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/pastel-sunrise.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/pastel-sunrise.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171828
     }
   },
   {
@@ -622,11 +664,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934171927
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -645,8 +684,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/deep-teal.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/deep-teal.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/deep-teal.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/deep-teal.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934171927
     }
   },
   {
@@ -681,11 +727,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934172003
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -704,8 +747,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/rose-quartz.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/rose-quartz.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/rose-quartz.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/rose-quartz.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934172003
     }
   },
   {
@@ -740,11 +790,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934172079
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -763,8 +810,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/graphite-silver.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/graphite-silver.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/graphite-silver.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/graphite-silver.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934172079
     }
   },
   {
@@ -799,11 +853,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934172152
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -822,8 +873,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/olive-and-stone.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/olive-and-stone.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/olive-and-stone.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/olive-and-stone.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934172152
     }
   },
   {
@@ -857,11 +915,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934172226
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -880,8 +935,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/electric-blue-haze.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/electric-blue-haze.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/electric-blue-haze.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/electric-blue-haze.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934172226
     }
   },
   {
@@ -916,11 +978,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": false,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934172302
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -939,8 +998,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/eclipse-cream.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/eclipse-cream.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/eclipse-cream.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/eclipse-cream.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934172302
     }
   },
   {
@@ -975,11 +1041,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": true,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14",
-      "createdAt": 1791934172366
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -998,8 +1061,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 941
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/midnight-dunes.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/midnight-dunes.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/midnight-dunes.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/midnight-dunes.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14",
+      "createdAt": 1791934172366
     }
   },
   {
@@ -1031,11 +1101,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T12:12:38.290Z",
-      "createdAt": 1791979958290
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1054,8 +1121,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 941
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/sunflowers-in-soft-morning-light-952605.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/sunflowers-in-soft-morning-light-952605.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/sunflowers-in-soft-morning-light-952605.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/sunflowers-in-soft-morning-light-952605.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T12:12:38.290Z",
+      "createdAt": 1791979958290
     }
   },
   {
@@ -1089,11 +1163,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T16:07:04.273Z",
-      "createdAt": 1791994024273
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1112,8 +1183,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/red-rose-luxury-minimalism-019956.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/red-rose-luxury-minimalism-019956.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/red-rose-luxury-minimalism-019956.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/red-rose-luxury-minimalism-019956.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T16:07:04.273Z",
+      "createdAt": 1791994024273
     }
   },
   {
@@ -1145,11 +1223,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T17:43:57.693Z",
-      "createdAt": 1791999837693
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1168,8 +1243,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/white-daisy-playful-minimalism.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/white-daisy-playful-minimalism.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/white-daisy-playful-minimalism.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/white-daisy-playful-minimalism.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T17:43:57.693Z",
+      "createdAt": 1791999837693
     }
   },
   {
@@ -1201,11 +1283,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T19:22:04.320Z",
-      "createdAt": 1792005724320
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1224,8 +1303,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/calla-lily-sculptural-white.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/calla-lily-sculptural-white.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/calla-lily-sculptural-white.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/calla-lily-sculptural-white.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T19:22:04.320Z",
+      "createdAt": 1792005724320
     }
   },
   {
@@ -1257,11 +1343,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T19:22:42.713Z",
-      "createdAt": 1792005762713
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1280,8 +1363,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/cherry-blossom-soft-pink.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/cherry-blossom-soft-pink.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/cherry-blossom-soft-pink.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/cherry-blossom-soft-pink.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T19:22:42.713Z",
+      "createdAt": 1792005762713
     }
   },
   {
@@ -1313,11 +1403,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T19:23:11.016Z",
-      "createdAt": 1792005791016
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1336,8 +1423,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/forget-me-nots-tiny-blue-blooms.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/forget-me-nots-tiny-blue-blooms.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/forget-me-nots-tiny-blue-blooms.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/forget-me-nots-tiny-blue-blooms.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T19:23:11.016Z",
+      "createdAt": 1792005791016
     }
   },
   {
@@ -1369,11 +1463,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T19:23:42.962Z",
-      "createdAt": 1792005822962
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1392,8 +1483,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/tulips-peach-cream.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/tulips-peach-cream.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/tulips-peach-cream.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/tulips-peach-cream.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T19:23:42.962Z",
+      "createdAt": 1792005822962
     }
   },
   {
@@ -1425,11 +1523,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T19:24:30.298Z",
-      "createdAt": 1792005870298
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1448,8 +1543,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/lotus-misty-blue.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/lotus-misty-blue.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/lotus-misty-blue.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/lotus-misty-blue.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T19:24:30.298Z",
+      "createdAt": 1792005870298
     }
   },
   {
@@ -1481,11 +1583,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T19:24:53.919Z",
-      "createdAt": 1792005893919
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1504,8 +1603,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/hibiscus-tropical-coral.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/hibiscus-tropical-coral.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/hibiscus-tropical-coral.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/hibiscus-tropical-coral.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T19:24:53.919Z",
+      "createdAt": 1792005893919
     }
   },
   {
@@ -1537,11 +1643,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T19:25:18.824Z",
-      "createdAt": 1792005918824
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1560,8 +1663,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/lavender-purple-haze.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/lavender-purple-haze.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/lavender-purple-haze.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/lavender-purple-haze.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T19:25:18.824Z",
+      "createdAt": 1792005918824
     }
   },
   {
@@ -1593,11 +1703,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T19:26:18.390Z",
-      "createdAt": 1792005978390
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1616,8 +1723,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/poppies-orange-blue.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/poppies-orange-blue.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/poppies-orange-blue.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/poppies-orange-blue.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T19:26:18.390Z",
+      "createdAt": 1792005978390
     }
   },
   {
@@ -1649,11 +1763,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T19:27:16.922Z",
-      "createdAt": 1792006036922
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1672,8 +1783,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 941
       }
     },
-    "monetization": {
-      "affiliateMood": "botanical"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/dewlit-white-flower-in-misty-forest.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/dewlit-white-flower-in-misty-forest.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/dewlit-white-flower-in-misty-forest.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/dewlit-white-flower-in-misty-forest.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T19:27:16.922Z",
+      "createdAt": 1792006036922
     }
   },
   {
@@ -1705,11 +1823,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T21:36:59.218Z",
-      "createdAt": 1792013819218
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1728,8 +1843,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/a-quiet-moon.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/a-quiet-moon.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/a-quiet-moon.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/a-quiet-moon.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T21:36:59.218Z",
+      "createdAt": 1792013819218
     }
   },
   {
@@ -1762,11 +1884,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T21:37:28.914Z",
-      "createdAt": 1792013848914
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1785,8 +1904,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/eclipse-oled.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/eclipse-oled.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/eclipse-oled.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/eclipse-oled.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T21:37:28.914Z",
+      "createdAt": 1792013848914
     }
   },
   {
@@ -1818,11 +1944,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T21:38:18.508Z",
-      "createdAt": 1792013898508
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1841,8 +1964,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "warm-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/endless-horizon.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/endless-horizon.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/endless-horizon.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/endless-horizon.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T21:38:18.508Z",
+      "createdAt": 1792013898508
     }
   },
   {
@@ -1874,11 +2004,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T21:39:44.499Z",
-      "createdAt": 1792013984499
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1897,8 +2024,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "cool-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/frozen-wave.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/frozen-wave.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/frozen-wave.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/frozen-wave.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T21:39:44.499Z",
+      "createdAt": 1792013984499
     }
   },
   {
@@ -1930,11 +2064,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T21:40:44.247Z",
-      "createdAt": 1792014044247
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -1953,8 +2084,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/golden-afterglow-oled.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/golden-afterglow-oled.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/golden-afterglow-oled.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/golden-afterglow-oled.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T21:40:44.247Z",
+      "createdAt": 1792014044247
     }
   },
   {
@@ -1986,11 +2124,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T21:41:07.895Z",
-      "createdAt": 1792014067895
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -2009,8 +2144,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/golden-lotus-oled.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/golden-lotus-oled.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/golden-lotus-oled.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/golden-lotus-oled.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T21:41:07.895Z",
+      "createdAt": 1792014067895
     }
   },
   {
@@ -2042,11 +2184,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T21:42:21.390Z",
-      "createdAt": 1792014141390
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -2065,8 +2204,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/liquid-silk.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/liquid-silk.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/liquid-silk.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/liquid-silk.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T21:42:21.390Z",
+      "createdAt": 1792014141390
     }
   },
   {
@@ -2098,11 +2244,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T21:43:03.230Z",
-      "createdAt": 1792014183230
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -2121,8 +2264,15 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 2160
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/liquid-silk-copy.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/liquid-silk-copy.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/liquid-silk-copy.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/liquid-silk-copy.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T21:43:03.230Z",
+      "createdAt": 1792014183230
     }
   },
   {
@@ -2154,11 +2304,8 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
     "flags": {
       "isFeatured": false,
       "isNew": true,
-      "hasPhoneCrop": true
-    },
-    "metadata": {
-      "publishedAt": "2026-10-14T21:44:01.062Z",
-      "createdAt": 1792014241062
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
     },
     "author": {
       "id": "xweet",
@@ -2177,8 +2324,1730 @@ const RAW_WALLPAPERS: WallpaperDoc[] = [
         "height": 1536
       }
     },
-    "monetization": {
-      "affiliateMood": "dark-minimal"
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/midnight-blossom-oled.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/midnight-blossom-oled.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/midnight-blossom-oled.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/thumbnails/midnight-blossom-oled.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-10-14T21:44:01.062Z",
+      "createdAt": 1792014241062
+    }
+  },
+  {
+    "id": "wp_1795379412592_1",
+    "slug": "a-quiet-road-corner",
+    "title": "A Quiet Road Corner",
+    "description": "Curated nature vertical wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Nature Vertical",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#4830F0",
+      "paletteHex": "#3018F0",
+      "palette": [
+        "#4830F0",
+        "#3018F0",
+        "#F04830",
+        "#F06048"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "nature-vertical",
+        "quiet",
+        "road",
+        "corner"
+      ]
+    },
+    "flags": {
+      "isFeatured": true,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/a-quiet-road-corner.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/a-quiet-road-corner.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/a-quiet-road-corner.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/a-quiet-road-corner.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/a-quiet-road-corner.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:04:14.501Z",
+      "createdAt": 1795377854501
+    }
+  },
+  {
+    "id": "wp_1795379414913_2",
+    "slug": "abundand-boat",
+    "title": "Abundand Boat",
+    "description": "Curated lockscreen wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Lockscreen",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#F0D8D8",
+      "paletteHex": "#D8D8F0",
+      "palette": [
+        "#F0D8D8",
+        "#D8D8F0",
+        "#D8D8D8",
+        "#D8F0D8"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "lockscreen",
+        "abundand",
+        "boat"
+      ]
+    },
+    "flags": {
+      "isFeatured": true,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/abundand-boat.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/abundand-boat.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/abundand-boat.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/abundand-boat.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/abundand-boat.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:05:16.456Z",
+      "createdAt": 1795377916456
+    }
+  },
+  {
+    "id": "wp_1795379416560_3",
+    "slug": "aesthatic-japan-train",
+    "title": "Aesthatic Japan Train",
+    "description": "Curated anime vertical wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Anime Vertical",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#F06060",
+      "paletteHex": "#F04848",
+      "palette": [
+        "#F06060",
+        "#F04848",
+        "#4848F0",
+        "#F07878"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "anime-vertical",
+        "aesthatic",
+        "japan",
+        "train"
+      ]
+    },
+    "flags": {
+      "isFeatured": true,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/aesthatic-japan-train.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/aesthatic-japan-train.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/aesthatic-japan-train.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/aesthatic-japan-train.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/aesthatic-japan-train.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:06:18.328Z",
+      "createdAt": 1795377978328
+    }
+  },
+  {
+    "id": "wp_1795379418412_4",
+    "slug": "alpenglow-under-a-crescent-moon",
+    "title": "Alpenglow Under a Crescent Moon",
+    "description": "Curated nature vertical wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Nature Vertical",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#181830",
+      "paletteHex": "#303048",
+      "palette": [
+        "#181830",
+        "#303048",
+        "#183030",
+        "#183048"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "nature-vertical",
+        "alpenglow",
+        "under",
+        "crescent",
+        "moon"
+      ]
+    },
+    "flags": {
+      "isFeatured": true,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/alpenglow-under-a-crescent-moon.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/alpenglow-under-a-crescent-moon.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/alpenglow-under-a-crescent-moon.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/alpenglow-under-a-crescent-moon.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/alpenglow-under-a-crescent-moon.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:07:19.775Z",
+      "createdAt": 1795378039775
+    }
+  },
+  {
+    "id": "wp_1795379419844_5",
+    "slug": "antigravity-sphere",
+    "title": "Antigravity Sphere",
+    "description": "Curated lockscreen wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Lockscreen",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#18F048",
+      "paletteHex": "#1818F0",
+      "palette": [
+        "#18F048",
+        "#1818F0",
+        "#3018F0",
+        "#F04830"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "lockscreen",
+        "antigravity",
+        "sphere"
+      ]
+    },
+    "flags": {
+      "isFeatured": true,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/antigravity-sphere.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/antigravity-sphere.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/antigravity-sphere.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/antigravity-sphere.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/antigravity-sphere.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:08:21.414Z",
+      "createdAt": 1795378101414
+    }
+  },
+  {
+    "id": "wp_1795379421516_6",
+    "slug": "autumn-rowboat-on-reflective-waters",
+    "title": "Autumn Rowboat on Reflective Waters",
+    "description": "Curated lockscreen wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Lockscreen",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#001818",
+      "paletteHex": "#183030",
+      "palette": [
+        "#001818",
+        "#183030",
+        "#003018",
+        "#003030"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "lockscreen",
+        "autumn",
+        "rowboat",
+        "reflective",
+        "waters"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/autumn-rowboat-on-reflective-waters.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/autumn-rowboat-on-reflective-waters.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/autumn-rowboat-on-reflective-waters.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/autumn-rowboat-on-reflective-waters.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/autumn-rowboat-on-reflective-waters.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:09:22.908Z",
+      "createdAt": 1795378162908
+    }
+  },
+  {
+    "id": "wp_1795379422953_7",
+    "slug": "bird-on-a-bloom-oled",
+    "title": "Bird on a Bloom OLED",
+    "description": "Curated amoled mobile wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "AMOLED Mobile",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#0000F0",
+      "paletteHex": "#000000",
+      "palette": [
+        "#0000F0",
+        "#000000",
+        "#F00000",
+        "#00F000"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "amoled-mobile",
+        "bird",
+        "bloom",
+        "oled"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/bird-on-a-bloom-oled.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/bird-on-a-bloom-oled.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/bird-on-a-bloom-oled.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/bird-on-a-bloom-oled.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/bird-on-a-bloom-oled.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:10:24.189Z",
+      "createdAt": 1795378224189
+    }
+  },
+  {
+    "id": "wp_1795379424239_8",
+    "slug": "crimson-koi-fish",
+    "title": "Crimson Koi Fish",
+    "description": "Curated anime vertical wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Anime Vertical",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#1818F0",
+      "paletteHex": "#F01818",
+      "palette": [
+        "#1818F0",
+        "#F01818",
+        "#181818",
+        "#3030F0"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "anime-vertical",
+        "crimson",
+        "koi",
+        "fish"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/crimson-koi-fish.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/crimson-koi-fish.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/crimson-koi-fish.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/crimson-koi-fish.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/crimson-koi-fish.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:11:26.493Z",
+      "createdAt": 1795378286493
+    }
+  },
+  {
+    "id": "wp_1795379426583_9",
+    "slug": "dreamy-grass",
+    "title": "Dreamy Grass",
+    "description": "Curated lockscreen wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Lockscreen",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#9090F0",
+      "paletteHex": "#A890F0",
+      "palette": [
+        "#9090F0",
+        "#A890F0",
+        "#F0A890",
+        "#90F0C0"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "lockscreen",
+        "dreamy",
+        "grass"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/dreamy-grass.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/dreamy-grass.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/dreamy-grass.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/dreamy-grass.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/dreamy-grass.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:12:28.439Z",
+      "createdAt": 1795378348439
+    }
+  },
+  {
+    "id": "wp_1795379428493_10",
+    "slug": "dreemy-valley",
+    "title": "Dreemy Valley",
+    "description": "Curated nature vertical wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Nature Vertical",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#F07878",
+      "paletteHex": "#F06060",
+      "palette": [
+        "#F07878",
+        "#F06060",
+        "#F09090",
+        "#F04848"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "nature-vertical",
+        "dreemy",
+        "valley"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/dreemy-valley.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/dreemy-valley.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/dreemy-valley.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/dreemy-valley.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/dreemy-valley.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:13:30.274Z",
+      "createdAt": 1795378410274
+    }
+  },
+  {
+    "id": "wp_1795379430388_11",
+    "slug": "fluffy-persian-cat-in-warm-sunlight",
+    "title": "Fluffy Persian Cat in Warm Sunlight",
+    "description": "Curated aesthetic portrait wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Aesthetic Portrait",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1671"
+    },
+    "styling": {
+      "dominantColor": "#C0A890",
+      "paletteHex": "#D8C0A8",
+      "palette": [
+        "#C0A890",
+        "#D8C0A8",
+        "#D8D8C0",
+        "#F0D8C0"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "aesthetic-portrait",
+        "fluffy",
+        "persian",
+        "cat",
+        "warm",
+        "sunlight"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/fluffy-persian-cat-in-warm-sunlight.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1671
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/fluffy-persian-cat-in-warm-sunlight.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/fluffy-persian-cat-in-warm-sunlight.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/fluffy-persian-cat-in-warm-sunlight.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/fluffy-persian-cat-in-warm-sunlight.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:14:31.964Z",
+      "createdAt": 1795378471964
+    }
+  },
+  {
+    "id": "wp_1795379432021_12",
+    "slug": "minimal-green-botanical-circle",
+    "title": "Minimal Green Botanical Circle",
+    "description": "Curated nature vertical wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Nature Vertical",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#F0D8C0",
+      "paletteHex": "#F0D8D8",
+      "palette": [
+        "#F0D8C0",
+        "#F0D8D8",
+        "#304830",
+        "#484830"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "nature-vertical",
+        "minimal",
+        "green",
+        "botanical",
+        "circle"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/minimal-green-botanical-circle.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/minimal-green-botanical-circle.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/minimal-green-botanical-circle.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/minimal-green-botanical-circle.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/minimal-green-botanical-circle.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:15:33.353Z",
+      "createdAt": 1795378533353
+    }
+  },
+  {
+    "id": "wp_1795379433443_13",
+    "slug": "minimalist-white-india-map-outline",
+    "title": "Minimalist White India Map Outline",
+    "description": "Curated minimal mobile wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Minimal Mobile",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#000000",
+      "paletteHex": "#606060",
+      "palette": [
+        "#000000",
+        "#606060",
+        "#181818",
+        "#303030"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "minimal-mobile",
+        "minimalist",
+        "white",
+        "india",
+        "map",
+        "outline"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/minimalist-white-india-map-outline.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/minimalist-white-india-map-outline.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/minimalist-white-india-map-outline.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/minimalist-white-india-map-outline.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/minimalist-white-india-map-outline.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:16:34.571Z",
+      "createdAt": 1795378594571
+    }
+  },
+  {
+    "id": "wp_1795379434615_14",
+    "slug": "moon-in-day",
+    "title": "Moon in Day",
+    "description": "Curated lockscreen wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Lockscreen",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#90F0D8",
+      "paletteHex": "#F0D8A8",
+      "palette": [
+        "#90F0D8",
+        "#F0D8A8",
+        "#F0C090",
+        "#F0F0C0"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "lockscreen",
+        "moon",
+        "day"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/moon-in-day.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/moon-in-day.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moon-in-day.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/moon-in-day.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moon-in-day.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:17:36.353Z",
+      "createdAt": 1795378656353
+    }
+  },
+  {
+    "id": "wp_1795379436412_15",
+    "slug": "moonlit-autumn-teahouse-with-sleeping-cat",
+    "title": "Moonlit Autumn Teahouse with Sleeping Cat",
+    "description": "Curated amoled mobile wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "AMOLED Mobile",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1670"
+    },
+    "styling": {
+      "dominantColor": "#D8C090",
+      "paletteHex": "#F0C090",
+      "palette": [
+        "#D8C090",
+        "#F0C090",
+        "#D8A890",
+        "#D8A878"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "amoled-mobile",
+        "moonlit",
+        "autumn",
+        "teahouse",
+        "with",
+        "sleeping",
+        "cat"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/moonlit-autumn-teahouse-with-sleeping-cat.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1670
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/moonlit-autumn-teahouse-with-sleeping-cat.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-autumn-teahouse-with-sleeping-cat.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/moonlit-autumn-teahouse-with-sleeping-cat.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-autumn-teahouse-with-sleeping-cat.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:18:38.073Z",
+      "createdAt": 1795378718073
+    }
+  },
+  {
+    "id": "wp_1795379438154_16",
+    "slug": "moonlit-blossoms-over-twilight-clouds-1",
+    "title": "Moonlit Blossoms Over Twilight Clouds (1)",
+    "description": "Curated amoled mobile wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "AMOLED Mobile",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#303048",
+      "paletteHex": "#181830",
+      "palette": [
+        "#303048",
+        "#181830",
+        "#183030",
+        "#484848"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "amoled-mobile",
+        "moonlit",
+        "blossoms",
+        "over",
+        "twilight",
+        "clouds",
+        "(1)"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/moonlit-blossoms-over-twilight-clouds-1.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/moonlit-blossoms-over-twilight-clouds-1.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-blossoms-over-twilight-clouds-1.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/moonlit-blossoms-over-twilight-clouds-1.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-blossoms-over-twilight-clouds-1.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:19:39.609Z",
+      "createdAt": 1795378779609
+    }
+  },
+  {
+    "id": "wp_1795379439751_17",
+    "slug": "moonlit-crane-beneath-blossoms",
+    "title": "Moonlit Crane Beneath Blossoms",
+    "description": "Curated amoled mobile wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "AMOLED Mobile",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1671"
+    },
+    "styling": {
+      "dominantColor": "#D8C090",
+      "paletteHex": "#D8C0A8",
+      "palette": [
+        "#D8C090",
+        "#D8C0A8",
+        "#A89078",
+        "#C0A890"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "amoled-mobile",
+        "moonlit",
+        "crane",
+        "beneath",
+        "blossoms"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/moonlit-crane-beneath-blossoms.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1671
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/moonlit-crane-beneath-blossoms.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-crane-beneath-blossoms.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/moonlit-crane-beneath-blossoms.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-crane-beneath-blossoms.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:20:41.280Z",
+      "createdAt": 1795378841280
+    }
+  },
+  {
+    "id": "wp_1795379441349_18",
+    "slug": "moonlit-lake-with-lantern-and-sleeping-dog",
+    "title": "Moonlit Lake with Lantern and Sleeping Dog",
+    "description": "Curated amoled mobile wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "AMOLED Mobile",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#304848",
+      "paletteHex": "#303048",
+      "palette": [
+        "#304848",
+        "#303048",
+        "#484860",
+        "#304860"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "amoled-mobile",
+        "moonlit",
+        "lake",
+        "with",
+        "lantern",
+        "and",
+        "sleeping",
+        "dog"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/moonlit-lake-with-lantern-and-sleeping-dog.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/moonlit-lake-with-lantern-and-sleeping-dog.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-lake-with-lantern-and-sleeping-dog.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/moonlit-lake-with-lantern-and-sleeping-dog.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-lake-with-lantern-and-sleeping-dog.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:21:42.783Z",
+      "createdAt": 1795378902783
+    }
+  },
+  {
+    "id": "wp_1795379442875_19",
+    "slug": "moonlit-radha-and-krishna-beneath-blossoms",
+    "title": "Moonlit Radha and Krishna Beneath Blossoms",
+    "description": "Curated amoled mobile wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "AMOLED Mobile",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#181818",
+      "paletteHex": "#303030",
+      "palette": [
+        "#181818",
+        "#303030",
+        "#000000",
+        "#484848"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "amoled-mobile",
+        "moonlit",
+        "radha",
+        "and",
+        "krishna",
+        "beneath",
+        "blossoms"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/moonlit-radha-and-krishna-beneath-blossoms.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/moonlit-radha-and-krishna-beneath-blossoms.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-radha-and-krishna-beneath-blossoms.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/moonlit-radha-and-krishna-beneath-blossoms.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-radha-and-krishna-beneath-blossoms.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:22:44.354Z",
+      "createdAt": 1795378964354
+    }
+  },
+  {
+    "id": "wp_1795379444424_20",
+    "slug": "moonlit-white-lily-on-stone",
+    "title": "Moonlit White Lily on Stone",
+    "description": "Curated amoled mobile wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "AMOLED Mobile",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#001818",
+      "paletteHex": "#181818",
+      "palette": [
+        "#001818",
+        "#181818",
+        "#000018",
+        "#303018"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "amoled-mobile",
+        "moonlit",
+        "white",
+        "lily",
+        "stone"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/moonlit-white-lily-on-stone.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/moonlit-white-lily-on-stone.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-white-lily-on-stone.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/moonlit-white-lily-on-stone.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/moonlit-white-lily-on-stone.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:23:45.963Z",
+      "createdAt": 1795379025963
+    }
+  },
+  {
+    "id": "wp_1795379446059_21",
+    "slug": "sunlit-persian-cat-portrait",
+    "title": "Sunlit Persian Cat Portrait",
+    "description": "Curated aesthetic portrait wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Aesthetic Portrait",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#D8D8C0",
+      "paletteHex": "#A8A890",
+      "palette": [
+        "#D8D8C0",
+        "#A8A890",
+        "#D8C0C0",
+        "#C0A8A8"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "aesthetic-portrait",
+        "sunlit",
+        "persian",
+        "cat",
+        "portrait"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/sunlit-persian-cat-portrait.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/sunlit-persian-cat-portrait.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/sunlit-persian-cat-portrait.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/sunlit-persian-cat-portrait.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/sunlit-persian-cat-portrait.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:24:47.740Z",
+      "createdAt": 1795379087740
+    }
+  },
+  {
+    "id": "wp_1795379447800_22",
+    "slug": "sunrise-valley-it-can-t-always-be-night",
+    "title": "Sunrise Valley It Can’t Always Be Night",
+    "description": "Curated amoled mobile wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "AMOLED Mobile",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1671"
+    },
+    "styling": {
+      "dominantColor": "#303030",
+      "paletteHex": "#304860",
+      "palette": [
+        "#303030",
+        "#304860",
+        "#484848",
+        "#486060"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "amoled-mobile",
+        "sunrise",
+        "valley",
+        "can’t",
+        "always",
+        "night"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/sunrise-valley-it-can-t-always-be-night.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1671
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/sunrise-valley-it-can-t-always-be-night.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/sunrise-valley-it-can-t-always-be-night.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/sunrise-valley-it-can-t-always-be-night.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/sunrise-valley-it-can-t-always-be-night.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:25:49.144Z",
+      "createdAt": 1795379149144
+    }
+  },
+  {
+    "id": "wp_1795379449234_23",
+    "slug": "sunset-bicycle-reading-nook",
+    "title": "Sunset Bicycle Reading Nook",
+    "description": "Curated nature vertical wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Nature Vertical",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1671"
+    },
+    "styling": {
+      "dominantColor": "#C0A8A8",
+      "paletteHex": "#D8A8A8",
+      "palette": [
+        "#C0A8A8",
+        "#D8A8A8",
+        "#606078",
+        "#D89078"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "nature-vertical",
+        "sunset",
+        "bicycle",
+        "reading",
+        "nook"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/sunset-bicycle-reading-nook.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1671
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/sunset-bicycle-reading-nook.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/sunset-bicycle-reading-nook.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/sunset-bicycle-reading-nook.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/sunset-bicycle-reading-nook.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:26:50.978Z",
+      "createdAt": 1795379210978
+    }
+  },
+  {
+    "id": "wp_1795379451068_24",
+    "slug": "terracotta-sun-over-layered-hills",
+    "title": "Terracotta Sun Over Layered Hills",
+    "description": "Curated nature vertical wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Nature Vertical",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1671"
+    },
+    "styling": {
+      "dominantColor": "#F0D8C0",
+      "paletteHex": "#909078",
+      "palette": [
+        "#F0D8C0",
+        "#909078",
+        "#183018",
+        "#F0D8D8"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "nature-vertical",
+        "terracotta",
+        "sun",
+        "over",
+        "layered",
+        "hills"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/terracotta-sun-over-layered-hills.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1671
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/terracotta-sun-over-layered-hills.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/terracotta-sun-over-layered-hills.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/terracotta-sun-over-layered-hills.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/terracotta-sun-over-layered-hills.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:27:52.309Z",
+      "createdAt": 1795379272309
+    }
+  },
+  {
+    "id": "wp_1795379452398_25",
+    "slug": "ukiyo-e-pagoda-beneath-the-red-sun",
+    "title": "Ukiyo E Pagoda Beneath the Red Sun",
+    "description": "Curated anime vertical wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Anime Vertical",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "941 × 1672"
+    },
+    "styling": {
+      "dominantColor": "#D8C0A8",
+      "paletteHex": "#F0D8A8",
+      "palette": [
+        "#D8C0A8",
+        "#F0D8A8",
+        "#F0C0A8",
+        "#C0A890"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "anime-vertical",
+        "ukiyo",
+        "pagoda",
+        "beneath",
+        "the",
+        "red",
+        "sun"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/ukiyo-e-pagoda-beneath-the-red-sun.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 941,
+        "height": 1672
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/ukiyo-e-pagoda-beneath-the-red-sun.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/ukiyo-e-pagoda-beneath-the-red-sun.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/ukiyo-e-pagoda-beneath-the-red-sun.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/ukiyo-e-pagoda-beneath-the-red-sun.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:28:54.273Z",
+      "createdAt": 1795379334273
+    }
+  },
+  {
+    "id": "wp_1795379454353_26",
+    "slug": "whale-in-sky",
+    "title": "Whale in Sky",
+    "description": "Curated lockscreen wallpaper crafted for mobile lockscreens.",
+    "classification": {
+      "category": "Lockscreen",
+      "collection": "Mobile Lockscreen Edition",
+      "aspectRatio": "9:16",
+      "resolution": "1536 × 2730"
+    },
+    "styling": {
+      "dominantColor": "#F00018",
+      "paletteHex": "#1830F0",
+      "palette": [
+        "#F00018",
+        "#1830F0",
+        "#30F000",
+        "#001830"
+      ],
+      "tags": [
+        "mobile",
+        "lockscreen",
+        "phone",
+        "lockscreen",
+        "whale",
+        "sky"
+      ]
+    },
+    "flags": {
+      "isFeatured": false,
+      "isNew": true,
+      "hasPhoneCrop": true,
+      "hasDedicatedPhone": true
+    },
+    "author": {
+      "id": "xweet",
+      "username": "xweet",
+      "displayName": "Vicky",
+      "photoURL": "/logo.png",
+      "isVerified": true,
+      "bio": "Founder & Curator of Xweet Wallpapers. Curated minimal abstracts for focused screens."
+    },
+    "storage": {
+      "r2Key": "wallpapers/phone/whale-in-sky.webp",
+      "format": "webp",
+      "phoneCropCoords": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 2730
+      }
+    },
+    "urls": {
+      "phone": "https://cdn.xweet.in/wallpapers/phone/whale-in-sky.webp",
+      "phoneThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/whale-in-sky.webp",
+      "desktop": "https://cdn.xweet.in/wallpapers/phone/whale-in-sky.webp",
+      "desktopThumbnail": "https://cdn.xweet.in/wallpapers/phone/thumbnails/whale-in-sky.webp"
+    },
+    "metadata": {
+      "publishedAt": "2026-11-22T20:29:55.823Z",
+      "createdAt": 1795379395823
     }
   }
 ];
@@ -2203,7 +4072,7 @@ export function getPhoneCropStyle(wallpaper?: Wallpaper | null): React.CSSProper
   if (!wallpaper) return { objectPosition: "center center" };
 
   // If a dedicated phone image is provided, it is already framed as a vertical phone asset
-  if (wallpaper.phoneImageUrl && wallpaper.phoneImageUrl !== wallpaper.imageUrl) {
+  if (wallpaper.urls?.phone && wallpaper.urls.phone !== wallpaper.urls?.desktop) {
     return { objectPosition: "center center" };
   }
 
@@ -2221,7 +4090,6 @@ export function getPhoneCropStyle(wallpaper?: Wallpaper | null): React.CSSProper
     return { objectPosition: "center center" };
   }
 
-  // Parse natural resolution width
   let naturalWidth = 2752;
   if (wallpaper.resolution) {
     const parts = wallpaper.resolution.split(/[×xX]/);
@@ -2229,16 +4097,10 @@ export function getPhoneCropStyle(wallpaper?: Wallpaper | null): React.CSSProper
     if (!isNaN(parsedW) && parsedW > 0) {
       naturalWidth = parsedW;
     }
-  } else if (wallpaper.aspectRatio === "16:9") {
-    naturalWidth = 2752;
-  } else if (wallpaper.aspectRatio === "16:10") {
-    naturalWidth = 3840;
   }
 
   const maxOffset = naturalWidth - coords.width;
-  if (maxOffset <= 0) {
-    return { objectPosition: "center center" };
-  }
+  if (maxOffset <= 0) return { objectPosition: "center center" };
 
   const pct = Math.max(0, Math.min(100, (coords.x / maxOffset) * 100));
   return { objectPosition: `${pct.toFixed(2)}% center` };
@@ -2246,20 +4108,22 @@ export function getPhoneCropStyle(wallpaper?: Wallpaper | null): React.CSSProper
 
 /**
  * Returns the best CDN image URL for mobile lockscreen previews.
- * Falls back to desktop master/thumbnail if dedicated phone asset is not present.
+ * Prefers the dedicated phone thumbnail or phone master.
  */
 export function getPhonePreviewUrl(wallpaper?: Wallpaper | null): string {
   if (!wallpaper) return "";
-  if (wallpaper.phoneImageUrl && wallpaper.phoneImageUrl !== wallpaper.imageUrl) {
-    return getCdnImageUrl(wallpaper.phoneImageUrl);
-  }
-  return getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl);
+  return (
+    wallpaper.urls?.phoneThumbnail ||
+    wallpaper.urls?.phone ||
+    wallpaper.phoneThumbnailUrl ||
+    wallpaper.phoneImageUrl ||
+    getCdnImageUrl(wallpaper.thumbnailUrl || wallpaper.imageUrl)
+  );
 }
-
 
 /**
  * Normalizes any raw wallpaper (from Firestore or static fallback)
- * into the new clean schema while retaining convenience accessors.
+ * into the clean schema with backwards-compatible getters.
  */
 export function normalizeWallpaper(raw: any): Wallpaper {
   if (!raw) return raw;
@@ -2279,28 +4143,16 @@ export function normalizeWallpaper(raw: any): Wallpaper {
   const paletteHex = raw.styling?.paletteHex || raw.paletteHex || dominantColor;
   const palette = raw.styling?.palette || (Array.isArray(raw.palette) ? raw.palette : [dominantColor]);
   const tags = raw.styling?.tags || (Array.isArray(raw.tags) ? raw.tags : ["minimal", "abstract"]);
-  const styling = {
-    dominantColor,
-    paletteHex,
-    palette,
-    tags,
-  };
+  const styling = { dominantColor, paletteHex, palette, tags };
 
   const isFeatured = Boolean(raw.flags?.isFeatured ?? raw.isFeatured ?? raw.featured);
   const isNew = Boolean(raw.flags?.isNew ?? raw.isNew);
   const hasPhoneCrop = Boolean(raw.flags?.hasPhoneCrop ?? raw.hasPhoneCrop ?? true);
-  const flags = {
-    isFeatured,
-    isNew,
-    hasPhoneCrop,
-  };
+  const flags = { isFeatured, isNew, hasPhoneCrop, hasDedicatedPhone: true };
 
   const publishedAt = raw.metadata?.publishedAt || raw.publishedAt || new Date().toISOString();
   const createdAt = raw.metadata?.createdAt || raw.createdAt || Date.now();
-  const metadata = {
-    publishedAt,
-    createdAt,
-  };
+  const metadata = { publishedAt, createdAt };
 
   const author = raw.author || {
     id: "xweet",
@@ -2310,29 +4162,29 @@ export function normalizeWallpaper(raw: any): Wallpaper {
     isVerified: true,
   };
 
-  const r2Key =
-    raw.storage?.r2Key ||
-    (raw.desktopAsset?.key ? raw.desktopAsset.key : `wallpapers/${slug}.webp`);
-  const format = raw.storage?.format || "webp";
-  const phoneCropCoords = raw.storage?.phoneCropCoords || {
-    x: 944,
-    y: 0,
-    width: 864,
-    height: 1536,
+  const isMobile =
+    raw.orientation === "mobile" ||
+    classification.aspectRatio === "9:16" ||
+    classification.aspectRatio === "9:19.5";
+
+  // Clean URLs
+  const phoneMasterUrl = raw.urls?.phone || raw.phoneUrl || `https://cdn.xweet.in/wallpapers/phone/${slug}.webp`;
+  const phoneThumbUrl = raw.urls?.phoneThumbnail || raw.phoneThumbnailUrl || `https://cdn.xweet.in/wallpapers/phone/thumbnails/${slug}.webp`;
+  const desktopMasterUrl = raw.urls?.desktop || (isMobile ? phoneMasterUrl : `https://cdn.xweet.in/wallpapers/${slug}.webp`);
+  const desktopThumbUrl = raw.urls?.desktopThumbnail || (isMobile ? phoneThumbUrl : `https://cdn.xweet.in/wallpapers/thumbnails/${slug}.webp`);
+
+  const urls = {
+    phone: phoneMasterUrl,
+    phoneThumbnail: phoneThumbUrl,
+    desktop: desktopMasterUrl,
+    desktopThumbnail: desktopThumbUrl,
   };
+
   const storage = {
-    r2Key,
-    format,
-    phoneCropCoords,
+    r2Key: raw.storage?.r2Key || (isMobile ? `wallpapers/phone/${slug}.webp` : `wallpapers/${slug}.webp`),
+    format: "webp",
+    phoneCropCoords: raw.storage?.phoneCropCoords,
   };
-
-  const monetization = raw.monetization || {
-    affiliateMood: classification.category.toLowerCase().includes("dark")
-      ? "dark-minimal"
-      : "warm-minimal",
-  };
-
-  const masterCdnUrl = getCdnImageUrl(raw.imageUrl || `https://cdn.xweet.in/${r2Key}`);
 
   return {
     id,
@@ -2345,21 +4197,19 @@ export function normalizeWallpaper(raw: any): Wallpaper {
     metadata,
     author,
     storage,
-    monetization,
+    urls,
 
-    // Backward-compatibility properties
-    imageUrl: masterCdnUrl,
-    thumbnailUrl: getCdnImageUrl(raw.thumbnailUrl) || masterCdnUrl,
-    phoneImageUrl: getCdnImageUrl(raw.phoneImageUrl) || masterCdnUrl,
+    // Convenience accessors mapped directly to urls (clean & backwards compatible)
+    imageUrl: desktopMasterUrl,
+    thumbnailUrl: desktopThumbUrl,
+    phoneImageUrl: phoneMasterUrl,
+    phoneUrl: phoneMasterUrl,
+    phoneThumbnailUrl: phoneThumbUrl,
     category: classification.category,
     collection: classification.collection,
     resolution: classification.resolution,
     aspectRatio: classification.aspectRatio,
-    orientation:
-      raw.orientation ||
-      (classification.aspectRatio === "9:16" || classification.aspectRatio === "9:19.5"
-        ? "mobile"
-        : "desktop"),
+    orientation: isMobile ? "mobile" : "desktop",
     dominantColor,
     paletteHex,
     palette,
@@ -2378,3 +4228,15 @@ export function normalizeWallpaper(raw: any): Wallpaper {
 }
 
 export const WALLPAPERS: Wallpaper[] = RAW_WALLPAPERS.map(normalizeWallpaper);
+
+/**
+ * Fisher-Yates array shuffle for wallpapers catalog
+ */
+export function shuffleWallpapers<T>(items: T[]): T[] {
+  const array = [...items];
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
