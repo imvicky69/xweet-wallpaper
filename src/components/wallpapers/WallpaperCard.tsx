@@ -119,7 +119,7 @@ export const WallpaperCard: React.FC<WallpaperCardProps> = ({
   return (
     <article
       onClick={() => onPreview && onPreview(wallpaper)}
-      className="group relative flex flex-col border border-border bg-surface rounded-none overflow-hidden cursor-pointer transition-all duration-200 hover:border-primary/70 shadow-2xs hover:shadow-md"
+      className="group relative flex flex-col h-fit w-full self-start border border-border bg-surface rounded-none overflow-hidden cursor-pointer transition-all duration-200 hover:border-primary/70 shadow-2xs hover:shadow-md"
     >
       {/* Artwork Frame */}
       <div className={`relative w-full overflow-hidden bg-muted/30 ${frameAspectRatioClass}`}>

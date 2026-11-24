@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Wallpaper } from "@/types/wallpaper";
 import { WallpaperCard } from "./WallpaperCard";
 import { CatalogEndQuote } from "./CatalogEndQuote";
@@ -57,12 +57,48 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [viewMode, setViewMode] = useState<"auto" | "mobile" | "desktop">("auto");
   const [mobileColumns, setMobileColumns] = useState<1 | 2>(2);
+  const [columnCount, setColumnCount] = useState<number>(3);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic responsive column calculation for natural masonry flow (prevents stretched row gaps)
+  useEffect(() => {
+    const updateColumns = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setColumnCount(mobileColumns);
+      } else if (width < 1024) {
+        setColumnCount(2);
+      } else {
+        setColumnCount(3);
+      }
+    };
+
+    updateColumns();
+    window.addEventListener("resize", updateColumns);
+    return () => window.removeEventListener("resize", updateColumns);
+  }, [mobileColumns]);
 
   // Reset to page 1 whenever the wallpapers list changes (filter or search applied)
   useEffect(() => {
     setCurrentPage(1);
   }, [wallpapers]);
+
+  const totalPages = Math.max(1, Math.ceil(wallpapers.length / itemsPerPage));
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+  const startIndex = (validCurrentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, wallpapers.length);
+  const displayedWallpapers = wallpapers.slice(startIndex, endIndex);
+
+  // Distribute items across columns to maintain left-to-right reading order without vertical stretched row gaps
+  const columns = useMemo(() => {
+    const safeCount = Math.max(1, columnCount);
+    const cols: Wallpaper[][] = Array.from({ length: safeCount }, () => []);
+    displayedWallpapers.forEach((wp, index) => {
+      cols[index % safeCount].push(wp);
+    });
+    return cols;
+  }, [displayedWallpapers, columnCount]);
 
   // Handle empty search / filter state
   if (wallpapers.length === 0) {
@@ -91,13 +127,6 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
       </div>
     );
   }
-
-  const totalPages = Math.max(1, Math.ceil(wallpapers.length / itemsPerPage));
-  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
-
-  const startIndex = (validCurrentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, wallpapers.length);
-  const displayedWallpapers = wallpapers.slice(startIndex, endIndex);
 
   const isFirstPage = validCurrentPage === 1;
   const isLastPage = validCurrentPage === totalPages;
@@ -228,21 +257,21 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
         </div>
       </div>
 
-      {/* 2. Wallpaper Grid: 2-column mobile default (phone proportion), 3-column desktop */}
-      <div
-        className={`grid ${
-          mobileColumns === 1 ? "grid-cols-1" : "grid-cols-2"
-        } sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8`}
-      >
-        {displayedWallpapers.map((wallpaper) => (
-          <WallpaperCard
-            key={wallpaper.id}
-            wallpaper={wallpaper}
-            viewMode={viewMode}
-            onPreview={onPreview}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+      {/* 2. Responsive Masonry Columns (eliminates row stretching and whitespace gaps) */}
+      <div className="flex gap-2.5 sm:gap-6 lg:gap-8 items-start w-full">
+        {columns.map((colWallpapers, colIdx) => (
+          <div key={colIdx} className="flex-1 flex flex-col gap-2.5 sm:gap-6 lg:gap-8 min-w-0">
+            {colWallpapers.map((wallpaper) => (
+              <WallpaperCard
+                key={wallpaper.id}
+                wallpaper={wallpaper}
+                viewMode={viewMode}
+                onPreview={onPreview}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            ))}
+          </div>
         ))}
       </div>
 
