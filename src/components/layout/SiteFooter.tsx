@@ -1,40 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  IconArrowUp,
-  IconShieldCheck,
-  IconCheck,
-  IconCopy,
-  IconSparkles,
-} from "@tabler/icons-react";
-
-interface PaletteColor {
-  hex: string;
-  name: string;
-}
-
-const BRAND_PALETTE: PaletteColor[] = [
-  { hex: "#F6F3E9", name: "Paper Cream" },
-  { hex: "#DCE5D5", name: "Soft Sage" },
-  { hex: "#858B70", name: "Olive Moss" },
-  { hex: "#244B38", name: "Deep Forest" },
-  { hex: "#111B2A", name: "Obsidian" },
-];
+import { IconArrowUp } from "@tabler/icons-react";
 
 export const SiteFooter: React.FC = () => {
-  const [copiedHex, setCopiedHex] = useState<string | null>(null);
-
-  const handleCopyColor = (hex: string) => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(hex);
-      setCopiedHex(hex);
-      setTimeout(() => setCopiedHex(null), 2000);
-    }
-  };
-
   const scrollToTop = () => {
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -74,146 +45,7 @@ export const SiteFooter: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Architectural Multi-Column Grid */}
-      <div className="mx-auto max-w-7xl px-6 py-12 lg:py-16 lg:px-12">
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-8 lg:gap-12">
-          {/* Column 1: Catalog Navigation (3 cols) */}
-          <div className="col-span-2 md:col-span-3 flex flex-col gap-3.5">
-            <h4 className="font-mono text-xs font-semibold uppercase tracking-wider text-foreground">
-              Discovery
-            </h4>
-            <ul className="flex flex-col gap-2 font-sans text-xs sm:text-sm text-muted-foreground">
-              <li>
-                <Link href="/#wallpapers" className="hover:text-primary transition-colors">
-                  All Wallpapers
-                </Link>
-              </li>
-              <li>
-                <Link href="/#wallpapers" className="hover:text-primary transition-colors">
-                  Exclusive Drops
-                </Link>
-              </li>
-              <li>
-                <Link href="/xweet" className="hover:text-primary transition-colors inline-flex items-center gap-1.5">
-                  <span>Curator Portfolio</span>
-                  <span className="text-[10px] font-mono text-primary bg-secondary/80 px-1 py-0.2 border border-border">
-                    @XWEET
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/upload" className="hover:text-primary transition-colors">
-                  Upload New Drop
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 2: Curated Styles (3 cols) */}
-          <div className="col-span-1 md:col-span-3 flex flex-col gap-3.5">
-            <h4 className="font-mono text-xs font-semibold uppercase tracking-wider text-foreground">
-              Aesthetics
-            </h4>
-            <ul className="flex flex-col gap-2 font-sans text-xs sm:text-sm text-muted-foreground">
-              <li>
-                <Link href="/#wallpapers" className="hover:text-primary transition-colors">
-                  Dark Abstract
-                </Link>
-              </li>
-              <li>
-                <Link href="/#wallpapers" className="hover:text-primary transition-colors">
-                  Warm Minimal
-                </Link>
-              </li>
-              <li>
-                <Link href="/#wallpapers" className="hover:text-primary transition-colors">
-                  Earthy & Botanical
-                </Link>
-              </li>
-              <li>
-                <Link href="/#wallpapers" className="hover:text-primary transition-colors">
-                  Soft Gradients
-                </Link>
-              </li>
-              <li>
-                <Link href="/#wallpapers" className="hover:text-primary transition-colors">
-                  Lockscreen Vertical
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: Display Specifications (3 cols) */}
-          <div className="col-span-1 md:col-span-3 flex flex-col gap-3.5">
-            <h4 className="font-mono text-xs font-semibold uppercase tracking-wider text-foreground">
-              Master Standards
-            </h4>
-            <div className="flex flex-col gap-1.5 font-mono text-[11px] text-muted-foreground">
-              <span className="flex items-center gap-1.5 text-foreground font-medium">
-                <IconShieldCheck size={13} className="text-primary shrink-0" />
-                <span>Cloudflare R2 Direct CDN</span>
-              </span>
-              <span>4K UHD (3840 × 2160)</span>
-              <span>5K Studio (5120 × 2880)</span>
-              <span>19.5:9 Phone Lockscreen</span>
-              <span className="text-[10px] text-primary mt-1">100% UNCOMPRESSED MASTERS</span>
-            </div>
-          </div>
-
-          {/* Column 4: Interactive Palette Strip (3 cols) */}
-          <div className="col-span-2 md:col-span-3 flex flex-col gap-3.5">
-            <div className="flex items-center justify-between">
-              <h4 className="font-mono text-xs font-semibold uppercase tracking-wider text-foreground">
-                Editorial Palette
-              </h4>
-              <span className="font-mono text-[10px] text-muted-foreground">
-                Click to copy
-              </span>
-            </div>
-
-            <p className="font-sans text-xs text-muted-foreground leading-relaxed">
-              Tailored chromatic tokens grounding every wallpaper frame on this canvas.
-            </p>
-
-            {/* Interactive Swatches Bar */}
-            <div className="flex items-center gap-1.5 pt-1">
-              {BRAND_PALETTE.map((color) => {
-                const isCopied = copiedHex === color.hex;
-                return (
-                  <button
-                    key={color.hex}
-                    type="button"
-                    onClick={() => handleCopyColor(color.hex)}
-                    style={{ backgroundColor: color.hex }}
-                    className="group relative h-9 flex-1 border border-border/80 transition-all duration-150 hover:-translate-y-0.5 cursor-pointer rounded-none flex items-center justify-center shadow-xs"
-                    title={`${color.name} (${color.hex}) — Click to copy`}
-                  >
-                    {isCopied && (
-                      <span className="bg-foreground text-background p-0.5 rounded-none shadow-md">
-                        <IconCheck size={11} />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {copiedHex ? (
-              <span className="font-mono text-[10px] text-primary flex items-center gap-1 font-semibold animate-pulse">
-                <IconCheck size={12} />
-                <span>Copied {copiedHex} to clipboard!</span>
-              </span>
-            ) : (
-              <span className="font-mono text-[10px] text-muted-foreground flex items-center gap-1">
-                <IconSparkles size={11} className="text-primary" />
-                <span>5-Tone Brand System</span>
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Massive Minimalist Architectural Sign-off */}
+      {/* 2. Massive Minimalist Architectural Sign-off */}
       <div className="w-full overflow-hidden select-none pointer-events-none -my-4 sm:-my-6 flex justify-center">
         <span className="font-sans text-[18vw] sm:text-[16vw] font-bold tracking-tighter text-foreground/[0.04] leading-none whitespace-nowrap uppercase">
           XWEET
@@ -242,16 +74,23 @@ export const SiteFooter: React.FC = () => {
             <span className="hidden md:inline">WARM MINIMALISM</span>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px]">
-            <span>GEIST TYPOGRAPHY</span>
+          <div className="flex items-center gap-3 text-[11px]">
+            <span>A XWEET APP</span>
             <span className="text-border">•</span>
-            <span>FREE FOR ALL SCREENS</span>
+            <a
+              href="https://xweet.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary font-semibold hover:underline"
+            >
+              xweet.in
+            </a>
             <span className="text-border">•</span>
             <Link
               href="/xweet"
-              className="text-primary font-semibold hover:underline"
+              className="text-muted-foreground hover:text-primary transition-colors"
             >
-              @XWEET
+              @xweet
             </Link>
           </div>
         </div>

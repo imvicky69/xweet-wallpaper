@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xweet Wallpaper — Local Upload Studio</title>
+  <style>
+    :root {
+      --bg: #0c0d0c;
+      --surface: #141614;
+      --surface-2: #1c1f1c;
+      --border: #2a2e2a;
+      --text: #f3f4f1;
+      --muted: #98a096;
+      --accent: #244b38;
+      --accent-bright: #469d72;
+      --lime: #d7f36a;
+      --danger: #e5534b;
+      --warn: #e0a836;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 24px;
+      background: rgba(12, 13, 12, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-badge {
+      width: 30px;
+      height: 30px;
+      background: var(--accent);
+      border: 1px solid var(--accent-bright);
+      color: var(--lime);
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .brand-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .status-pills {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-bright);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 3px;
+    }
+    .nav-tab {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .nav-tab.active {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hidden { display: none !important; }
+
+    .grid-main {
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .grid-main { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    .card-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--lime);
+      margin: 0 0 12px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Mode Selector */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 640px) {
+      .mode-grid { grid-template-columns: 1fr; }
+    }
+    .mode-btn {
+      text-align: left;
+      padding: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .mode-btn:hover { border-color: var(--accent-bright); }
+    .mode-btn.active {
+      border-color: var(--lime);
+      background: rgba(36, 75, 56, 0.38);
+    }
+    .mode-btn .m-title {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mode-btn .m-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 1px 5px;
+      border: 1px solid var(--border);
+      color: var(--lime);
+    }
+    .mode-btn .m-desc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Dropzone */
+    .dropzone {
+      border: 1px dashed var(--border);
+      background: var(--surface-2);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--lime);
+      background: rgba(215, 243, 106, 0.04);
+    }
+    .dropzone input[type="file"] { display: none; }
+    .dropzone-meta {
+      margin-top: 8px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent-bright);
+    }
+
+    /* Crop Studio */
+    .crop-layout {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr;
+      gap: 16px;
+      align-items: start;
+      margin-top: 12px;
+    }
+    @media (max-width: 768px) {
+      .crop-layout { grid-template-columns: 1fr; }
+    }
+    .crop-stage {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      user-select: none;
+      touch-action: none;
+      cursor: ew-resize;
+    }
+    .crop-stage img {
+      display: block;
+      width: 100%;
+      height: auto;
+      pointer-events: none;
+    }
+    .crop-dim {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      pointer-events: none;
+    }
+    .crop-dim-v {
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.65);
+      pointer-events: none;
+    }
+    .crop-box {
+      position: absolute;
+      border: 2px solid var(--lime);
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 18px rgba(215, 243, 106, 0.25);
+      pointer-events: none;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+    }
+    .crop-box > div {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+    .crop-badge {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      font-family: var(--mono);
+      font-size: 10px;
+      background: var(--lime);
+      color: #000;
+      font-weight: 700;
+      padding: 1px 5px;
+    }
+
+    /* Live Phone Mockup */
+    .phone-preview-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .phone-frame {
+      position: relative;
+      width: 178px;
+      aspect-ratio: 9 / 19.5;
+      border-radius: 26px;
+      border: 4px solid #383e38;
+      background: #000;
+      overflow: hidden;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+    }
+    .phone-frame.ratio-9-16 {
+      aspect-ratio: 9 / 16;
+      border-radius: 20px;
+    }
+    .phone-frame canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .phone-ui-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.42), transparent 32%, transparent 72%, rgba(0,0,0,0.48));
+      text-align: center;
+    }
+    .phone-notch {
+      width: 52px;
+      height: 10px;
+      background: #000;
+      border-radius: 999px;
+      margin: 0 auto 6px;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .phone-date { font-family: var(--mono); font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.8); }
+    .phone-time { font-size: 28px; font-weight: 300; color: #fff; line-height: 1.05; margin-top: 2px; }
+    .phone-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 6px 4px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.85);
+    }
+    .phone-bar {
+      width: 44px;
+      height: 3px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.75);
+      margin: 4px auto 0;
+    }
+
+    /* Controls */
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    input[type="text"], input[type="search"], select, textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 10px;
+      font-family: var(--sans);
+      font-size: 13px;
+      outline: none;
+    }
+    input[type="text"]:focus, select:focus, textarea:focus {
+      border-color: var(--lime);
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--lime);
+      cursor: pointer;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 7px 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { border-color: var(--lime); color: var(--lime); }
+    .btn.active { background: var(--accent); border-color: var(--accent-bright); color: #fff; }
+    .btn-primary {
+      width: 100%;
+      justify-content: center;
+      background: var(--lime);
+      color: #0c0d0c;
+      border: 1px solid var(--lime);
+      font-weight: 700;
+      padding: 12px 16px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .btn-primary:hover { background: #e3fa88; color: #000; }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-danger { border-color: rgba(229, 83, 75, 0.45); color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    .preset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .swatch-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      padding: 3px 6px;
+    }
+    .swatch-item input[type="color"] {
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    .swatch-item span {
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .tag-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+    .chip {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 3px 7px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .chip.on {
+      border-color: var(--accent-bright);
+      color: var(--lime);
+      background: rgba(36, 75, 56, 0.25);
+    }
+
+    .check-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin: 10px 0;
+    }
+    .check-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .check-label input { accent-color: var(--lime); }
+
+    pre.json-preview {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #c5d1c3;
+      overflow-x: auto;
+      max-height: 320px;
+      margin: 0;
+    }
+
+    .alert {
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      margin-bottom: 14px;
+    }
+    .alert-err { border-color: var(--danger); background: rgba(229, 83, 75, 0.12); color: #ffb3ae; }
+    .alert-ok { border-color: var(--accent-bright); background: rgba(36, 75, 56, 0.3); color: #d6f7e3; }
+    .alert-warn { border-color: var(--warn); background: rgba(224, 168, 54, 0.12); color: #f9dc9c; }
+
+    /* Listings table */
+    .listings-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      background: var(--surface-2);
+    }
+    .thumb-pair {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .thumb-box {
+      width: 46px;
+      height: 30px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+    .thumb-box-phone {
+      width: 22px;
+      height: 44px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+    .badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      display: inline-block;
+    }
+    .badge-dual { border-color: var(--accent-bright); color: var(--lime); }
+    .badge-mobile { border-color: #6b8afd; color: #b5c6ff; }
+    .badge-desktop { border-color: #e0a836; color: #f9dc9c; }
+    .r2-dot {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 1px 4px;
+      margin-right: 3px;
+      border: 1px solid var(--border);
+    }
+    .r2-ok { color: #7ee787; border-color: rgba(126, 231, 135, 0.35); }
+    .r2-miss { color: var(--danger); border-color: rgba(229, 83, 75, 0.5); }
+
+    /* Batch Multi-Upload Queue */
+    .submode-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .batch-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .batch-item {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      padding: 12px;
+      align-items: start;
+    }
+    @media (max-width: 720px) {
+      .batch-item { grid-template-columns: 1fr; }
+    }
+    .batch-thumb-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .batch-thumb {
+      width: 120px;
+      height: 90px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+    .batch-fields {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 900px) {
+      .batch-fields { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .batch-fields { grid-template-columns: 1fr; }
+    }
+    .batch-fields .span-2 { grid-column: span 2; }
+    .batch-fields .span-3 { grid-column: 1 / -1; }
+    .mini-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .batch-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      grid-column: 1 / -1;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .progress-bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--lime);
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-badge">XW</div>
+      <div>
+        <h1>Xweet Wallpaper — Local Upload Studio</h1>
+        <div class="brand-sub" id="connectionLine">Connecting to Firestore Service Account &amp; R2...</div>
+      </div>
+    </div>
+
+    <div class="status-pills">
+      <span class="pill"><span class="dot"></span><span id="statCounts">Loading...</span></span>
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="upload">Post Wallpaper</button>
+        <button class="nav-tab" data-tab="listings">Firestore &amp; R2 Listing</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- TAB 1: UPLOAD STUDIO -->
+    <section id="tab-upload">
+      <div id="resultBanner"></div>
+
+      <div class="submode-bar">
+        <div class="nav-tabs">
+          <button type="button" class="nav-tab active" id="btnSubSingle">Single Upload (with Crop Studio)</button>
+          <button type="button" class="nav-tab" id="btnSubBatch">Batch Multi-Upload (<span id="batchCountBadge">0</span>)</button>
+        </div>
+        <span class="brand-sub">Tip: Drop multiple images anywhere to auto-extract titles, colors, tags &amp; descriptions.</span>
+      </div>
+
+      <!-- BATCH MULTI-UPLOAD VIEW -->
+      <div id="batchView" class="hidden">
+        <div class="card">
+          <h2 class="card-title">
+            <span>Batch Multi-Image Uploader</span>
+            <span style="color:var(--muted)">Auto-extracts Title, Colors, Tags &amp; Description • Fully Editable</span>
+          </h2>
+
+          <div class="mode-grid" style="margin-bottom:14px;">
+            <button type="button" class="mode-btn active" data-mode="dual">
+              <div class="m-title">Both (Desktop + Phone) <span class="m-tag">DUAL + CROP</span></div>
+              <div class="m-desc">4K Desktop + auto-cropped 1290×2796 Phone for all queued images.</div>
+            </button>
+            <button type="button" class="mode-btn" data-mode="desktop">
+              <div class="m-title">Desktop Only <span class="m-tag">16:9 / 21:9</span></div>
+              <div class="m-desc">4K Desktop + 800px thumb only for all queued images.</div>
+            </button>
+            <button type="button" class="mode-btn" data-mode="mobile">
+              <div class="m-title">Phone Only <span class="m-tag">9:16 / 9:19.5</span></div>
+              <div class="m-desc">1290×2796 Phone + 400×868 thumb for all queued images.</div>
+            </button>
+          </div>
+
+          <label class="dropzone" id="batchDropzone">
+            <input type="file" id="batchFileInput" accept="image/*" multiple />
+            <div><strong>Click or drop multiple images here</strong> (PNG, JPG, WebP)</div>
+            <div class="dropzone-meta">Each image automatically extracts title, slug, 5-color palette, tags &amp; description</div>
+          </label>
+
+          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-top:14px;">
+            <div class="check-row" style="margin:0;">
+              <label class="check-label"><input type="checkbox" id="batchOverwriteAll" /> Overwrite existing slugs</label>
+              <label class="check-label"><input type="checkbox" id="batchIsNewAll" checked /> Mark all isNew</label>
+              <label class="check-label"><input type="checkbox" id="batchIsFeaturedAll" /> Mark all isFeatured</label>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-danger" id="btnClearBatch">Clear Queue</button>
+              <button type="button" class="btn btn-primary" style="width:auto; padding:8px 16px;" id="btnPublishAll">Publish All Pending (0)</button>
+            </div>
+          </div>
+
+          <div class="progress-bar-wrap hidden" id="batchProgressWrap">
+            <div class="progress-bar-fill" id="batchProgressFill"></div>
+          </div>
+
+          <div class="batch-list" id="batchList"></div>
+        </div>
+      </div>
+
+      <div id="singleView" class="grid-main">
+        <!-- LEFT COLUMN: Mode, Images & Crop Studio -->
+        <div>
+          <div class="card">
+            <h2 class="card-title"><span>1. Wallpaper Type (Website &amp; App Configuration)</span></h2>
+            <div class="mode-grid">
+              <button type="button" class="mode-btn active" data-mode="dual">
+                <div class="m-title">Both (Desktop + Phone) <span class="m-tag">DUAL + CROP</span></div>
+                <div class="m-desc">4K Desktop WebP + 800px thumb + Cropped 1290×2796 Phone + 400×868 thumb.</div>
+              </button>
+              <button type="button" class="mode-btn" data-mode="desktop">
+                <div class="m-title">Desktop Only <span class="m-tag">16:9 / 21:9</span></div>
+                <div class="m-desc">4K Desktop WebP + 800px thumb only. Excluded from mobile-only app feed.</div>
+              </button>
+              <button type="button" class="mode-btn" data-mode="mobile">
+                <div class="m-title">Phone Only <span class="m-tag">9:16 / 9:19.5</span></div>
+                <div class="m-desc">1290×2796 Retina Lockscreen WebP + 400×868 mobile feed thumb.</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- MASTER UPLOAD CARD -->
+          <div class="card" id="desktopUploadCard">
+            <h2 class="card-title">
+              <span id="primaryUploadLabel">2. Desktop 4K Master Image</span>
+              <span id="desktopResBadge" style="color: var(--muted)">No file</span>
+            </h2>
+            <label class="dropzone" id="desktopDropzone">
+              <input type="file" id="desktopFileInput" accept="image/*" multiple />
+              <div><strong>Click or drop Desktop image(s) here</strong> (PNG, JPG, WebP — drop multiple for Batch)</div>
+              <div class="dropzone-meta" id="desktopFileMeta">Target: 4K WebP (up to 3840×2160, q94) + 800px thumbnail</div>
+            </label>
+          </div>
+
+          <!-- PHONE UPLOAD / CROP STUDIO CARD -->
+          <div class="card" id="phoneSectionCard">
+            <h2 class="card-title">
+              <span id="phoneSectionTitle">3. Phone Version — Interactive Crop Studio</span>
+              <div style="display:flex; gap:6px; align-items:center;" id="dualSourceToggle">
+                <button type="button" class="btn active" id="btnDualCrop">Crop from Desktop</button>
+                <button type="button" class="btn" id="btnDualDedicated">Separate Phone File</button>
+              </div>
+            </h2>
+
+            <!-- Dedicated / Mobile-only file picker -->
+            <div id="phoneFilePickerWrap" class="hidden" style="margin-bottom: 12px;">
+              <label class="dropzone" id="phoneDropzone">
+                <input type="file" id="phoneFileInput" accept="image/*" multiple />
+                <div><strong>Click or drop Phone image(s) here</strong> (Portrait PNG, JPG, WebP — drop multiple for Batch)</div>
+                <div class="dropzone-meta" id="phoneFileMeta">Target: 1290×2796 Retina WebP + 400×868 mobile thumb</div>
+              </label>
+            </div>
+
+            <!-- Interactive Crop Studio (works for Dual Crop AND Phone-only custom framing) -->
+            <div id="cropStudioWrap" class="hidden">
+              <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; gap:6px;">
+                  <button type="button" class="btn active" id="btnAspect9195">9:19.5 (Flagship)</button>
+                  <button type="button" class="btn" id="btnAspect916">9:16 (Standard)</button>
+                </div>
+                <span style="font-family:var(--mono); font-size:11px; color:var(--muted);" id="cropCoordsReadout">
+                  X: 0px, Y: 0px • 0×0px
+                </span>
+              </div>
+
+              <div class="crop-layout">
+                <div>
+                  <div class="crop-stage" id="cropStage">
+                    <img id="cropSourceImg" alt="Crop source" />
+                    <div class="crop-dim" id="dimLeft"></div>
+                    <div class="crop-dim" id="dimRight"></div>
+                    <div class="crop-dim-v hidden" id="dimTop"></div>
+                    <div class="crop-dim-v hidden" id="dimBottom"></div>
+                    <div class="crop-box" id="cropBox">
+                      <div></div><div></div><div></div>
+                      <div></div><div></div><div></div>
+                      <div></div><div></div><div></div>
+                      <span class="crop-badge" id="cropBoxBadge">9:19.5 • 50%</span>
+                    </div>
+                  </div>
+
+                  <div style="margin-top:10px;">
+                    <input type="range" id="cropSlider" min="0" max="100" step="0.5" value="50" />
+                    <div class="preset-row">
+                      <button type="button" class="btn preset-btn" data-pos="15">Left (15%)</button>
+                      <button type="button" class="btn preset-btn" data-pos="33.3">1/3 (33%)</button>
+                      <button type="button" class="btn preset-btn" data-pos="50">Center (50%)</button>
+                      <button type="button" class="btn preset-btn" data-pos="66.7">2/3 (67%)</button>
+                      <button type="button" class="btn preset-btn" data-pos="85">Right (85%)</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="phone-preview-wrap">
+                  <div style="width:100%; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-family:var(--mono); font-size:10px; color:var(--muted); text-transform:uppercase;">Live Lockscreen</span>
+                    <button type="button" class="btn" id="btnToggleLockUi" style="padding:3px 7px; font-size:10px;">Hide UI</button>
+                  </div>
+                  <div class="phone-frame" id="phoneFrameMockup">
+                    <canvas id="phonePreviewCanvas" width="360" height="780"></canvas>
+                    <div class="phone-ui-overlay" id="phoneUiOverlay">
+                      <div>
+                        <div class="phone-notch"></div>
+                        <div class="phone-date">Wednesday, Nov 25</div>
+                        <div class="phone-time">09:41</div>
+                      </div>
+                      <div>
+                        <div class="phone-bottom">
+                          <span>⚡</span>
+                          <span>📷</span>
+                        </div>
+                        <div class="phone-bar"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="cropPlaceholderHint" style="font-family:var(--mono); font-size:11px; color:var(--muted);">
+              Select an image above to position the cropped phone lockscreen window.
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Metadata, Palette & Publish -->
+        <div>
+          <form id="publishForm" class="card">
+            <h2 class="card-title"><span>4. Metadata &amp; Firestore Document</span></h2>
+
+            <div class="row">
+              <div class="field">
+                <label>Title * <span id="autoTitleHint" style="color:var(--accent-bright)"></span></label>
+                <input type="text" id="titleInput" placeholder="e.g. Midnight Amber" required />
+              </div>
+              <div class="field">
+                <label>URL Slug * <span id="slugStatus" style="color:var(--muted)">auto</span></label>
+                <input type="text" id="slugInput" placeholder="midnight-amber" required />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label>
+                  <span>Category *</span>
+                  <button type="button" id="btnCustomCategory" class="btn" style="padding:1px 6px; font-size:10px;">+ Custom</button>
+                </label>
+                <select id="categorySelect"></select>
+                <input type="text" id="customCategoryInput" class="hidden" placeholder="Enter custom category" />
+              </div>
+              <div class="field">
+                <label>Collection</label>
+                <input type="text" id="collectionInput" value="Minimal Abstracts" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label>Classification Aspect Ratio</label>
+                <select id="aspectRatioSelect">
+                  <option value="16:9">16:9 (Desktop Standard)</option>
+                  <option value="16:10">16:10 (MacBook / Wide)</option>
+                  <option value="21:9">21:9 (Ultrawide)</option>
+                  <option value="9:16">9:16 (Mobile Lockscreen)</option>
+                  <option value="9:19.5">9:19.5 (Flagship Mobile)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Flags &amp; Options</label>
+                <div class="check-row" style="margin:6px 0 0;">
+                  <label class="check-label"><input type="checkbox" id="isNewCheck" checked /> isNew</label>
+                  <label class="check-label"><input type="checkbox" id="isFeaturedCheck" /> isFeatured</label>
+                  <label class="check-label"><input type="checkbox" id="overwriteCheck" /> Overwrite slug</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>
+                <span>Color Palette (Auto-Extracted)</span>
+                <button type="button" id="btnReExtract" class="btn" style="padding:1px 6px; font-size:10px;">Re-Extract</button>
+              </label>
+              <div class="swatches" id="paletteSwatches"></div>
+            </div>
+
+            <div class="field">
+              <label>Tags (Comma Separated)</label>
+              <input type="text" id="tagsInput" value="minimal, 4k, abstract, editorial" />
+              <div class="tag-chips" id="quickTagChips"></div>
+            </div>
+
+            <div class="field">
+              <label>Description</label>
+              <textarea id="descriptionInput" rows="3" placeholder="Curated minimal wallpaper crafted for focused screens..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btnPublish">
+              Publish to Cloudflare R2 &amp; Firestore
+            </button>
+          </form>
+
+          <div class="card">
+            <h2 class="card-title">
+              <span>Live Firestore &amp; R2 Payload Preview</span>
+              <span style="color:var(--muted)">11-key minimal schema</span>
+            </h2>
+            <pre class="json-preview" id="payloadPreview"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: FIRESTORE & R2 LISTING -->
+    <section id="tab-listings" class="hidden">
+      <div class="card">
+        <div class="listings-toolbar">
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+            <input type="search" id="listingSearch" placeholder="Search title, slug, category..." style="width:240px;" />
+            <select id="listingTypeFilter" style="width:150px;">
+              <option value="all">All Types</option>
+              <option value="dual">Both (Dual)</option>
+              <option value="mobile">Phone Only</option>
+              <option value="desktop">Desktop Only</option>
+            </select>
+            <button type="button" class="btn" id="btnRefreshListings">Refresh Firestore &amp; R2</button>
+          </div>
+          <div style="font-family:var(--mono); font-size:11px; color:var(--muted);" id="listingSummary">—</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Preview</th>
+                <th>Title / Slug / ID</th>
+                <th>Type &amp; Ratio</th>
+                <th>Category</th>
+                <th>R2 Assets Audit</th>
+                <th>Flags</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="listingsBody">
+              <tr><td colspan="7" style="text-align:center; color:var(--muted); padding:24px;">Loading live Firestore &amp; R2 listing...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      mode: "dual", // "dual" | "desktop" | "mobile"
+      dualSource: "crop", // "crop" | "dedicated"
+      phoneCropAspect: "9:19.5",
+      cropPosition: 50,
+      showLockUi: true,
+      isCustomCategory: false,
+      desktopFile: null,
+      desktopImg: null,
+      desktopUrl: "",
+      phoneFile: null,
+      phoneImg: null,
+      phoneUrl: "",
+      palette: ["#111B2A", "#D99562", "#344153", "#F0E5D2"],
+      existingSlugs: new Set(),
+      desktopCategories: [],
+      mobileCategories: [],
+      listings: [],
+      uploadView: "single", // "single" | "batch"
+      batchItems: [],
+    };
+
+    const STOP_WORDS = new Set(["the", "and", "for", "with", "over", "into", "from", "that", "this", "your", "are", "was", "in", "on", "at", "to", "of", "by", "a", "an", "or"]);
+
+    function detectCategoryFromTitle(title, mode) {
+      const l = (title || "").toLowerCase();
+      if (l.includes("oled") || l.includes("amoled") || l.includes("moonlit") || l.includes("night")) {
+        return mode === "mobile" ? "AMOLED Mobile" : "Dark Abstract";
+      }
+      if (l.includes("flower") || l.includes("lily") || l.includes("rose") || l.includes("lotus") || l.includes("tulip") || l.includes("daisy") || l.includes("blossom") || l.includes("bloom")) {
+        return "flower";
+      }
+      if (l.includes("japan") || l.includes("anime") || l.includes("pagoda") || l.includes("ukiyo") || l.includes("koi")) {
+        return "Anime Vertical";
+      }
+      if (l.includes("cat") || l.includes("dog") || l.includes("bird") || l.includes("portrait")) {
+        return "Aesthetic Portrait";
+      }
+      if (l.includes("valley") || l.includes("mountain") || l.includes("hills") || l.includes("sunset") || l.includes("sunrise") || l.includes("forest") || l.includes("road") || l.includes("ocean") || l.includes("mist")) {
+        return mode === "mobile" ? "Nature Vertical" : "Cool Minimal";
+      }
+      if (l.includes("minimal")) return mode === "mobile" ? "Minimal Mobile" : "Warm Minimal";
+      if (l.includes("pastel")) return "Pastel Abstract";
+      if (l.includes("dark") || l.includes("midnight") || l.includes("shadow")) return "Dark Abstract";
+      return mode === "mobile" ? "Lockscreen" : "Dark Abstract";
+    }
+
+    function extractTagsFromTitle(title, category, mode) {
+      const titleWords = (title || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .map((w) => w.trim())
+        .filter((w) => w.length >= 3 && !STOP_WORDS.has(w));
+      const modeTags = mode === "mobile"
+        ? ["mobile", "lockscreen", "phone"]
+        : mode === "desktop"
+        ? ["desktop", "4k", "minimal"]
+        : ["desktop", "mobile", "lockscreen", "4k"];
+      const catTag = (category || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      return Array.from(new Set([...titleWords, catTag, ...modeTags].filter(Boolean))).slice(0, 10);
+    }
+
+    function buildDescriptionFromTitle(title, category, mode) {
+      const target = mode === "mobile"
+        ? "mobile lockscreens"
+        : mode === "desktop"
+        ? "wide 4K desktop displays"
+        : "4K desktop displays and cropped mobile lockscreens";
+      return `${title} — curated ${category.toLowerCase()} wallpaper crafted for ${target}.`;
+    }
+
+    const QUICK_TAGS = ["minimal", "4k", "dark", "abstract", "lockscreen", "amoled", "editorial", "desktop", "phone", "nature", "flower"];
+
+    // Helpers
+    const $ = (id) => document.getElementById(id);
+
+    function escHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function slugify(str) {
+      return (str || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    }
+
+    function formatTitleFromFilename(filename) {
+      const noExt = filename.replace(/\.[^/.]+$/, "");
+      const cleaned = noExt
+        .replace(/[-_](4k|5k|8k|uhd|hd|wallpaper|lockscreen|mobile|desktop|companion|phone|\d+x\d+)/gi, "")
+        .replace(/[_-]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      return cleaned
+        .split(" ")
+        .map((w, i) => {
+          if (!w) return "";
+          const l = w.toLowerCase();
+          if (l === "oled" || l === "amoled") return l.toUpperCase();
+          if (i > 0 && ["in", "the", "a", "an", "and", "or", "of", "for", "on", "at", "to", "with"].includes(l)) return l;
+          return w.charAt(0).toUpperCase() + w.slice(1);
+        })
+        .join(" ");
+    }
+
+    function extractPalette(img) {
+      const canvas = document.createElement("canvas");
+      const size = 96;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, size, size);
+      const data = ctx.getImageData(0, 0, size, size).data;
+
+      const buckets = new Map();
+      const step = 20;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < 128) continue;
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        const key = `${Math.floor(r / step) * step},${Math.floor(g / step) * step},${Math.floor(b / step) * step}`;
+        const cur = buckets.get(key) || { r: 0, g: 0, b: 0, count: 0 };
+        cur.r += r; cur.g += g; cur.b += b; cur.count += 1;
+        buckets.set(key, cur);
+      }
+      const list = Array.from(buckets.values()).map((b) => {
+        const r = Math.round(b.r / b.count), g = Math.round(b.g / b.count), bVal = Math.round(b.b / b.count);
+        const mx = Math.max(r, g, bVal), mn = Math.min(r, g, bVal);
+        return { r, g, b: bVal, count: b.count, sat: mx === 0 ? 0 : (mx - mn) / mx };
+      });
+      if (!list.length) return ["#111B2A", "#D99562", "#344153", "#F0E5D2"];
+      list.sort((a, b) => b.count - a.count);
+
+      const dist = (a, b) => Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
+      const chosen = [list[0]];
+      const vibrant = list.filter((x) => dist(list[0], x) >= 45).sort((a, b) => b.sat * Math.log2(b.count + 2) - a.sat * Math.log2(a.count + 2));
+      if (vibrant[0] && vibrant[0].sat > 0.15) chosen.push(vibrant[0]);
+      for (const item of list) {
+        if (chosen.length >= 5) break;
+        if (chosen.every((c) => dist(c, item) >= 45)) chosen.push(item);
+      }
+      if (chosen.length < 4) {
+        for (const item of list) {
+          if (chosen.length >= 4) break;
+          if (chosen.every((c) => dist(c, item) >= 20)) chosen.push(item);
+        }
+      }
+      const toHex = (n) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, "0").toUpperCase();
+      return chosen.map((c) => `#${toHex(c.r)}${toHex(c.g)}${toHex(c.b)}`);
+    }
+
+    function renderPalette() {
+      const wrap = $("paletteSwatches");
+      wrap.innerHTML = "";
+      state.palette.forEach((hex, idx) => {
+        const div = document.createElement("div");
+        div.className = "swatch-item";
+        div.innerHTML = `<input type="color" value="${hex}" data-idx="${idx}" /><span>${hex}</span>`;
+        div.querySelector("input").addEventListener("input", (e) => {
+          state.palette[idx] = e.target.value.toUpperCase();
+          div.querySelector("span").textContent = state.palette[idx];
+          updatePreviewJson();
+        });
+        wrap.appendChild(div);
+      });
+    }
+
+    function renderQuickTags() {
+      const wrap = $("quickTagChips");
+      const activeTags = new Set($("tagsInput").value.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean));
+      wrap.innerHTML = "";
+      QUICK_TAGS.forEach((tag) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `chip ${activeTags.has(tag) ? "on" : ""}`;
+        btn.textContent = `+ ${tag}`;
+        btn.addEventListener("click", () => {
+          const list = $("tagsInput").value.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+          const idx = list.indexOf(tag);
+          if (idx >= 0) list.splice(idx, 1); else list.push(tag);
+          $("tagsInput").value = list.join(", ");
+          renderQuickTags();
+          updatePreviewJson();
+        });
+        wrap.appendChild(btn);
+      });
+    }
+
+    function populateCategories() {
+      const sel = $("categorySelect");
+      const current = sel.value;
+      const list = state.mode === "mobile"
+        ? Array.from(new Set([...state.mobileCategories, ...state.desktopCategories]))
+        : Array.from(new Set([...state.desktopCategories, ...state.mobileCategories]));
+      sel.innerHTML = list.map((c) => `<option value="${c}">${c}</option>`).join("");
+      if (current && list.includes(current)) {
+        sel.value = current;
+      } else {
+        sel.value = state.mode === "mobile" ? "Lockscreen" : "Dark Abstract";
+      }
+    }
+
+    function getActiveCropImage() {
+      if (state.mode === "dual" && state.dualSource === "crop") return state.desktopImg;
+      if (state.mode === "mobile") return state.phoneImg;
+      return null;
+    }
+
+    function computeCropCoords() {
+      const img = getActiveCropImage();
+      if (!img) return null;
+      const W = img.naturalWidth || 3840;
+      const H = img.naturalHeight || 2160;
+      const targetRatio = state.phoneCropAspect === "9:16" ? 9 / 16 : 9 / 19.5;
+      const currentRatio = W / H;
+
+      let cropW, cropH, cropX, cropY;
+      if (currentRatio >= targetRatio) {
+        cropH = H;
+        cropW = Math.min(W, Math.round(H * targetRatio));
+        const maxX = Math.max(0, W - cropW);
+        cropX = Math.round((state.cropPosition / 100) * maxX);
+        cropY = 0;
+      } else {
+        cropW = W;
+        cropH = Math.min(H, Math.round(W / targetRatio));
+        const maxY = Math.max(0, H - cropH);
+        cropY = Math.round((state.cropPosition / 100) * maxY);
+        cropX = 0;
+      }
+      return { x: cropX, y: cropY, width: cropW, height: cropH, naturalW: W, naturalH: H, horizontal: currentRatio >= targetRatio };
+    }
+
+    function updateCropUI() {
+      const img = getActiveCropImage();
+      const wrap = $("cropStudioWrap");
+      const hint = $("cropPlaceholderHint");
+
+      const needsCropper = (state.mode === "dual" && state.dualSource === "crop") || state.mode === "mobile";
+      if (!needsCropper || !img) {
+        wrap.classList.add("hidden");
+        hint.classList.toggle("hidden", !needsCropper);
+        return;
+      }
+
+      wrap.classList.remove("hidden");
+      hint.classList.add("hidden");
+
+      const srcEl = $("cropSourceImg");
+      if (srcEl.src !== img.src) srcEl.src = img.src;
+
+      const coords = computeCropCoords();
+      const leftPct = (coords.x / coords.naturalW) * 100;
+      const widthPct = (coords.width / coords.naturalW) * 100;
+      const topPct = (coords.y / coords.naturalH) * 100;
+      const heightPct = (coords.height / coords.naturalH) * 100;
+
+      const box = $("cropBox");
+      box.style.left = `${leftPct}%`;
+      box.style.width = `${widthPct}%`;
+      box.style.top = `${topPct}%`;
+      box.style.height = `${heightPct}%`;
+
+      $("dimLeft").style.width = `${leftPct}%`;
+      $("dimRight").style.width = `${Math.max(0, 100 - leftPct - widthPct)}%`;
+      $("dimRight").style.right = "0";
+
+      const isVertCrop = !coords.horizontal;
+      $("dimTop").classList.toggle("hidden", !isVertCrop);
+      $("dimBottom").classList.toggle("hidden", !isVertCrop);
+      $("dimLeft").classList.toggle("hidden", isVertCrop);
+      $("dimRight").classList.toggle("hidden", isVertCrop);
+
+      if (isVertCrop) {
+        $("dimTop").style.top = "0";
+        $("dimTop").style.height = `${topPct}%`;
+        $("dimBottom").style.bottom = "0";
+        $("dimBottom").style.height = `${Math.max(0, 100 - topPct - heightPct)}%`;
+        $("cropStage").style.cursor = "ns-resize";
+      } else {
+        $("cropStage").style.cursor = "ew-resize";
+      }
+
+      $("cropBoxBadge").textContent = `${state.phoneCropAspect} • ${Math.round(state.cropPosition)}%`;
+      $("cropCoordsReadout").textContent = `X: ${coords.x}px, Y: ${coords.y}px • ${coords.width}×${coords.height}px`;
+
+      // Draw live phone preview canvas
+      const canvas = $("phonePreviewCanvas");
+      const targetH = state.phoneCropAspect === "9:16" ? 640 : 780;
+      const targetW = 360;
+      if (canvas.height !== targetH) canvas.height = targetH;
+      $("phoneFrameMockup").classList.toggle("ratio-9-16", state.phoneCropAspect === "9:16");
+
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, targetW, targetH);
+      ctx.drawImage(img, coords.x, coords.y, coords.width, coords.height, 0, 0, targetW, targetH);
+
+      updatePreviewJson();
+    }
+
+    function updateModeUI() {
+      document.querySelectorAll(".mode-btn").forEach((b) => {
+        b.classList.toggle("active", b.dataset.mode === state.mode);
+      });
+
+      const showDesktop = state.mode === "desktop" || state.mode === "dual";
+      const showPhone = state.mode === "mobile" || state.mode === "dual";
+
+      $("desktopUploadCard").classList.toggle("hidden", !showDesktop);
+      $("phoneSectionCard").classList.toggle("hidden", !showPhone);
+      $("dualSourceToggle").classList.toggle("hidden", state.mode !== "dual");
+
+      if (state.mode === "mobile") {
+        $("phoneSectionTitle").textContent = "2. Phone Lockscreen Image & Framing";
+        $("phoneFilePickerWrap").classList.remove("hidden");
+        $("collectionInput").value = "Mobile Lockscreen Edition";
+        $("aspectRatioSelect").value = state.phoneCropAspect === "9:19.5" ? "9:19.5" : "9:16";
+        $("tagsInput").value = "mobile, lockscreen, phone, minimal, 4k";
+      } else if (state.mode === "desktop") {
+        $("primaryUploadLabel").textContent = "2. Desktop 4K Master Image";
+        $("collectionInput").value = "Minimal Abstracts";
+        $("aspectRatioSelect").value = "16:9";
+        $("tagsInput").value = "minimal, 4k, desktop, editorial";
+      } else {
+        $("phoneSectionTitle").textContent = "3. Phone Version — Cropped from Master (or Dedicated)";
+        $("phoneFilePickerWrap").classList.toggle("hidden", state.dualSource !== "dedicated");
+        $("collectionInput").value = "Minimal Abstracts";
+        $("aspectRatioSelect").value = "16:9";
+        $("tagsInput").value = "minimal, 4k, abstract, editorial";
+      }
+
+      populateCategories();
+      renderQuickTags();
+      updateCropUI();
+      updatePreviewJson();
+      if (typeof renderBatchList === "function") renderBatchList();
+    }
+
+    function updateSlugStatus() {
+      const slug = slugify($("slugInput").value || $("titleInput").value);
+      const exists = state.existingSlugs.has(slug);
+      const statusEl = $("slugStatus");
+      if (!slug) {
+        statusEl.textContent = "auto";
+        statusEl.style.color = "var(--muted)";
+      } else if (exists) {
+        statusEl.textContent = "EXISTS IN FIRESTORE";
+        statusEl.style.color = "var(--warn)";
+      } else {
+        statusEl.textContent = "available";
+        statusEl.style.color = "var(--accent-bright)";
+      }
+    }
+
+    function updatePreviewJson() {
+      const title = $("titleInput").value.trim() || "Untitled Wallpaper";
+      const slug = slugify($("slugInput").value || title) || "untitled-wallpaper";
+      const category = state.isCustomCategory ? ($("customCategoryInput").value.trim() || "Custom") : $("categorySelect").value;
+      const collection = $("collectionInput").value.trim() || "Minimal Abstracts";
+      const tags = $("tagsInput").value.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+      const crop = computeCropCoords();
+      const cdn = "https://cdn.xweet.in";
+
+      let resText = "3840 × 2160";
+      if (state.mode === "mobile" && state.phoneImg) {
+        resText = `${state.phoneImg.naturalWidth} × ${state.phoneImg.naturalHeight}`;
+      } else if (state.desktopImg) {
+        resText = `${Math.min(3840, state.desktopImg.naturalWidth)} × ${Math.min(2160, state.desktopImg.naturalHeight)}`;
+      }
+
+      const isMobile = state.mode === "mobile";
+      const hasPhone = state.mode === "mobile" || state.mode === "dual";
+      const doc = {
+        id: "wp_<timestamp>",
+        slug,
+        title,
+        description: $("descriptionInput").value.trim() || "(auto-generated editorial description)",
+        classification: {
+          category,
+          collection,
+          aspectRatio: $("aspectRatioSelect").value,
+          resolution: resText,
+        },
+        styling: {
+          dominantColor: state.palette[0] || "#111B2A",
+          paletteHex: state.palette[1] || state.palette[0] || "#D99562",
+          palette: state.palette,
+          tags,
+        },
+        flags: {
+          isFeatured: $("isFeaturedCheck").checked,
+          isNew: $("isNewCheck").checked,
+          hasPhoneCrop: hasPhone,
+          hasDedicatedPhone: hasPhone,
+        },
+        storage: {
+          r2Key: isMobile ? `wallpapers/phone/${slug}.webp` : `wallpapers/${slug}.webp`,
+          format: "webp",
+          ...(hasPhone && crop ? { phoneCropCoords: { x: crop.x, y: crop.y, width: crop.width, height: crop.height } } : {}),
+        },
+        urls: {
+          phone: hasPhone ? `${cdn}/wallpapers/phone/${slug}.webp` : "",
+          phoneThumbnail: hasPhone ? `${cdn}/wallpapers/phone/thumbnails/${slug}.webp` : "",
+          desktop: isMobile ? `${cdn}/wallpapers/phone/${slug}.webp` : `${cdn}/wallpapers/${slug}.webp`,
+          desktopThumbnail: isMobile ? `${cdn}/wallpapers/phone/thumbnails/${slug}.webp` : `${cdn}/wallpapers/thumbnails/${slug}.webp`,
+        },
+      };
+
+      $("payloadPreview").textContent = JSON.stringify(doc, null, 2);
+      updateSlugStatus();
+    }
+
+    function handleImageSelected(file, kind) {
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        if (kind === "desktop") {
+          state.desktopFile = file;
+          state.desktopImg = img;
+          state.desktopUrl = url;
+          $("desktopResBadge").textContent = `${img.naturalWidth} × ${img.naturalHeight}px`;
+          $("desktopFileMeta").textContent = `${file.name} (${Math.round(file.size / 1024)} KB) • ${img.naturalWidth}×${img.naturalHeight}`;
+
+          const ratio = img.naturalWidth / img.naturalHeight;
+          if (Math.abs(ratio - 16 / 10) < 0.08) $("aspectRatioSelect").value = "16:10";
+          else if (ratio > 2.1) $("aspectRatioSelect").value = "21:9";
+          else $("aspectRatioSelect").value = "16:9";
+        } else {
+          state.phoneFile = file;
+          state.phoneImg = img;
+          state.phoneUrl = url;
+          $("phoneFileMeta").textContent = `${file.name} (${Math.round(file.size / 1024)} KB) • ${img.naturalWidth}×${img.naturalHeight}`;
+        }
+
+        if (!$("titleInput").value.trim()) {
+          const detected = formatTitleFromFilename(file.name);
+          const autoCat = detectCategoryFromTitle(detected, state.mode);
+          const autoTags = extractTagsFromTitle(detected, autoCat, state.mode);
+          $("titleInput").value = detected;
+          $("slugInput").value = slugify(detected);
+          $("autoTitleHint").textContent = "auto from filename";
+          if (!state.isCustomCategory) {
+            const sel = $("categorySelect");
+            if (Array.from(sel.options).some((o) => o.value === autoCat)) sel.value = autoCat;
+          }
+          $("tagsInput").value = autoTags.join(", ");
+          renderQuickTags();
+          if (!$("descriptionInput").value.trim()) {
+            $("descriptionInput").value = buildDescriptionFromTitle(detected, autoCat, state.mode);
+          }
+        }
+
+        state.palette = extractPalette(img);
+        renderPalette();
+        updateCropUI();
+        updatePreviewJson();
+      };
+      img.src = url;
+    }
+
+    function setupDropzone(zoneId, inputId, kind) {
+      const zone = $(zoneId);
+      const input = $(inputId);
+      const handleFiles = (fileList) => {
+        const files = Array.from(fileList || []).filter((f) => f && f.type.startsWith("image/"));
+        if (!files.length) return;
+        if (files.length > 1 || state.uploadView === "batch" || kind === "batch") {
+          setUploadView("batch");
+          addFilesToBatch(files);
+        } else {
+          handleImageSelected(files[0], kind);
+        }
+      };
+      input.addEventListener("change", (e) => {
+        handleFiles(e.target.files);
+        input.value = "";
+      });
+      zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("dragover"); });
+      zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+      zone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        zone.classList.remove("dragover");
+        handleFiles(e.dataTransfer.files);
+      });
+    }
+
+    function setUploadView(view) {
+      state.uploadView = view;
+      $("btnSubSingle").classList.toggle("active", view === "single");
+      $("btnSubBatch").classList.toggle("active", view === "batch");
+      $("singleView").classList.toggle("hidden", view !== "single");
+      $("batchView").classList.toggle("hidden", view !== "batch");
+    }
+
+    $("btnSubSingle").addEventListener("click", () => setUploadView("single"));
+    $("btnSubBatch").addEventListener("click", () => setUploadView("batch"));
+
+    function computeCropCoordsForImage(w, h, cropPosPct, cropAspect) {
+      const targetRatio = cropAspect === "9:16" ? 9 / 16 : 9 / 19.5;
+      const currentRatio = w / h;
+      if (currentRatio >= targetRatio) {
+        const cropH = h;
+        const cropW = Math.min(w, Math.round(h * targetRatio));
+        const cropX = Math.round((cropPosPct / 100) * Math.max(0, w - cropW));
+        return { x: cropX, y: 0, width: cropW, height: cropH };
+      } else {
+        const cropW = w;
+        const cropH = Math.min(h, Math.round(w / targetRatio));
+        const cropY = Math.round((cropPosPct / 100) * Math.max(0, h - cropH));
+        return { x: 0, y: cropY, width: cropW, height: cropH };
+      }
+    }
+
+    function addFilesToBatch(files) {
+      for (const file of files) {
+        const id = `b_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          const title = formatTitleFromFilename(file.name) || "Untitled Wallpaper";
+          const slug = slugify(title);
+          const w = img.naturalWidth || 3840;
+          const h = img.naturalHeight || 2160;
+          const category = detectCategoryFromTitle(title, state.mode);
+          const palette = extractPalette(img);
+          const tags = extractTagsFromTitle(title, category, state.mode);
+          const description = buildDescriptionFromTitle(title, category, state.mode);
+          const aspectRatio = state.mode === "mobile"
+            ? (state.phoneCropAspect === "9:19.5" ? "9:19.5" : "9:16")
+            : Math.abs(w / h - 16 / 10) < 0.08 ? "16:10" : w / h > 2.1 ? "21:9" : "16:9";
+
+          state.batchItems.push({
+            id,
+            file,
+            url,
+            w,
+            h,
+            title,
+            slug,
+            category,
+            collection: state.mode === "mobile" ? "Mobile Lockscreen Edition" : "Minimal Abstracts",
+            aspectRatio,
+            palette,
+            tagsText: tags.join(", "),
+            description,
+            cropPosition: 50,
+            isNew: $("batchIsNewAll").checked,
+            isFeatured: $("batchIsFeaturedAll").checked,
+            overwrite: $("batchOverwriteAll").checked,
+            status: "pending", // "pending" | "uploading" | "done" | "error"
+            statusMsg: "",
+          });
+          renderBatchList();
+        };
+        img.src = url;
+      }
+    }
+
+    function renderBatchList() {
+      $("batchCountBadge").textContent = state.batchItems.length;
+      const pendingCount = state.batchItems.filter((i) => i.status === "pending" || i.status === "error").length;
+      $("btnPublishAll").textContent = `Publish All Pending (${pendingCount})`;
+      $("btnPublishAll").disabled = pendingCount === 0;
+
+      const listEl = $("batchList");
+      if (!state.batchItems.length) {
+        listEl.innerHTML = `<div style="text-align:center; color:var(--muted); padding:24px; font-family:var(--mono); font-size:11px;">Queue is empty. Drop multiple images above to auto-extract titles, colors, tags &amp; descriptions.</div>`;
+        return;
+      }
+
+      const cats = Array.from(new Set([...state.desktopCategories, ...state.mobileCategories]));
+
+      listEl.innerHTML = state.batchItems.map((item, idx) => {
+        const exists = state.existingSlugs.has(item.slug);
+        const statusColor = item.status === "done" ? "#7ee787" : item.status === "error" ? "var(--danger)" : item.status === "uploading" ? "var(--lime)" : "var(--muted)";
+        const catOpts = Array.from(new Set([item.category, ...cats]))
+          .map((c) => `<option value="${escHtml(c)}" ${c === item.category ? "selected" : ""}>${escHtml(c)}</option>`)
+          .join("");
+        const swatchesHtml = item.palette.map((hex, cIdx) => `
+          <div class="swatch-item" style="padding:2px 4px;">
+            <input type="color" value="${escHtml(hex)}" data-bid="${item.id}" data-cidx="${cIdx}" class="batch-color-input" />
+            <span style="font-size:10px;">${escHtml(hex)}</span>
+          </div>
+        `).join("");
+
+        return `
+          <div class="batch-item" data-bid="${item.id}">
+            <div class="batch-thumb-wrap">
+              <img class="batch-thumb" src="${escHtml(item.url)}" alt="${escHtml(item.title)}" />
+              <div style="font-family:var(--mono); font-size:10px; color:var(--muted);">${item.w} × ${item.h}px</div>
+              <div style="font-family:var(--mono); font-size:10px; color:${statusColor}; font-weight:600;">${escHtml(item.status.toUpperCase())}${item.statusMsg ? ` • ${escHtml(item.statusMsg)}` : ""}</div>
+            </div>
+
+            <div class="batch-fields">
+              <div>
+                <label class="mini-label">Title</label>
+                <input type="text" value="${escHtml(item.title)}" data-bid="${item.id}" data-field="title" class="batch-input" />
+              </div>
+              <div>
+                <label class="mini-label">Slug ${exists ? '<span style="color:var(--warn)">(EXISTS)</span>' : '<span style="color:var(--accent-bright)">(OK)</span>'}</label>
+                <input type="text" value="${escHtml(item.slug)}" data-bid="${item.id}" data-field="slug" class="batch-input" />
+              </div>
+              <div>
+                <label class="mini-label">Category</label>
+                <select data-bid="${item.id}" data-field="category" class="batch-input">${catOpts}</select>
+              </div>
+              <div class="${state.mode === "desktop" ? "span-3" : "span-2"}">
+                <label class="mini-label">Tags (extracted from title)</label>
+                <input type="text" value="${escHtml(item.tagsText)}" data-bid="${item.id}" data-field="tagsText" class="batch-input" />
+              </div>
+              ${state.mode !== "desktop" ? `
+              <div>
+                <label class="mini-label">Phone Crop Pos: ${item.cropPosition}%</label>
+                <input type="range" min="0" max="100" step="1" value="${item.cropPosition}" data-bid="${item.id}" data-field="cropPosition" class="batch-input" />
+              </div>` : ""}
+              <div class="span-3">
+                <label class="mini-label">Description</label>
+                <input type="text" value="${escHtml(item.description)}" data-bid="${item.id}" data-field="description" class="batch-input" />
+              </div>
+              <div class="span-3">
+                <label class="mini-label">Extracted Palette (editable)</label>
+                <div class="swatches">${swatchesHtml}</div>
+              </div>
+              <div class="batch-actions">
+                <div class="check-row" style="margin:0;">
+                  <label class="check-label"><input type="checkbox" ${item.isNew ? "checked" : ""} data-bid="${item.id}" data-field="isNew" class="batch-check" /> isNew</label>
+                  <label class="check-label"><input type="checkbox" ${item.isFeatured ? "checked" : ""} data-bid="${item.id}" data-field="isFeatured" class="batch-check" /> isFeatured</label>
+                  <label class="check-label"><input type="checkbox" ${item.overwrite ? "checked" : ""} data-bid="${item.id}" data-field="overwrite" class="batch-check" /> Overwrite</label>
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" class="btn" onclick="publishBatchItem('${item.id}')" ${item.status === "uploading" ? "disabled" : ""}>${item.status === "done" ? "Re-Upload" : "Direct Upload"}</button>
+                  <button type="button" class="btn btn-danger" onclick="removeBatchItem('${item.id}')" ${item.status === "uploading" ? "disabled" : ""}>Remove</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      listEl.querySelectorAll(".batch-input").forEach((el) => {
+        el.addEventListener("input", (e) => {
+          const item = state.batchItems.find((i) => i.id === e.target.dataset.bid);
+          if (!item) return;
+          const field = e.target.dataset.field;
+          item[field] = field === "cropPosition" ? Number(e.target.value) : e.target.value;
+          if (field === "title") {
+            item.slug = slugify(item.title);
+            const slugInput = listEl.querySelector(`.batch-input[data-bid="${item.id}"][data-field="slug"]`);
+            if (slugInput) slugInput.value = item.slug;
+          }
+          if (field === "cropPosition") {
+            e.target.previousElementSibling.textContent = `Phone Crop Pos: ${item.cropPosition}%`;
+          }
+        });
+      });
+      listEl.querySelectorAll(".batch-check").forEach((el) => {
+        el.addEventListener("change", (e) => {
+          const item = state.batchItems.find((i) => i.id === e.target.dataset.bid);
+          if (item) item[e.target.dataset.field] = e.target.checked;
+        });
+      });
+      listEl.querySelectorAll(".batch-color-input").forEach((el) => {
+        el.addEventListener("input", (e) => {
+          const item = state.batchItems.find((i) => i.id === e.target.dataset.bid);
+          if (!item) return;
+          const cIdx = Number(e.target.dataset.cidx);
+          item.palette[cIdx] = e.target.value.toUpperCase();
+          e.target.nextElementSibling.textContent = item.palette[cIdx];
+        });
+      });
+    }
+
+    window.removeBatchItem = (id) => {
+      state.batchItems = state.batchItems.filter((i) => i.id !== id);
+      renderBatchList();
+    };
+
+    window.publishBatchItem = async (id, skipReload = false) => {
+      const item = state.batchItems.find((i) => i.id === id);
+      if (!item) return false;
+      item.status = "uploading";
+      item.statusMsg = "Processing & uploading...";
+      renderBatchList();
+
+      try {
+        const fd = new FormData();
+        fd.append("mode", state.mode);
+        fd.append("title", item.title.trim() || "Untitled");
+        fd.append("slug", slugify(item.slug || item.title));
+        fd.append("overwrite", item.overwrite ? "true" : "false");
+        fd.append("category", item.category);
+        fd.append("collection", state.mode === "mobile" ? "Mobile Lockscreen Edition" : item.collection);
+        fd.append("aspectRatio", state.mode === "mobile" ? (state.phoneCropAspect === "9:19.5" ? "9:19.5" : "9:16") : item.aspectRatio);
+        fd.append("phoneCropAspect", state.phoneCropAspect);
+        fd.append("dominantColor", item.palette[0] || "#111B2A");
+        fd.append("palette", item.palette.join(","));
+        fd.append("tags", item.tagsText);
+        fd.append("description", item.description.trim());
+        fd.append("isNew", item.isNew ? "true" : "false");
+        fd.append("isFeatured", item.isFeatured ? "true" : "false");
+
+        const crop = computeCropCoordsForImage(item.w, item.h, item.cropPosition, state.phoneCropAspect);
+        fd.append("phoneCropCoords", JSON.stringify(crop));
+
+        if (state.mode === "mobile") {
+          fd.append("phoneImage", item.file);
+        } else {
+          fd.append("desktopImage", item.file);
+        }
+
+        const res = await fetch("/api/publish", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.error || "Failed");
+
+        item.status = "done";
+        item.statusMsg = `Doc ${data.docId}`;
+        if (!skipReload) await loadListings();
+        renderBatchList();
+        return true;
+      } catch (err) {
+        item.status = "error";
+        item.statusMsg = err.message;
+        renderBatchList();
+        return false;
+      }
+    };
+
+    $("btnClearBatch").addEventListener("click", () => {
+      state.batchItems = [];
+      renderBatchList();
+    });
+
+    ["batchOverwriteAll", "batchIsNewAll", "batchIsFeaturedAll"].forEach((cid) => {
+      $(cid).addEventListener("change", (e) => {
+        const key = cid === "batchOverwriteAll" ? "overwrite" : cid === "batchIsNewAll" ? "isNew" : "isFeatured";
+        state.batchItems.forEach((i) => { i[key] = e.target.checked; });
+        renderBatchList();
+      });
+    });
+
+    $("btnPublishAll").addEventListener("click", async () => {
+      const pending = state.batchItems.filter((i) => i.status === "pending" || i.status === "error");
+      if (!pending.length) return;
+      $("batchProgressWrap").classList.remove("hidden");
+      $("batchProgressFill").style.width = "0%";
+      $("btnPublishAll").disabled = true;
+
+      let done = 0;
+      for (const item of pending) {
+        await window.publishBatchItem(item.id, true);
+        done += 1;
+        $("batchProgressFill").style.width = `${Math.round((done / pending.length) * 100)}%`;
+      }
+      await loadListings();
+      renderBatchList();
+    });
+
+    // Interactive Cropper Pointer Drag
+    let draggingCrop = false;
+    function updateCropFromPointer(clientX, clientY) {
+      const coords = computeCropCoords();
+      if (!coords) return;
+      const rect = $("cropStage").getBoundingClientRect();
+      if (coords.horizontal) {
+        const boxW = rect.width * (coords.width / coords.naturalW);
+        const usable = Math.max(1, rect.width - boxW);
+        const left = Math.max(0, Math.min(usable, clientX - rect.left - boxW / 2));
+        state.cropPosition = Math.round((left / usable) * 1000) / 10;
+      } else {
+        const boxH = rect.height * (coords.height / coords.naturalH);
+        const usable = Math.max(1, rect.height - boxH);
+        const top = Math.max(0, Math.min(usable, clientY - rect.top - boxH / 2));
+        state.cropPosition = Math.round((top / usable) * 1000) / 10;
+      }
+      $("cropSlider").value = state.cropPosition;
+      updateCropUI();
+    }
+
+    $("cropStage").addEventListener("pointerdown", (e) => {
+      draggingCrop = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      updateCropFromPointer(e.clientX, e.clientY);
+    });
+    $("cropStage").addEventListener("pointermove", (e) => {
+      if (draggingCrop) updateCropFromPointer(e.clientX, e.clientY);
+    });
+    $("cropStage").addEventListener("pointerup", () => { draggingCrop = false; });
+
+    $("cropSlider").addEventListener("input", (e) => {
+      state.cropPosition = parseFloat(e.target.value);
+      updateCropUI();
+    });
+
+    document.querySelectorAll(".preset-btn").forEach((b) => {
+      b.addEventListener("click", () => {
+        state.cropPosition = parseFloat(b.dataset.pos);
+        $("cropSlider").value = state.cropPosition;
+        updateCropUI();
+      });
+    });
+
+    $("btnAspect9195").addEventListener("click", () => {
+      state.phoneCropAspect = "9:19.5";
+      $("btnAspect9195").classList.add("active");
+      $("btnAspect916").classList.remove("active");
+      if (state.mode === "mobile") $("aspectRatioSelect").value = "9:19.5";
+      updateCropUI();
+    });
+    $("btnAspect916").addEventListener("click", () => {
+      state.phoneCropAspect = "9:16";
+      $("btnAspect916").classList.add("active");
+      $("btnAspect9195").classList.remove("active");
+      if (state.mode === "mobile") $("aspectRatioSelect").value = "9:16";
+      updateCropUI();
+    });
+
+    $("btnToggleLockUi").addEventListener("click", () => {
+      state.showLockUi = !state.showLockUi;
+      $("phoneUiOverlay").classList.toggle("hidden", !state.showLockUi);
+      $("btnToggleLockUi").textContent = state.showLockUi ? "Hide UI" : "Show UI";
+    });
+
+    // Mode & source switches
+    document.querySelectorAll(".mode-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.mode = btn.dataset.mode;
+        updateModeUI();
+      });
+    });
+
+    $("btnDualCrop").addEventListener("click", () => {
+      state.dualSource = "crop";
+      $("btnDualCrop").classList.add("active");
+      $("btnDualDedicated").classList.remove("active");
+      updateModeUI();
+    });
+    $("btnDualDedicated").addEventListener("click", () => {
+      state.dualSource = "dedicated";
+      $("btnDualDedicated").classList.add("active");
+      $("btnDualCrop").classList.remove("active");
+      updateModeUI();
+    });
+
+    // Form bindings
+    $("titleInput").addEventListener("input", () => {
+      $("slugInput").value = slugify($("titleInput").value);
+      updatePreviewJson();
+    });
+    ["slugInput", "categorySelect", "customCategoryInput", "collectionInput", "aspectRatioSelect", "tagsInput", "descriptionInput", "isNewCheck", "isFeaturedCheck"].forEach((id) => {
+      $(id).addEventListener("input", () => {
+        if (id === "tagsInput") renderQuickTags();
+        updatePreviewJson();
+      });
+      $(id).addEventListener("change", updatePreviewJson);
+    });
+
+    $("btnCustomCategory").addEventListener("click", () => {
+      state.isCustomCategory = !state.isCustomCategory;
+      $("categorySelect").classList.toggle("hidden", state.isCustomCategory);
+      $("customCategoryInput").classList.toggle("hidden", !state.isCustomCategory);
+      $("btnCustomCategory").textContent = state.isCustomCategory ? "Use Preset" : "+ Custom";
+      updatePreviewJson();
+    });
+
+    $("btnReExtract").addEventListener("click", () => {
+      const img = state.desktopImg || state.phoneImg;
+      if (img) {
+        state.palette = extractPalette(img);
+        renderPalette();
+        updatePreviewJson();
+      }
+    });
+
+    // Publish Submit
+    $("publishForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const banner = $("resultBanner");
+      banner.innerHTML = "";
+
+      const fd = new FormData();
+      fd.append("mode", state.mode);
+      fd.append("title", $("titleInput").value.trim());
+      fd.append("slug", slugify($("slugInput").value || $("titleInput").value));
+      fd.append("overwrite", $("overwriteCheck").checked ? "true" : "false");
+      const category = state.isCustomCategory ? $("customCategoryInput").value.trim() : $("categorySelect").value;
+      fd.append("category", category);
+      fd.append("collection", $("collectionInput").value.trim());
+      fd.append("aspectRatio", $("aspectRatioSelect").value);
+      fd.append("phoneCropAspect", state.phoneCropAspect);
+      fd.append("dominantColor", state.palette[0] || "#111B2A");
+      fd.append("palette", state.palette.join(","));
+      fd.append("tags", $("tagsInput").value);
+      fd.append("description", $("descriptionInput").value.trim());
+      fd.append("isNew", $("isNewCheck").checked ? "true" : "false");
+      fd.append("isFeatured", $("isFeaturedCheck").checked ? "true" : "false");
+
+      const crop = computeCropCoords();
+      if (crop) {
+        fd.append("phoneCropCoords", JSON.stringify({ x: crop.x, y: crop.y, width: crop.width, height: crop.height }));
+      }
+
+      if (state.mode === "desktop") {
+        if (!state.desktopFile) return alert("Please select a Desktop image.");
+        fd.append("desktopImage", state.desktopFile);
+      } else if (state.mode === "mobile") {
+        if (!state.phoneFile) return alert("Please select a Phone image.");
+        fd.append("phoneImage", state.phoneFile);
+      } else {
+        if (!state.desktopFile) return alert("Please select a Desktop master image.");
+        fd.append("desktopImage", state.desktopFile);
+        if (state.dualSource === "dedicated") {
+          if (!state.phoneFile) return alert("Please select a separate Phone image or switch to Crop from Desktop.");
+          fd.append("phoneImage", state.phoneFile);
+        }
+      }
+
+      const btn = $("btnPublish");
+      btn.disabled = true;
+      btn.textContent = "Processing with Sharp, Uploading to R2 & Writing Firestore...";
+
+      try {
+        const res = await fetch("/api/publish", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || "Publish failed");
+        }
+
+        const links = data.uploadedAssets
+          .map((a) => `<li><strong>${a.label}</strong> (${a.dims}, ${(a.bytes / 1024).toFixed(0)} KB): <a href="${a.url}" target="_blank" style="color:var(--lime)">${a.key}</a></li>`)
+          .join("");
+
+        banner.innerHTML = `
+          <div class="alert alert-ok">
+            <strong>Published successfully!</strong> Firestore Doc: <code>${data.docId}</code> (slug: <code>${data.slug}</code>, mode: <code>${data.mode}</code>)
+            <ul style="margin:8px 0 0 18px; padding:0; font-family:var(--mono); font-size:11px;">${links}</ul>
+          </div>
+        `;
+        await loadListings();
+      } catch (err) {
+        banner.innerHTML = `<div class="alert alert-err"><strong>Error:</strong> ${err.message}</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Publish to Cloudflare R2 & Firestore";
+      }
+    });
+
+    // Top Navigation Tabs
+    document.querySelectorAll("header .nav-tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll("header .nav-tab").forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        const target = tab.dataset.tab;
+        $("tab-upload").classList.toggle("hidden", target !== "upload");
+        $("tab-listings").classList.toggle("hidden", target !== "listings");
+        if (target === "listings") renderListings();
+      });
+    });
+
+    function renderListings() {
+      const q = $("listingSearch").value.trim().toLowerCase();
+      const typeFilter = $("listingTypeFilter").value;
+
+      const filtered = state.listings.filter((wp) => {
+        if (typeFilter !== "all" && wp._mode !== typeFilter) return false;
+        if (!q) return true;
+        return (
+          (wp.title || "").toLowerCase().includes(q) ||
+          (wp.slug || "").toLowerCase().includes(q) ||
+          (wp.classification?.category || "").toLowerCase().includes(q)
+        );
+      });
+
+      $("listingSummary").textContent = `Showing ${filtered.length} of ${state.listings.length} Firestore docs`;
+
+      const tbody = $("listingsBody");
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:24px;">No wallpapers match.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered
+        .map((wp) => {
+          const slug = wp.slug || wp.id;
+          const cat = wp.classification?.category || wp.category || "—";
+          const ar = wp.classification?.aspectRatio || "16:9";
+          const resText = wp.classification?.resolution || "";
+          const badgeClass = wp._mode === "dual" ? "badge-dual" : wp._mode === "mobile" ? "badge-mobile" : "badge-desktop";
+          const modeLabel = wp._mode === "dual" ? "BOTH" : wp._mode === "mobile" ? "PHONE" : "DESKTOP";
+
+          const dThumb = wp.urls?.desktopThumbnail || wp.urls?.desktop || "";
+          const pThumb = wp.urls?.phoneThumbnail || wp.urls?.phone || "";
+          const audit = wp._r2Audit || {};
+
+          const auditPill = (label, val) => {
+            if (val === null || val === undefined) return "";
+            return `<span class="r2-dot ${val ? "r2-ok" : "r2-miss"}">${label}:${val ? "OK" : "MISS"}</span>`;
+          };
+
+          const isNew = Boolean(wp.flags?.isNew);
+          const isFeat = Boolean(wp.flags?.isFeatured);
+
+          return `
+            <tr>
+              <td>
+                <div class="thumb-pair">
+                  ${dThumb && wp._mode !== "mobile" ? `<img class="thumb-box" src="${escHtml(dThumb)}" loading="lazy" alt="desktop" />` : ""}
+                  ${pThumb ? `<img class="thumb-box-phone" src="${escHtml(pThumb)}" loading="lazy" alt="phone" />` : ""}
+                </div>
+              </td>
+              <td>
+                <div style="font-weight:600;">${escHtml(wp.title || slug)}</div>
+                <div style="font-family:var(--mono); font-size:11px; color:var(--muted);">${escHtml(slug)} • ${escHtml(wp.id)}</div>
+              </td>
+              <td>
+                <span class="badge ${badgeClass}">${modeLabel}</span>
+                <div style="font-family:var(--mono); font-size:10px; color:var(--muted); margin-top:3px;">${escHtml(ar)} • ${escHtml(resText)}</div>
+              </td>
+              <td>${escHtml(cat)}</td>
+              <td>
+                ${auditPill("D", audit.desktop)}
+                ${auditPill("DT", audit.desktopThumbnail)}
+                ${auditPill("P", audit.phone)}
+                ${auditPill("PT", audit.phoneThumbnail)}
+              </td>
+              <td>
+                <button class="btn ${isNew ? "active" : ""}" style="padding:2px 6px; font-size:10px;" onclick="toggleFlag('${escHtml(wp.id)}', 'isNew', ${!isNew})">NEW</button>
+                <button class="btn ${isFeat ? "active" : ""}" style="padding:2px 6px; font-size:10px;" onclick="toggleFlag('${escHtml(wp.id)}', 'isFeatured', ${!isFeat})">FEAT</button>
+              </td>
+              <td>
+                <button class="btn btn-danger" style="padding:3px 7px; font-size:10px;" onclick="deleteWallpaper('${escHtml(wp.id)}', '${escHtml(slug)}')">Delete</button>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+    }
+
+    window.toggleFlag = async (id, flag, value) => {
+      await fetch("/api/toggle-flag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, flag, value }),
+      });
+      await loadListings();
+    };
+
+    window.deleteWallpaper = async (id, slug) => {
+      if (!confirm(`Delete "${slug}" (${id}) from Firestore AND purge its R2 WebP objects?`)) return;
+      await fetch("/api/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, slug, deleteR2: true }),
+      });
+      await loadListings();
+    };
+
+    $("listingSearch").addEventListener("input", renderListings);
+    $("listingTypeFilter").addEventListener("change", renderListings);
+    $("btnRefreshListings").addEventListener("click", loadListings);
+
+    async function loadListings() {
+      const res = await fetch("/api/listings");
+      const data = await res.json();
+      if (data.ok) {
+        state.listings = data.wallpapers;
+        state.existingSlugs = new Set(data.wallpapers.map((w) => w.slug));
+        $("statCounts").textContent = `Firestore: ${data.firestoreCount} docs | R2: ${data.r2Count} objects`;
+        updateSlugStatus();
+        renderListings();
+      }
+    }
+
+    async function init() {
+      setupDropzone("desktopDropzone", "desktopFileInput", "desktop");
+      setupDropzone("phoneDropzone", "phoneFileInput", "phone");
+      setupDropzone("batchDropzone", "batchFileInput", "batch");
+      renderPalette();
+      renderBatchList();
+
+      const statusRes = await fetch("/api/status");
+      const status = await statusRes.json();
+      if (status.ok) {
+        $("connectionLine").textContent = `Project: ${status.projectId} (${status.clientEmail}) • Bucket: ${status.bucketName} (${status.cdnDomain})`;
+        state.desktopCategories = status.desktopCategories || [];
+        state.mobileCategories = status.mobileCategories || [];
+      }
+
+      updateModeUI();
+      await loadListings();
+    }
+
+    init();
+  </script>
+</body>
+</html>

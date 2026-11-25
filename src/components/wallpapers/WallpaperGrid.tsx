@@ -48,7 +48,7 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
   wallpapers,
   onPreview,
   onResetFilters,
-  itemsPerPage = 12,
+  itemsPerPage = 16,
   isFiltered = false,
   onEdit,
   onDelete,
@@ -83,22 +83,63 @@ export const WallpaperGrid: React.FC<WallpaperGridProps> = ({
     setCurrentPage(1);
   }, [wallpapers]);
 
-  const totalPages = Math.max(1, Math.ceil(wallpapers.length / itemsPerPage));
+  // Adaptive pagination: avoid tiny orphan final pages (< columnCount items)
+  const pageRanges = useMemo(() => {
+    const total = wallpapers.length;
+    if (total === 0) return [[0, 0]] as [number, number][];
+    const ranges: [number, number][] = [];
+    let cursor = 0;
+    while (cursor < total) {
+      let end = Math.min(total, cursor + itemsPerPage);
+      const remaining = total - end;
+      if (remaining > 0 && remaining < columnCount) {
+        end = total;
+      }
+      ranges.push([cursor, end]);
+      cursor = end;
+    }
+    return ranges;
+  }, [wallpapers.length, itemsPerPage, columnCount]);
+
+  const totalPages = Math.max(1, pageRanges.length);
   const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
 
-  const startIndex = (validCurrentPage - 1) * itemsPerPage;
-  const endIndex = Math.min(startIndex + itemsPerPage, wallpapers.length);
+  const [startIndex, endIndex] = pageRanges[validCurrentPage - 1] || [0, 0];
   const displayedWallpapers = wallpapers.slice(startIndex, endIndex);
 
-  // Distribute items across columns to maintain left-to-right reading order without vertical stretched row gaps
+  // Shortest-column-first masonry packing based on rendered card aspect ratio
   const columns = useMemo(() => {
     const safeCount = Math.max(1, columnCount);
     const cols: Wallpaper[][] = Array.from({ length: safeCount }, () => []);
-    displayedWallpapers.forEach((wp, index) => {
-      cols[index % safeCount].push(wp);
+    const heights: number[] = Array(safeCount).fill(0);
+    const isSmallViewport = typeof window !== "undefined" && window.innerWidth < 640;
+
+    displayedWallpapers.forEach((wp) => {
+      const isPortrait =
+        wp.aspectRatio === "9:16" ||
+        wp.aspectRatio === "9:19.5" ||
+        wp.orientation === "mobile";
+
+      const rendersAsPhone =
+        viewMode === "mobile" ||
+        (viewMode === "desktop" ? isPortrait && !wp.desktopAsset : isPortrait || isSmallViewport);
+
+      // Relative height in column-width units (image aspect + card metadata footer)
+      const estHeight = (rendersAsPhone ? 16 / 9 : 10 / 16) + 0.35;
+
+      let shortestIdx = 0;
+      for (let i = 1; i < safeCount; i++) {
+        if (heights[i] < heights[shortestIdx]) {
+          shortestIdx = i;
+        }
+      }
+
+      cols[shortestIdx].push(wp);
+      heights[shortestIdx] += estHeight;
     });
+
     return cols;
-  }, [displayedWallpapers, columnCount]);
+  }, [displayedWallpapers, columnCount, viewMode]);
 
   // Handle empty search / filter state
   if (wallpapers.length === 0) {

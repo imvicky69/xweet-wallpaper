@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconArrowDown,
-  IconSparkles,
+  IconBrandGooglePlay,
   IconLock,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
@@ -15,7 +15,6 @@ import { getCdnImageUrl, getPhoneCropStyle, getPhonePreviewUrl } from "@/lib/wal
 interface HeroSlide {
   wallpaper: Wallpaper;
   word: string;
-  tagline: string;
 }
 
 interface HeroSectionProps {
@@ -32,15 +31,29 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Curated hero slides pulling from real wallpapers
+  // Only include wallpapers that have BOTH a desktop (non-phone) URL and a phone URL
   const heroSlides: HeroSlide[] = useMemo(() => {
-    const curatedList = wallpapers.slice(0, 4);
-    const editorialMeta = [
-      { word: "depth.", tagline: "Flowing midnight forms meet a delicate amber glow." },
-      { word: "calm.", tagline: "Tactile architectural paper and serene cream textures." },
-      { word: "clarity.", tagline: "Muted aquatic chromatic diffusions for focused desks." },
-      { word: "focus.", tagline: "Dreamy violet gradients meeting soft twilight shadows." },
+    const dualWallpapers = wallpapers.filter((wp) => {
+      const isPortrait =
+        wp.orientation === "mobile" ||
+        wp.aspectRatio === "9:16" ||
+        wp.aspectRatio === "9:19.5";
+      const desktopUrl = wp.urls?.desktop || wp.imageUrl || "";
+      const phoneUrl = wp.urls?.phone || wp.phoneImageUrl || "";
+      const hasBothUrls =
+        Boolean(desktopUrl) &&
+        Boolean(phoneUrl) &&
+        !desktopUrl.includes("/wallpapers/phone/") &&
+        desktopUrl !== phoneUrl;
+      return !isPortrait && hasBothUrls;
+    });
+
+    const featuredFirst = [
+      ...dualWallpapers.filter((w) => w.isFeatured),
+      ...dualWallpapers.filter((w) => !w.isFeatured),
     ];
+    const curatedList = featuredFirst.slice(0, 4);
+    const words = ["depth.", "calm.", "clarity.", "focus."];
 
     if (curatedList.length === 0) {
       return [
@@ -50,41 +63,50 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             slug: "midnight-amber",
             title: "Midnight Amber",
             category: "Dark Abstract",
-            imageUrl: "https://cdn.xweet.in/wallpapers/midnight-amber.png",
+            aspectRatio: "16:9",
+            orientation: "desktop",
+            imageUrl: "https://cdn.xweet.in/wallpapers/midnight-amber.webp",
             thumbnailUrl: "https://cdn.xweet.in/wallpapers/thumbnails/midnight-amber.webp",
-            phoneImageUrl: "https://cdn.xweet.in/wallpapers/phone/midnight-amber.png",
+            phoneImageUrl: "https://cdn.xweet.in/wallpapers/phone/midnight-amber.webp",
+            urls: {
+              desktop: "https://cdn.xweet.in/wallpapers/midnight-amber.webp",
+              desktopThumbnail: "https://cdn.xweet.in/wallpapers/thumbnails/midnight-amber.webp",
+              phone: "https://cdn.xweet.in/wallpapers/phone/midnight-amber.webp",
+              phoneThumbnail: "https://cdn.xweet.in/wallpapers/phone/thumbnails/midnight-amber.webp",
+            },
             resolution: "2752 × 1536",
             dominantColor: "#111B2A",
           } as Wallpaper,
-          word: "depth.",
-          tagline: "Flowing midnight forms meet a delicate amber glow.",
+          word: "focus.",
         },
       ];
     }
 
     return curatedList.map((wp, idx) => ({
       wallpaper: wp,
-      word: editorialMeta[idx % editorialMeta.length].word,
-      tagline: wp.description || editorialMeta[idx % editorialMeta.length].tagline,
+      word: words[idx % words.length],
     }));
   }, [wallpapers]);
 
-  // Preload all slide images to prevent any frame drops or white flicker
+  useEffect(() => {
+    if (activeIndex >= heroSlides.length) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, heroSlides.length]);
+
+  // Preload slide images
   useEffect(() => {
     if (typeof window === "undefined") return;
     heroSlides.forEach((slide) => {
       const desktopImg = new window.Image();
-      desktopImg.src = getCdnImageUrl(slide.wallpaper.imageUrl);
+      desktopImg.src = getCdnImageUrl(slide.wallpaper.urls?.desktop || slide.wallpaper.imageUrl);
       const phoneImg = new window.Image();
-      phoneImg.src = getCdnImageUrl(
-        slide.wallpaper.phoneImageUrl || slide.wallpaper.imageUrl
-      );
+      phoneImg.src = getPhonePreviewUrl(slide.wallpaper);
     });
   }, [heroSlides]);
 
-  // Auto-advance timer (pauses when user hovers over the laptop/phone mockup)
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || heroSlides.length <= 1) return;
     const timer = setInterval(() => {
       setActiveIndex((curr) => (curr + 1) % heroSlides.length);
     }, SLIDE_DURATION_MS);
@@ -92,54 +114,54 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   }, [isHovered, heroSlides.length]);
 
   const active = heroSlides[activeIndex] || heroSlides[0];
+  const desktopPreviewSrc = getCdnImageUrl(active.wallpaper.urls?.desktop || active.wallpaper.imageUrl);
 
   return (
-    <section className="relative w-full border-b border-border overflow-hidden bg-background py-10 lg:py-16">
-      {/* 1. Soft Ambient Background Glow that transitions with current wallpaper */}
+    <section className="relative w-full border-b border-border/60 overflow-hidden bg-background pt-16 pb-6 sm:pt-18 sm:pb-8 lg:pt-20 lg:pb-8">
+      {/* Ambient Background Glow flowing seamlessly behind the header */}
       <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
         <AnimatePresence>
           <motion.div
             key={active.wallpaper.id}
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.12 }}
+            animate={{ opacity: 0.14 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
             className="absolute inset-0"
           >
             <Image
               src={getCdnImageUrl(
-                active.wallpaper.thumbnailUrl || active.wallpaper.imageUrl
+                active.wallpaper.urls?.desktopThumbnail ||
+                  active.wallpaper.thumbnailUrl ||
+                  desktopPreviewSrc
               )}
               alt=""
               fill
               sizes="100vw"
-              className="object-cover filter blur-[3px]"
+              className="object-cover filter blur-[4px]"
               priority
             />
           </motion.div>
         </AnimatePresence>
-        {/* Editorial Paper Gradient Wash */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/80" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/92 to-background/75" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-          
-          {/* Left Column: Dynamic Editorial Typography & Controls */}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+          {/* Left Column: Compact Editorial Headline & Actions */}
           <div className="lg:col-span-6 flex flex-col justify-center">
-            {/* Headline with Synchronized Animated Word */}
-            <h1 className="font-sans text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-tight text-foreground leading-[1.06]">
+            <h1 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground leading-[1.08]">
               Your screen deserves{" "}
               <span className="inline-block relative">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={active.word}
-                    initial={{ y: 20, opacity: 0 }}
+                    initial={{ y: 14, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    transition={{ duration: 0.35, ease: "easeOut" }}
-                    className="text-primary italic inline-block underline decoration-secondary decoration-4 underline-offset-4"
+                    exit={{ y: -14, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="text-primary italic inline-block underline decoration-secondary decoration-3 underline-offset-4"
                   >
                     {active.word}
                   </motion.span>
@@ -147,123 +169,99 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </span>
             </h1>
 
-            {/* Subtitle */}
-            <p className="font-sans text-base sm:text-lg text-muted-foreground mt-5 max-w-xl leading-relaxed">
-              Thoughtfully crafted wallpapers for everyday displays. Focused on quiet tactile textures,
-              natural earth pigments, and editorial restraint.
+            <p className="font-sans text-sm sm:text-base text-muted-foreground mt-3 max-w-lg leading-relaxed">
+              4K desktop masters &amp; cropped phone lockscreens — tactile textures, natural pigments, zero clutter.
             </p>
 
-            {/* Action Buttons - Stable and stationary */}
-            <div className="flex flex-wrap items-center gap-3 mt-8">
-              <Button href="#wallpapers" size="md" variant="primary">
-                <span>Explore wallpapers</span>
-                <IconArrowDown size={16} />
+            <div className="flex flex-wrap items-center gap-2.5 mt-5">
+              <Button href="#wallpapers" size="sm" variant="primary" className="h-9 px-4 text-xs">
+                <span>Browse catalog</span>
+                <IconArrowDown size={14} />
               </Button>
 
               <Button
-                size="md"
+                href="https://play.google.com/store/apps/details?id=in.xweet.wallpapers"
+                target="_blank"
+                rel="noopener noreferrer"
+                size="sm"
                 variant="secondary"
-                onClick={() => onPreview(active.wallpaper)}
+                className="h-9 px-4 text-xs"
               >
-                <IconSparkles size={16} />
-                <span>Inspect spotlight</span>
+                <IconBrandGooglePlay size={14} />
+                <span>Get on Google Play</span>
               </Button>
             </div>
           </div>
 
-          {/* Right Column: Pure Laptop & Phone Viewed Wallpaper Mockup (No clutter, No extra elements) */}
+          {/* Right Column: Compact Dual-URL Laptop + Phone Preview */}
           <div
-            className="lg:col-span-6 relative flex flex-col items-center justify-center py-4"
+            className="lg:col-span-6 relative flex flex-col items-center justify-center"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            {/* Ambient Base Shadow */}
-            <div className="absolute bottom-8 inset-x-8 h-8 bg-black/25 blur-2xl rounded-full pointer-events-none" />
-
-            {/* Laptop Mockup Wrapper */}
             <div
               onClick={() => onPreview(active.wallpaper)}
-              className="relative w-full max-w-[520px] transition-transform duration-300 hover:scale-[1.015] cursor-pointer group select-none"
+              className="relative w-full max-w-[390px] sm:max-w-[420px] transition-transform duration-300 hover:scale-[1.015] cursor-pointer group select-none"
               title="Click to inspect wallpaper"
             >
-              {/* Laptop Screen Lid */}
-              <div className="relative rounded-t-[14px] sm:rounded-t-[18px] bg-[#1a1a1e] p-[7px] sm:p-[9px] pb-0 border border-neutral-700/60 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
-                {/* Camera Notch Dot */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-neutral-900 border border-neutral-700/80 z-20 pointer-events-none" />
+              {/* Laptop Lid */}
+              <div className="relative rounded-t-[12px] sm:rounded-t-[14px] bg-[#1a1a1e] p-[6px] sm:p-[7px] pb-0 border border-neutral-700/60 shadow-[0_14px_34px_rgba(0,0,0,0.35)]">
+                <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-neutral-900 border border-neutral-700/80 z-20 pointer-events-none" />
 
-                {/* Display Glass (16:10 Laptop Screen) */}
-                <div className="relative aspect-[16/10] w-full rounded-t-[6px] sm:rounded-t-[8px] overflow-hidden bg-black shadow-inner">
-                  {/* Protective Layer */}
-                  <div
-                    className="absolute inset-0 z-10 select-none cursor-pointer"
-                    onContextMenu={(e) => e.preventDefault()}
-                    onDragStart={(e) => e.preventDefault()}
-                  />
-
-                  {/* Synchronized 4K Master Wallpaper */}
+                {/* 16:10 Desktop Screen */}
+                <div className="relative aspect-[16/10] w-full rounded-t-[5px] sm:rounded-t-[6px] overflow-hidden bg-black">
                   <AnimatePresence>
                     <motion.div
                       key={active.wallpaper.id}
-                      initial={{ opacity: 0, scale: 1.02 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.5 }}
                       className="absolute inset-0"
                     >
                       <Image
-                        src={getCdnImageUrl(active.wallpaper.imageUrl)}
+                        src={desktopPreviewSrc}
                         alt={active.wallpaper.title}
                         fill
-                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        sizes="(max-width: 1024px) 100vw, 440px"
                         quality={92}
                         priority
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                        className="object-cover select-none pointer-events-none"
+                        draggable={false}
                       />
                     </motion.div>
                   </AnimatePresence>
-
-                  {/* Subtle Screen Glare Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent pointer-events-none" />
                 </div>
               </div>
 
-              {/* Laptop Lower Base / Keyboard Deck */}
-              <div className="relative -mt-[1px] h-[11px] sm:h-[15px] w-[104%] -left-[2%] bg-gradient-to-b from-[#2e2e34] via-[#1c1c20] to-[#101013] rounded-b-[10px] sm:rounded-b-[14px] border-t border-neutral-600/60 shadow-[0_20px_35px_rgba(0,0,0,0.4)] flex justify-center">
-                {/* Trackpad Thumb Notch */}
-                <div className="w-14 sm:w-20 h-1 sm:h-1.5 bg-neutral-800/90 rounded-b-md" />
+              {/* Laptop Base */}
+              <div className="relative -mt-[1px] h-[9px] sm:h-[12px] w-[104%] -left-[2%] bg-gradient-to-b from-[#2e2e34] via-[#1c1c20] to-[#101013] rounded-b-[8px] sm:rounded-b-[10px] border-t border-neutral-600/60 shadow-[0_14px_26px_rgba(0,0,0,0.32)] flex justify-center">
+                <div className="w-12 sm:w-16 h-1 bg-neutral-800/90 rounded-b-md" />
               </div>
 
-              {/* Phone Mockup (Standing Elegantly Overlapping on the Right) */}
+              {/* Phone Mockup (Using paired phone URL) */}
               <div
                 onClick={(e) => {
                   e.stopPropagation();
                   onPreview(active.wallpaper);
                 }}
-                className="absolute -bottom-4 sm:-bottom-6 right-2 sm:right-0 w-[110px] sm:w-[145px] md:w-[155px] aspect-[9/19.5] rounded-[24px] sm:rounded-[28px] border-[4px] sm:border-[5px] border-[#18181b] bg-black shadow-[0_25px_60px_rgba(0,0,0,0.7)] overflow-hidden ring-1 ring-white/10 z-20 transition-transform duration-300 hover:scale-[1.03] cursor-pointer"
+                className="absolute -bottom-3 right-1 sm:right-0 w-[86px] sm:w-[112px] aspect-[9/19.5] rounded-[18px] sm:rounded-[22px] border-[3px] sm:border-[4px] border-[#18181b] bg-black shadow-[0_18px_40px_rgba(0,0,0,0.65)] overflow-hidden ring-1 ring-white/10 z-20 transition-transform duration-300 hover:scale-[1.03] cursor-pointer"
                 title="Click to view lockscreen preview"
               >
-                {/* Protective Layer */}
-                <div
-                  className="absolute inset-0 z-10 select-none cursor-pointer"
-                  onContextMenu={(e) => e.preventDefault()}
-                  onDragStart={(e) => e.preventDefault()}
-                />
-
-                {/* Synchronized Phone Crop */}
                 <AnimatePresence>
                   <motion.div
                     key={active.wallpaper.id}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.5 }}
                     className="absolute inset-0"
                   >
                     <Image
                       src={getPhonePreviewUrl(active.wallpaper)}
-                      alt={`${active.wallpaper.title} Phone Lockscreen Crop`}
+                      alt={`${active.wallpaper.title} Phone Lockscreen`}
                       fill
-                      sizes="(max-width: 768px) 100vw, 600px"
+                      sizes="240px"
                       quality={95}
                       priority
                       style={getPhoneCropStyle(active.wallpaper)}
@@ -273,62 +271,39 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   </motion.div>
                 </AnimatePresence>
 
-                {/* iPhone Dynamic Island */}
-                <div className="absolute top-2 inset-x-0 flex justify-center z-30 pointer-events-none">
-                  <div className="h-3 w-12 sm:w-14 bg-black rounded-full shadow-xs" />
+                <div className="absolute top-1.5 inset-x-0 flex justify-center z-30 pointer-events-none">
+                  <div className="h-2.5 w-10 bg-black rounded-full" />
                 </div>
 
-                {/* Minimalist Lock Screen Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/60 p-2 sm:p-2.5 flex flex-col justify-between text-white pointer-events-none select-none">
-                  <div className="pt-4 sm:pt-5 flex flex-col items-center">
-                    <IconLock size={10} className="text-white/80 mb-0.5" />
-                    <span className="font-mono text-lg sm:text-xl font-light tracking-tight drop-shadow-md">
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/55 p-1.5 sm:p-2 flex flex-col justify-between text-white pointer-events-none select-none">
+                  <div className="pt-3.5 flex flex-col items-center">
+                    <IconLock size={8} className="text-white/80 mb-0.5" />
+                    <span className="font-mono text-sm sm:text-base font-light tracking-tight leading-none">
                       09:41
                     </span>
-                    <span className="font-sans text-[8px] sm:text-[9px] text-white/90 drop-shadow-sm font-medium">
-                      Wednesday, Oct 14
+                    <span className="font-sans text-[7px] text-white/85 mt-0.5">
+                      Wed, Oct 14
                     </span>
                   </div>
-
-                  <div className="pb-1 sm:pb-1.5 flex justify-center">
-                    <div className="h-1 w-9 bg-white/80 rounded-full" />
+                  <div className="pb-0.5 flex justify-center">
+                    <div className="h-0.5 w-7 bg-white/80 rounded-full" />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Artwork Spotlight Caption - Directly below the device mockup with fixed height */}
-            <div className="mt-6 sm:mt-7 flex items-center justify-center gap-2 font-mono text-xs text-muted-foreground select-none h-6">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 animate-pulse" />
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={active.wallpaper.id}
-                  initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -3 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center gap-2 truncate"
-                >
-                  <span className="text-foreground font-semibold uppercase tracking-wide truncate max-w-[200px] sm:max-w-[260px]">
-                    {active.wallpaper.title}
-                  </span>
-                  <span className="text-border">•</span>
-                  <span className="text-primary font-medium uppercase text-[11px] tracking-wider shrink-0">
-                    {active.wallpaper.category}
-                  </span>
-                  {active.wallpaper.resolution && (
-                    <>
-                      <span className="text-border hidden sm:inline">•</span>
-                      <span className="text-muted-foreground text-[11px] hidden sm:inline shrink-0">
-                        {active.wallpaper.resolution}
-                      </span>
-                    </>
-                  )}
-                </motion.div>
-              </AnimatePresence>
+            {/* Compact Caption */}
+            <div className="mt-4 flex items-center justify-center gap-2 font-mono text-[11px] text-muted-foreground select-none">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+              <span className="text-foreground font-semibold uppercase tracking-wide truncate max-w-[200px]">
+                {active.wallpaper.title}
+              </span>
+              <span className="text-border">•</span>
+              <span className="text-primary uppercase text-[10px] tracking-wider">
+                {active.wallpaper.category}
+              </span>
             </div>
           </div>
-
         </div>
       </div>
     </section>

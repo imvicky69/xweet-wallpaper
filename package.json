@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "sync:wallpapers": "node scripts/sync-wallpapers.mjs"
+    "sync:wallpapers": "node scripts/sync-wallpapers.mjs",
+    "studio": "node local-studio/server.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1151.0",

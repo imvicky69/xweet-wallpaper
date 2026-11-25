@@ -4,15 +4,56 @@ import React, { useState, useMemo, useEffect } from "react";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { HeroSection } from "@/components/sections/HeroSection";
-import { FeaturedWallpaperCarousel } from "@/components/sections/FeaturedWallpaperCarousel";
 import { WallpaperFilters } from "@/components/wallpapers/WallpaperFilters";
 import { WallpaperGrid } from "@/components/wallpapers/WallpaperGrid";
 import { WallpaperQuickViewModal } from "@/components/wallpapers/WallpaperQuickViewModal";
-import CircularCarousel, { CircularCarouselItem } from "@/components/CircularCarousel";
-import { CATEGORIES, getCdnImageUrl, shuffleWallpapers } from "@/lib/wallpapers";
+import { shuffleWallpapers } from "@/lib/wallpapers";
 import { useWallpapers } from "@/hooks/useWallpapers";
 import { Wallpaper, Orientation, WallpaperSort } from "@/types/wallpaper";
 import { IconSearch, IconX } from "@tabler/icons-react";
+
+const COMPACT_STYLES = [
+  "All",
+  "Abstract",
+  "Minimal",
+  "Dark & AMOLED",
+  "Flowers",
+  "Nature",
+  "Anime",
+  "Lockscreen",
+];
+
+function matchesCompactStyle(wp: Wallpaper, style: string): boolean {
+  if (style === "All") return true;
+  const cat = (wp.category || "").toLowerCase();
+  const col = (wp.collection || "").toLowerCase();
+  const tags = (wp.tags || []).map((t) => t.toLowerCase());
+  const hay = [cat, col, ...tags].join(" ");
+
+  switch (style) {
+    case "Abstract":
+      return cat.includes("abstract");
+    case "Minimal":
+      return (
+        cat.includes("minimal") ||
+        cat.includes("neutral") ||
+        cat.includes("pastel") ||
+        cat.includes("monochrome")
+      );
+    case "Dark & AMOLED":
+      return cat.includes("dark") || cat.includes("amoled") || tags.includes("oled");
+    case "Flowers":
+      return cat.includes("flower") || hay.includes("flower");
+    case "Nature":
+      return cat.includes("nature") || tags.includes("nature");
+    case "Anime":
+      return cat.includes("anime") || tags.includes("anime");
+    case "Lockscreen":
+      return cat.includes("lockscreen") || cat.includes("portrait");
+    default:
+      return cat === style.toLowerCase();
+  }
+}
 
 export default function Home() {
   const { wallpapers } = useWallpapers();
@@ -24,7 +65,6 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activePreview, setActivePreview] = useState<Wallpaper | null>(null);
 
-  // Automatically shuffle on mount so every visit discovers a fresh random mix
   useEffect(() => {
     setIsMounted(true);
     setShuffleSeed(Date.now());
@@ -35,25 +75,11 @@ export default function Home() {
     setShuffleSeed(Date.now());
   };
 
-  // Dynamic categories including default and custom categories
-  const dynamicCategories = useMemo(() => {
-    const list = Array.from(new Set(wallpapers.map((w) => w.category).filter(Boolean)));
-    const merged = new Set(["All", ...CATEGORIES.filter((c) => c !== "All"), ...list]);
-    return Array.from(merged);
-  }, [wallpapers]);
-
   // Filter & Sort logic
   const filteredWallpapers = useMemo(() => {
     let list = wallpapers.filter((wp) => {
-      // Category match
-      const matchesCategory =
-        selectedCategory === "All" ||
-        wp.category.toLowerCase() === selectedCategory.toLowerCase() ||
-        Boolean(wp.collection && wp.collection.toLowerCase() === selectedCategory.toLowerCase());
+      const matchesCategory = matchesCompactStyle(wp, selectedCategory);
 
-      // Orientation match:
-      // When "mobile" is selected, include mobile-only AND dual wallpapers (common ones with phone edition)
-      // When "desktop" is selected, include desktop-only AND dual wallpapers (common ones with desktop edition)
       const hasPhone = wp.hasPhoneCrop || Boolean(wp.phoneImageUrl) || wp.orientation === "mobile";
       const hasDesktop =
         wp.orientation === "desktop" ||
@@ -66,7 +92,6 @@ export default function Home() {
         (selectedOrientation === "mobile" && hasPhone) ||
         (selectedOrientation === "desktop" && hasDesktop);
 
-      // Search query match
       const query = searchQuery.trim().toLowerCase();
       const matchesSearch =
         !query ||
@@ -78,9 +103,7 @@ export default function Home() {
       return matchesCategory && matchesOrientation && matchesSearch;
     });
 
-    // Sort & Random Shuffle Pipeline
     if (sortBy === "random" && isMounted) {
-      // Shuffled randomly on mount & re-randomized on shuffle button click
       // eslint-disable-next-line react-hooks/exhaustive-deps
       list = shuffleWallpapers(list);
     } else if (sortBy === "newest") {
@@ -113,81 +136,48 @@ export default function Home() {
     setSearchQuery("");
   };
 
-  // Curated recent drops for the 3D circular carousel
-  const carouselWallpapers = useMemo(() => {
-    if (isMounted) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      return shuffleWallpapers(wallpapers).slice(0, 12);
-    }
-    const drops = [...wallpapers];
-    drops.sort((a, b) => {
-      if (a.isNew && !b.isNew) return -1;
-      if (!a.isNew && b.isNew) return 1;
-      return 0;
-    });
-    return drops.slice(0, 12);
-  }, [wallpapers, isMounted, shuffleSeed]);
-
-  const carouselItems: CircularCarouselItem[] = useMemo(() => {
-    return carouselWallpapers.map((wp) => ({
-      src: getCdnImageUrl(wp.thumbnailUrl || wp.imageUrl),
-      alt: wp.title,
-      title: wp.title,
-      subtitle: `${wp.category} • ${wp.resolution}`,
-    }));
-  }, [carouselWallpapers]);
-
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      {/* 1. Cleaner Premium Navbar with User's Circular Logo */}
+      {/* Seamless Header merged over Hero */}
       <SiteHeader
+        seamless
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
       />
 
       <main className="flex-1">
-        {/* 2. Hero Section: Auto-Fading Background + Rotating Word + Phone Crop & Zoom */}
+        {/* Compact Hero Section with dual-URL laptop + phone preview */}
         <HeroSection
           wallpapers={wallpapers}
           onPreview={setActivePreview}
         />
 
-        {/* 3. A Few Exclusive Drops (Swiper Carousel) */}
-        <FeaturedWallpaperCarousel
-          wallpapers={wallpapers}
-          onPreview={setActivePreview}
-        />
-
-        {/* 4. All Wallpapers (Clean Filterable Catalog) */}
-        <section id="wallpapers" className="w-full py-10 sm:py-16 lg:py-20">
+        {/* Compact Catalog Section */}
+        <section id="wallpapers" className="w-full py-5 sm:py-8">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-12">
-            {/* Header with Search and Title */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 sm:gap-6 mb-5 sm:mb-8">
-              <div>
-                <span className="font-mono text-[11px] sm:text-xs font-semibold text-primary uppercase tracking-wider">
-                  Catalog
-                </span>
-                <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground mt-0.5">
+            {/* Compact Header + Inline Search */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 sm:mb-4">
+              <div className="flex items-baseline gap-2.5">
+                <h2 className="font-sans text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
                   All Wallpapers
                 </h2>
-                <p className="font-sans text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 max-w-xl line-clamp-1 sm:line-clamp-none">
-                  Uncompressed 4K & 5K master backgrounds tailored for clean desks and handheld screens.
-                </p>
+                <span className="font-mono text-[11px] text-muted-foreground uppercase">
+                  4K Desktop &amp; Phone
+                </span>
               </div>
 
-              {/* Inline Search Input with 1-click Clear Button */}
-              <div className="w-full md:w-80">
+              <div className="w-full sm:w-72">
                 <div className="relative">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search titles, tags, colors..."
-                    className="h-9 sm:h-10 w-full rounded-none border border-border bg-surface pl-9 pr-8 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
+                    className="h-8.5 w-full rounded-none border border-border bg-surface pl-8 pr-7 font-sans text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
                   />
                   <IconSearch
-                    size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                    size={14}
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
                   />
                   {searchQuery && (
                     <button
@@ -195,26 +185,26 @@ export default function Home() {
                       onClick={() => setSearchQuery("")}
                       title="Clear search"
                       aria-label="Clear search"
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                     >
-                      <IconX size={14} />
+                      <IconX size={13} />
                     </button>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Active Search & Filter Feedback Banner */}
+            {/* Active Search Banner */}
             {searchQuery.trim() && (
-              <div className="mb-4 flex items-center justify-between border border-primary/30 bg-secondary/30 px-3.5 py-2 text-xs font-mono">
+              <div className="mb-3 flex items-center justify-between border border-primary/30 bg-secondary/30 px-3 py-1.5 text-xs font-mono">
                 <div className="flex items-center gap-2 text-foreground">
-                  <IconSearch size={14} className="text-primary shrink-0" />
+                  <IconSearch size={13} className="text-primary shrink-0" />
                   <span>
-                    Showing results for <strong className="text-primary font-bold">&quot;{searchQuery}&quot;</strong>
+                    Results for <strong className="text-primary font-bold">&quot;{searchQuery}&quot;</strong>
                   </span>
                   <span className="text-muted-foreground">•</span>
                   <span className="text-muted-foreground">
-                    {filteredWallpapers.length} {filteredWallpapers.length === 1 ? "wallpaper" : "wallpapers"} found
+                    {filteredWallpapers.length} found
                   </span>
                 </div>
                 <button
@@ -222,16 +212,16 @@ export default function Home() {
                   onClick={() => setSearchQuery("")}
                   className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                 >
-                  <span>Clear Search</span>
+                  <span>Clear</span>
                   <IconX size={12} />
                 </button>
               </div>
             )}
 
-            {/* Filter Bar */}
-            <div className="mb-6 sm:mb-10">
+            {/* Compact Filter Bar */}
+            <div className="mb-5">
               <WallpaperFilters
-                categories={dynamicCategories}
+                categories={COMPACT_STYLES}
                 selectedCategory={selectedCategory}
                 onSelectCategory={setSelectedCategory}
                 selectedOrientation={selectedOrientation}
@@ -257,46 +247,8 @@ export default function Home() {
             />
           </div>
         </section>
-
-        {/* 5. Curated 3D Ring Showcase: Circular Carousel */}
-        {carouselItems.length > 0 && (
-          <section className="w-full py-12 sm:py-16 bg-surface border-t border-border overflow-hidden">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-12 mb-6 sm:mb-8 text-center flex flex-col items-center">
-              <span className="font-mono text-[10px] sm:text-xs font-semibold text-primary uppercase tracking-widest px-2.5 py-1 border border-primary/40 bg-primary/5">
-                INTERACTIVE 3D PERSPECTIVE
-              </span>
-              <h2 className="font-sans text-2xl sm:text-3xl md:text-4xl font-semibold tracking-tight text-foreground mt-3">
-                Explore Drops in 3D Orbit
-              </h2>
-              <p className="font-sans text-xs sm:text-sm text-muted-foreground mt-1.5 max-w-lg leading-relaxed">
-                Drag, swipe, or spin the carousel to browse recent releases. Click any wallpaper card to inspect details and download in lossless 4K.
-              </p>
-            </div>
-
-            <div className="w-full h-[400px] sm:h-[460px] lg:h-[500px] relative select-none">
-              <CircularCarousel
-                items={carouselItems}
-                preset="cylinder"
-                autoplay="drift"
-                speed={0.35}
-                cardWidth={260}
-                aspectRatio={16 / 10}
-                cornerRadius={0}
-                gap={16}
-                fadeColor="#FCFAF4"
-                captions={true}
-                draggable={true}
-                onItemClick={(_item, index) => {
-                  const targetWp = carouselWallpapers[index];
-                  if (targetWp) setActivePreview(targetWp);
-                }}
-              />
-            </div>
-          </section>
-        )}
       </main>
 
-      {/* 6. Minimal Editorial Footer */}
       <SiteFooter />
 
       {/* Schema.org Structured Data */}
@@ -351,7 +303,6 @@ export default function Home() {
         }}
       />
 
-      {/* 6. Quick View Interactive Modal (Framer Motion) */}
       <WallpaperQuickViewModal
         wallpaper={activePreview}
         onClose={() => setActivePreview(null)}

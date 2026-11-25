@@ -83,9 +83,7 @@ export async function GET(
 
     const dedicatedPhoneKey =
       wallpaper?.storage?.phoneR2Key ||
-      (wallpaper?.phoneImageUrl && !wallpaper.phoneImageUrl.endsWith(`${cleanSlug}.webp`)
-        ? `wallpapers/${cleanSlug}-phone.webp`
-        : null);
+      `wallpapers/phone/${cleanSlug}.webp`;
 
     const r2Key =
       (isPhoneRequest && dedicatedPhoneKey) ||
@@ -100,14 +98,31 @@ export async function GET(
 
     // A. Attempt direct R2 download via S3 client
     try {
-      masterBuffer = await getObjectFromR2(r2Key);
-      if (masterBuffer && isPhoneRequest && dedicatedPhoneKey && r2Key === dedicatedPhoneKey) {
-        hasLoadedDedicatedPhone = true;
+      if (isPhoneRequest) {
+        const phoneKeys = Array.from(
+          new Set(
+            [
+              wallpaper?.storage?.phoneR2Key,
+              `wallpapers/phone/${cleanSlug}.webp`,
+              `wallpapers/${cleanSlug}-phone.webp`,
+              wallpaper?.storage?.r2Key?.startsWith("wallpapers/phone/")
+                ? wallpaper.storage.r2Key
+                : null,
+            ].filter(Boolean) as string[]
+          )
+        );
+        for (const pKey of phoneKeys) {
+          masterBuffer = await getObjectFromR2(pKey);
+          if (masterBuffer) {
+            hasLoadedDedicatedPhone = true;
+            break;
+          }
+        }
       }
-      if (!masterBuffer && isPhoneRequest && !dedicatedPhoneKey) {
-        // Check if -phone.webp exists in R2
-        masterBuffer = await getObjectFromR2(`wallpapers/${cleanSlug}-phone.webp`);
-        if (masterBuffer) {
+
+      if (!masterBuffer) {
+        masterBuffer = await getObjectFromR2(r2Key);
+        if (masterBuffer && isPhoneRequest && r2Key.startsWith("wallpapers/phone/")) {
           hasLoadedDedicatedPhone = true;
         }
       }
@@ -124,13 +139,22 @@ export async function GET(
 
     // B. Fallback: Fetch via public CDN URL
     if (!masterBuffer) {
-      const candidates = [
-        `${publicCdnDomain.replace(/\/$/, "")}/${r2Key.replace(/^\//, "")}`,
-        wallpaper?.imageUrl,
-        `https://cdn.xweet.in/wallpapers/${cleanSlug}.webp`,
-        `https://cdn.xweet.in/wallpapers/${cleanSlug}.png`,
-        `https://cdn.xweet.in/wallpapers/${cleanSlug}/desktop.png`,
-      ].filter(Boolean) as string[];
+      const candidates = isPhoneRequest
+        ? ([
+            wallpaper?.urls?.phone,
+            wallpaper?.phoneImageUrl,
+            `https://cdn.xweet.in/wallpapers/phone/${cleanSlug}.webp`,
+            `${publicCdnDomain.replace(/\/$/, "")}/${r2Key.replace(/^\//, "")}`,
+            wallpaper?.imageUrl,
+            `https://cdn.xweet.in/wallpapers/${cleanSlug}.webp`,
+          ].filter(Boolean) as string[])
+        : ([
+            `${publicCdnDomain.replace(/\/$/, "")}/${r2Key.replace(/^\//, "")}`,
+            wallpaper?.imageUrl,
+            `https://cdn.xweet.in/wallpapers/${cleanSlug}.webp`,
+            `https://cdn.xweet.in/wallpapers/${cleanSlug}.png`,
+            `https://cdn.xweet.in/wallpapers/${cleanSlug}/desktop.png`,
+          ].filter(Boolean) as string[]);
 
       for (const candidateUrl of candidates) {
         try {
@@ -141,6 +165,9 @@ export async function GET(
           if (res.ok) {
             const arrBuffer = await res.arrayBuffer();
             masterBuffer = Buffer.from(arrBuffer);
+            if (isPhoneRequest && candidateUrl.includes("/phone/")) {
+              hasLoadedDedicatedPhone = true;
+            }
             break;
           }
         } catch {
@@ -186,7 +213,13 @@ export async function GET(
         ? "jpg"
         : "webp";
 
-    try {
+    const isDirectWebpMaster =
+      requestedFormat === "webp" &&
+      ((isPhoneRequest && hasLoadedDedicatedPhone) ||
+        (type === "desktop-4k" && r2Key.endsWith(".webp")));
+
+    if (!isDirectWebpMaster) {
+      try {
       const sharpMod = await import("sharp");
       const sharpFn = sharpMod.default || sharpMod;
       const sharpInstance = sharpFn(masterBuffer);
@@ -299,6 +332,7 @@ export async function GET(
       const masterExt = r2Key.endsWith(".png") ? "png" : "webp";
       contentType = masterExt === "png" ? "image/png" : "image/webp";
       fileExtension = masterExt;
+    }
     }
 
     const sanitizedFilename = `${cleanSlug}-${type}.${fileExtension}`.replace(
